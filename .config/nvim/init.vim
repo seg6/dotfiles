@@ -19,7 +19,6 @@ Plug 'nvim-telescope/telescope.nvim'
 
 Plug 'ellisonleao/glow.nvim'
 Plug 'Mofiqul/vscode.nvim'
-Plug 'crispgm/nvim-tabline'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
@@ -31,14 +30,14 @@ set guifont=MonoLisa:h10
 let g:mapleader=","
 let g:vscode_style = "dark"
 let g:airline_theme = "angr"
+let g:neovide_no_idle=v:true
+let g:neovide_refresh_rate=75
 let g:vscode_italic_comment = 1
 let g:vscode_disable_nvimtree_bg = v:true 
-let g:airline#extensions#tabline#enabled = 1
+" let g:airline#extensions#tabline#enabled = 1
+" let g:vscode_transparent = 1
 
 if exists("neovide")
-    let g:neovide_no_idle=v:true
-    let g:neovide_refresh_rate=75
-
     nmap <c-c> "+y
     vmap <c-c> "+y
     nmap <c-v> "+p
@@ -76,7 +75,7 @@ nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> gD    <cmd>lua vim.lsp.buf.implementation()<CR>
 nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
-nnoremap <silent> gt    <cmd>lua vim.lsp.buf.type_definition()<CR>
+nnoremap <silent> gD    <cmd>lua vim.lsp.buf.type_definition()<CR>
 nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap <silent> gf    <cmd>lua vim.lsp.buf.formatting()<CR>
 nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>

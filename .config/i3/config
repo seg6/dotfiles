@@ -68,9 +68,6 @@ bindsym $mod+Control+Up    exec --no-startup-id pactl set-sink-volume @DEFAULT_S
 bindsym $mod+Control+Left  exec --no-startup-id playerctl previous
 bindsym $mod+Control+Right exec --no-startup-id playerctl next
 
-# rip escape key
-bindsym --release Print exec --no-startup-id xdotool key --clearmodifiers Escape
-
 bindsym $mod+1 workspace number $ws1
 bindsym $mod+2 workspace number $ws2
 bindsym $mod+3 workspace number $ws3
@@ -111,15 +108,17 @@ mode "resize" {
 }
 
 exec --no-startup-id optimus-manager-qt
+exec --no-startup-id warpd
 exec --no-startup-id nm-applet
 exec --no-startup-id xfce4-clipman
 exec --no-startup-id xfce4-volumed-pulse
 exec --no-startup-id xfce4-power-manager
-exec --no-startup-id hsetroot -solid "#3f6353"
+exec --no-startup-id hsetroot -solid "#212121"
 exec --no-startup-id $HOME/.config/polybar/launch.sh
 exec --no-startup-id picom --experimental-backends --vsync
 exec --no-startup-id xinput set-prop "SYNA32B9:00 06CB:CE7D Touchpad" "libinput Tapping Enabled" 1
 exec --no-startup-id xinput set-float-prop "ThinkPad Essential Wireless Mouse" "libinput Accel Speed" -0.6
 
+# exec --no-startup-id hsetroot -solid "#3f6353"
 # exec --no-startup-id xrandr --output DP-1 --auto --output eDP-1 --off
 # exec --no-startup-id nvidia-settings --assign CurrentMetaMode="nvidia-auto-select +0+0 { ForceCompositionPipeline = On }"
