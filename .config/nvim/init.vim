@@ -16,11 +16,10 @@ Plug 'tomtom/tcomment_vim'
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
-
 Plug 'ellisonleao/glow.nvim'
-Plug 'Mofiqul/vscode.nvim'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
+
+Plug 'itchyny/lightline.vim'
+Plug 'jacoborus/tender.vim'
 
 call plug#end()
 
@@ -28,24 +27,25 @@ syntax on
 set guifont=MonoLisa:h10
 
 let g:mapleader=","
-let g:vscode_style = "dark"
-let g:airline_theme = "angr"
-let g:neovide_no_idle=v:true
-let g:neovide_refresh_rate=75
-let g:vscode_italic_comment = 1
-let g:vscode_disable_nvimtree_bg = v:true 
-" let g:airline#extensions#tabline#enabled = 1
-" let g:vscode_transparent = 1
+" let g:neovide_no_idle=v:true
+" let g:neovide_refresh_rate=75
 
 if exists("neovide")
     nmap <c-c> "+y
     vmap <c-c> "+y
     nmap <c-v> "+p
-else
-    let g:vscode_transparent = 1
 end
 
-colorscheme vscode
+if (has("termguicolors"))
+    set termguicolors
+end
+
+let g:lightline = { 'colorscheme': 'tender' }
+
+syntax enable
+set noshowmode
+
+colorscheme tender
 
 set nu rnu
 set hlsearch
