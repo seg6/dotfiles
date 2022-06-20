@@ -107,15 +107,18 @@ mode "resize" {
     bindsym $mod+r mode "default"
 }
 
-exec --no-startup-id optimus-manager-qt
 exec --no-startup-id warpd
-exec --no-startup-id nm-applet
-exec --no-startup-id xfce4-clipman
-exec --no-startup-id xfce4-volumed-pulse
-exec --no-startup-id xfce4-power-manager
-exec --no-startup-id hsetroot -solid "#212121"
+exec --no-startup-id hsetroot -solid "#718c97"
 exec --no-startup-id $HOME/.config/polybar/launch.sh
 exec --no-startup-id picom --experimental-backends --vsync
+
+exec --no-startup-id nm-applet
+exec --no-startup-id xfce4-clipman
+exec --no-startup-id optimus-manager-qt
+exec --no-startup-id xfce4-volumed-pulse
+exec --no-startup-id xfce4-power-manager
+
+exec --no-startup-id xmodmap -e "keycode 107 = Escape"
 exec --no-startup-id xinput set-prop "SYNA32B9:00 06CB:CE7D Touchpad" "libinput Tapping Enabled" 1
 exec --no-startup-id xinput set-float-prop "ThinkPad Essential Wireless Mouse" "libinput Accel Speed" -0.6
 
