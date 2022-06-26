@@ -41,11 +41,13 @@ Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 
 Plug 'itchyny/lightline.vim'
 Plug 'jacoborus/tender.vim'
+Plug 'AlphaTechnolog/pywal.nvim', { 'as': 'pywal' }
 
 call plug#end()
 
 let g:lightline = { 'colorscheme': 'tender' }
-colorscheme tender
+" colorscheme tender
+colorscheme pywal
 
 let g:mapleader=","
 let g:neovide_no_idle=v:true

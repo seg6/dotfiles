@@ -108,9 +108,9 @@ mode "resize" {
 }
 
 exec --no-startup-id warpd
-exec --no-startup-id hsetroot -solid "#718c97"
 exec --no-startup-id $HOME/.config/polybar/launch.sh
-exec --no-startup-id picom --experimental-backends --vsync
+exec --no-startup-id feh --bg-fill $HOME/pictures/wall.jpg
+exec --no-startup-id picom --backend glx --experimental-backends --vsync -b
 
 exec --no-startup-id nm-applet
 exec --no-startup-id xfce4-clipman
