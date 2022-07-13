@@ -8,12 +8,12 @@ RFILE="$HOME/.config/polybar/scripts/rofi/colors.rasi"
 change_color() {
 	# polybar
 	sed -i -e "s/background = #.*/background = $BG/g" $PFILE
-	sed -i -e "s/background-alt = #.*/background-alt = $BGA/g" $PFILE
 	sed -i -e "s/foreground = #.*/foreground = $FG/g" $PFILE
-	sed -i -e "s/foreground-alt = #.*/foreground-alt = $FG/g" $PFILE
+	sed -i -e "s/foreground-alt = #.*/foreground-alt = $FGA/g" $PFILE
+	sed -i -e "s/module-fg = #.*/module-fg = $MF/g" $PFILE
 	sed -i -e "s/primary = #.*/primary = $AC/g" $PFILE
-	sed -i -e 's/red = #.*/red = #EF5350/g' $PFILE
-	sed -i -e 's/yellow = #.*/yellow = #FFEE58/g' $PFILE
+	sed -i -e "s/secondary = #.*/secondary = $SC/g" $PFILE
+	sed -i -e "s/alternate = #.*/alternate = $AL/g" $PFILE
 	
 	# rofi
 	cat > $RFILE <<- EOF
@@ -22,8 +22,8 @@ change_color() {
 	* {
 	  al:   #00000000;
 	  bg:   ${BG}FF;
-	  bga:  ${BGA}FF;
-	  fga:  ${FG}FF;
+	  bga:  ${AC}33;
+	  bar:  ${MF}FF;
 	  fg:   ${FG}FF;
 	  ac:   ${AC}FF;
 	}
@@ -64,10 +64,33 @@ get_random_color() {
 	echo $RCOLOR
 }
 
-# Main
-BG='#272727'	# change to light bg
-FG='#CACACA'	# change to dark fg
-BGA='#383838'
-AC=`get_random_color`
+hex_to_rgb() {
+    # Convert a hex value WITHOUT the hashtag (#)
+    R=$(printf "%d" 0x${1:0:2})
+    G=$(printf "%d" 0x${1:2:2})
+    B=$(printf "%d" 0x${1:4:2})
+}
 
+get_fg_color(){
+    INTENSITY=$(calc "$R*0.299 + $G*0.587 + $B*0.114")
+    
+    if [ $(echo "$INTENSITY>186" | bc) -eq 1 ]; then
+        MF="#0a0a0a"
+    else
+        MF="#F5F5F5"
+    fi
+}
+
+# Main
+BG='#1F1F1F'	# change to light bg
+FG='#FFFFFF'	# change to dark fg
+FGA=`get_random_color`
+AC=`get_random_color`
+SC=`get_random_color`
+AL=`get_random_color`
+
+HEX=${AC:1}
+
+hex_to_rgb $HEX
+get_fg_color
 change_color

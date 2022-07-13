@@ -16,6 +16,7 @@ focus_follows_mouse no
 workspace_auto_back_and_forth yes
 
 gaps inner 20
+gaps bottom 60
 assign [class="zoom"] 5
 
 for_window [class=".*"] border none
@@ -108,8 +109,8 @@ mode "resize" {
 }
 
 exec --no-startup-id warpd
+exec --no-startup-id hsetroot -solid '#1f1f1f'
 exec --no-startup-id $HOME/.config/polybar/launch.sh
-exec --no-startup-id feh --bg-fill $HOME/pictures/wall.jpg
 exec --no-startup-id picom --backend glx --experimental-backends --vsync -b
 
 exec --no-startup-id nm-applet

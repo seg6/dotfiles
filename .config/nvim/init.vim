@@ -1,4 +1,4 @@
-set guifont=MonoLisa:h10
+set guifont=MonoLisa:h9
 set shortmess+=c
 set signcolumn=yes
 set completeopt=menuone,noinsert,noselect
@@ -40,14 +40,15 @@ Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 
 Plug 'itchyny/lightline.vim'
-Plug 'jacoborus/tender.vim'
+Plug 'nekonako/xresources-nvim'
 Plug 'AlphaTechnolog/pywal.nvim', { 'as': 'pywal' }
+
+Plug 'folke/twilight.nvim'
 
 call plug#end()
 
-let g:lightline = { 'colorscheme': 'tender' }
-" colorscheme tender
-colorscheme pywal
+colorscheme xresources
+let g:lightline = { 'colorscheme': 'seoul256' }
 
 let g:mapleader=","
 let g:neovide_no_idle=v:true
@@ -72,7 +73,7 @@ nnoremap <Leader>;   <cmd>lua require'telescope.builtin'.buffers{}<CR>
 nnoremap <Leader>/   <cmd>lua require'telescope.builtin'.current_buffer_fuzzy_find{}<CR>
 nnoremap <Leader>'   <cmd>lua require'telescope.builtin'.marks{}<CR>
 nnoremap <Leader>f   <cmd>lua require'telescope.builtin'.git_files{}<CR>
-nnoremap <Leader>nf  <cmd>lua require'telescope.builtin'.find_files{}<CR>
+nnoremap <Leader>d   <cmd>lua require'telescope.builtin'.find_files{}<CR>
 nnoremap <Leader>g   <cmd>lua require'telescope.builtin'.live_grep{}<CR>
 nnoremap <Leader>cs  <cmd>lua require'telescope.builtin'.colorscheme{}<CR>
 
@@ -160,4 +161,12 @@ cmp.setup({
         { name = 'buffer' },
     },
 })
+EOF
+
+lua << EOF
+  require("twilight").setup {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
 EOF

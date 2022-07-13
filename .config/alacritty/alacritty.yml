@@ -14,36 +14,32 @@ cursor:
 font:
   size: 10
   normal:
-    family: MonoLisa
-    # family: DinaRemaster
-    # family: Terminus
-    # family: Consolas
-    # family: Terminus (TTF) for Windows
+    family: Terminus
 
 colors:
   # Default colors
   primary:
-    background: '0xe6e7e8'
-    foreground: '0x030406'
+    background: '0x1f1f1f'
+    foreground: '0xc5c8c6'
 
   # Normal colors
   normal:
-    black:   '0xe6e7e8'
-    red:     '0xbb3831'
-    green:   '0x3b7c99'
-    yellow:  '0xc84f45'
-    blue:    '0x698e93'
-    magenta: '0xc26d6e'
-    cyan:    '0xd39089'
-    white:   '0x030406'
+    black:   '0x1d1f21'
+    red:     '0xcc6666'
+    green:   '0xb5bd68'
+    yellow:  '0xf0c674'
+    blue:    '0x81a2be'
+    magenta: '0xb294bb'
+    cyan:    '0x8abeb7'
+    white:   '0xc5c8c6'
 
   # Bright colors
   bright:
-    black:   '0x3d4048'
-    red:     '0xbb3831'
-    green:   '0x3b7c99'
-    yellow:  '0xc84f45'
-    blue:    '0x698e93'
-    magenta: '0xc26d6e'
-    cyan:    '0xd39089'
-    white:   '0x030406'
+    black:   '0x969896'
+    red:     '0xcc6666'
+    green:   '0xb5bd68'
+    yellow:  '0xf0c674'
+    blue:    '0x81a2be'
+    magenta: '0xb294bb'
+    cyan:    '0x8abeb7'
+    white:   '0xffffff'
