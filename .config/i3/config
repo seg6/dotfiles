@@ -40,7 +40,6 @@ client.placeholder      #282A36 #282A36 #F8F8F2 #282A36   #282A36
 client.background       #F8F8F2
 
 bindsym $mod+q kill
-bindsym $mod+l exec --no-startup-id dm-tool lock
 bindsym $mod+d exec --no-startup-id rofi -show run
 bindsym $mod+Return exec --no-startup-id alacritty
 
@@ -129,8 +128,8 @@ exec --no-startup-id optimus-manager-qt
 exec --no-startup-id xfce4-volumed-pulse
 exec --no-startup-id xfce4-power-manager
 
-exec --no-startup-id xmodmap -e "keycode 107 = Escape"
-exec --no-startup-id xrandr --output DP-1 --auto --output eDP-1 --off
+exec --no-startup-id setxkbmap -option caps:escape_shifted_capslock
+# exec --no-startup-id xrandr --output DP-1 --auto --output eDP-1 --off
 exec --no-startup-id xinput set-prop "SYNA32B9:00 06CB:CE7D Touchpad" "libinput Tapping Enabled" 1
 exec --no-startup-id xinput set-float-prop "ThinkPad Essential Wireless Mouse" "libinput Accel Speed" -0.6
 

@@ -14,7 +14,8 @@ cursor:
 font:
   size: 10
   normal:
-    family: Terminus
+    family: MonoLisa
+    # family: Terminus
 
 colors:
   # Default colors
