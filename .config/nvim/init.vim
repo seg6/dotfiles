@@ -1,4 +1,4 @@
-set guifont=MonoLisa:h9
+set guifont=MonoLisa:h10
 set shortmess+=c
 set signcolumn=yes
 set completeopt=menuone,noinsert,noselect
@@ -39,7 +39,6 @@ Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 
-" Plug 'itchyny/lightline.vim'
 Plug 'nvim-lualine/lualine.nvim'
 Plug 'nekonako/xresources-nvim'
 Plug 'AlphaTechnolog/pywal.nvim', { 'as': 'pywal' }
