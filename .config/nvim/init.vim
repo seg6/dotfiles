@@ -10,6 +10,7 @@ set expandtab
 set noshowmode
 set smartindent
 set shiftwidth=4
+set mouse=
 
 if (has("termguicolors"))
     set termguicolors

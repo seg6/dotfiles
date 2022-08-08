@@ -6,7 +6,7 @@ RFILE="$HOME/.config/polybar/scripts/rofi/colors.rasi"
 
 # Get colors
 pywal_get() {
-	wal -i "$1" -q -t
+	wal -i "$1" -q -t --backend colorz
 }
 
 # Change colors

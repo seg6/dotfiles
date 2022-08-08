@@ -118,8 +118,9 @@ mode "resize" {
 }
 
 exec --no-startup-id warpd
-exec --no-startup-id hsetroot -solid '#404a5b'
+# exec --no-startup-id hsetroot -solid '#404a5b'
 exec --no-startup-id $HOME/.config/polybar/launch.sh
+exec --no-startup-id feh --bg-fill $HOME/pictures/wall.png
 exec --no-startup-id picom --backend glx --experimental-backends --vsync -b
 
 exec --no-startup-id nm-applet
