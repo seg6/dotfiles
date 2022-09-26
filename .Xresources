@@ -10,38 +10,38 @@ Xft.rgba: rgb
 Xcursor.theme: simpleandsoft
 
 ! special
-*.foreground:   #a7a7a7
-*.background:   #1e1e1e
-*.cursorColor:  #a7a7a7
+*.foreground:   #d0d0d0
+*.background:   #151515
+*.cursorColor:  #d0d0d0
 
 ! black
-*.color0:       #1e1e1e
-*.color8:       #5f5a60
+*.color0:       #151515
+*.color8:       #505050
 
 ! red
-*.color1:       #cf6a4c
-*.color9:       #cf6a4c
+*.color1:       #ac4142
+*.color9:       #ac4142
 
 ! green
-*.color2:       #8f9d6a
-*.color10:      #8f9d6a
+*.color2:       #90a959
+*.color10:      #90a959
 
 ! yellow
-*.color3:       #f9ee98
-*.color11:      #f9ee98
+*.color3:       #f4bf75
+*.color11:      #f4bf75
 
 ! blue
-*.color4:       #7587a6
-*.color12:      #7587a6
+*.color4:       #6a9fb5
+*.color12:      #6a9fb5
 
 ! magenta
-*.color5:       #9b859d
-*.color13:      #9b859d
+*.color5:       #aa759f
+*.color13:      #aa759f
 
 ! cyan
-*.color6:       #afc4db
-*.color14:      #afc4db
+*.color6:       #75b5aa
+*.color14:      #75b5aa
 
 ! white
-*.color7:       #a7a7a7
-*.color15:      #ffffff
+*.color7:       #d0d0d0
+*.color15:      #f5f5f5

@@ -1,5 +1,6 @@
 " directly nvim related settings
 set nocompatible
+set noshowmode
 set showmatch
 set ignorecase
 set hlsearch
@@ -9,13 +10,13 @@ set softtabstop=4
 set expandtab
 set shiftwidth=4
 set smartindent
-set rnu
+set rnu nu
 set shortmess+=c
 set signcolumn=yes
 set completeopt=menuone,noinsert,noselect
 set guifont=MonoLisa:h11
 
-call plug#begin("~/.vim/plugged")
+call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/vim-vsnip'
   Plug 'hrsh7th/nvim-cmp'
   Plug 'hrsh7th/cmp-nvim-lsp'
@@ -37,14 +38,14 @@ call plug#begin("~/.vim/plugged")
   Plug 'tomtom/tcomment_vim'
   Plug 'ellisonleao/glow.nvim'
 
+  Plug 'https://gitlab.com/protesilaos/tempus-themes-vim.git'
   Plug 'nvim-lualine/lualine.nvim'
   Plug 'mhinz/vim-startify'
-  Plug 'RRethy/nvim-base16'
   Plug 'folke/twilight.nvim'
   Plug 'j-hui/fidget.nvim'
 call plug#end()
 
-if (has("termguicolors"))
+if (has('termguicolors'))
     set termguicolors
 end
 
@@ -52,15 +53,14 @@ syntax on
 filetype plugin on
 filetype plugin indent on
 
-colorscheme base16-twilight
+" let g:oxocarbon_lua_alternative_telescope = 1
+" set background=light
+" colorscheme oxocarbon-lua
+" colorscheme PaperColor
+" colorscheme antarctic
+colorscheme tempus_winter
 
-if exists("neovide")
-    nmap <c-c> "+y
-    vmap <c-c> "+y
-    nmap <c-v> "+p
-end
-
-let g:mapleader=","
+let g:mapleader=','
 let g:neovide_no_idle=v:true
 let g:neovide_refresh_rate=75
 
@@ -72,20 +72,29 @@ autocmd FileChangedShellPost *
     \ echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None
 
 " Vim jump to the last position when reopening a file
-if has("autocmd")
+if has('autocmd')
   au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 endif
 
+nmap <Leader>c "+y
+vmap <Leader>c "+y
+nmap <Leader>v "+p
+vmap <Leader>v "+p
+vmap ff <ESC><cmd>lua vim.lsp.buf.range_formatting()<CR>
+
 nnoremap <Leader>pp  <cmd>lua require'telescope.builtin'.builtin{}<CR>
 nnoremap <Leader>m   <cmd>lua require'telescope.builtin'.oldfiles{}<CR>
-nnoremap <Leader>;   <cmd>lua require'telescope.builtin'.buffers{}<CR>
+nnoremap <Leader>a   <cmd>lua require'telescope.builtin'.buffers{}<CR>
 nnoremap <Leader>/   <cmd>lua require'telescope.builtin'.current_buffer_fuzzy_find{}<CR>
 nnoremap <Leader>'   <cmd>lua require'telescope.builtin'.marks{}<CR>
 nnoremap <Leader>d   <cmd>lua require'telescope.builtin'.git_files{}<CR>
 nnoremap <Leader>f   <cmd>lua require'telescope.builtin'.find_files{}<CR>
 nnoremap <Leader>g   <cmd>lua require'telescope.builtin'.live_grep{}<CR>
 nnoremap <Leader>cs  <cmd>lua require'telescope.builtin'.colorscheme{}<CR>
+
+nnoremap <Leader>ss :SSave<CR>
+nnoremap <Leader>sd :SClose<CR>
 
 nnoremap <silent> <c-]> <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> K     <cmd>lua vim.lsp.buf.hover()<CR>
@@ -103,39 +112,33 @@ nnoremap <silent> gh    <cmd>lua vim.diagnostic.open_float(nil, { focusable = fa
 nnoremap <silent> g[ <cmd>lua vim.diagnostic.goto_prev()<CR>
 nnoremap <silent> g] <cmd>lua vim.diagnostic.goto_next()<CR>
 
+let g:startify_custom_header = []
+let g:startify_lists = [
+  \ { 'type': 'sessions', 'header': ['Sessions'] }
+  \ ]
+
 lua <<EOF
-local nvim_lsp = require'lspconfig'
-local lsp_installer = require("nvim-lsp-installer")
+local nvim_lsp = require('lspconfig')
+local lsp_installer = require('nvim-lsp-installer')
 
 lsp_installer.on_server_ready(function(server)
-    server:setup({})
+  server:setup({})
 end)
 EOF
 
 lua <<EOF
-  require("rust-tools").setup({server = {}})
-EOF
+require('rust-tools').setup({server = {}})
+require('fidget').setup({})
+require('twilight').setup({})
+require('clangd_extensions').setup()
 
-lua <<EOF
-  require"fidget".setup{}
-EOF
-
-lua <<EOF
-  require("twilight").setup {}
-EOF
-
-lua <<EOF
-  require("clangd_extensions").setup()
-EOF
-
-lua <<EOF
-local cmp = require'cmp'
+local cmp = require('cmp')
 
 cmp.setup({
   -- Enable LSP snippets
   snippet = {
     expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body)
+      vim.fn['vsnip#anonymous'](args.body)
       end,
   },
   mapping = {
@@ -162,21 +165,61 @@ cmp.setup({
     { name = 'buffer' },
   },
 })
-EOF
 
-lua <<EOF
-  require('lualine').setup()
-EOF
+local theme = require('lualine.themes.auto')
+local bgcol = '#202427'
 
-lua <<EOF
+theme.normal.a.fg = theme.normal.a.bg;
+theme.normal.a.bg = bgcol
+theme.normal.b.bg = bgcol
+theme.normal.c.bg = bgcol
+
+theme.insert.a.fg = theme.insert.a.bg;
+theme.insert.a.bg = bgcol
+theme.insert.b.bg = bgcol
+theme.insert.c.bg = bgcol
+
+theme.visual.a.fg = theme.visual.a.bg;
+theme.visual.a.bg = bgcol
+theme.visual.b.bg = bgcol
+theme.visual.c.bg = bgcol
+
+theme.replace.a.fg = theme.replace.a.bg;
+theme.replace.a.bg = bgcol
+theme.replace.b.bg = bgcol
+theme.replace.c.bg = bgcol
+
+theme.command.a.fg = theme.command.a.bg;
+theme.command.a.bg = bgcol
+theme.command.b.bg = bgcol
+theme.command.c.bg = bgcol
+
+require('lualine').setup{
+  options = {
+      theme = theme,
+      icons_enabled = false,
+  }
+}
+
 require('telescope').setup {
   extensions = {
     fzf = {
       fuzzy = true,                    -- false will only do exact matching
       override_generic_sorter = true,  -- override the generic sorter
       override_file_sorter = true,     -- override the file sorter
-      case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+      case_mode = 'smart_case',        -- or "ignore_case" or "respect_case"
                                        -- the default case_mode is "smart_case"
     }
   }
 }
+
+require('nvim-treesitter.configs').setup {
+  ensure_installed = { 'c', 'cpp', 'rust', 'python', 'c_sharp' },
+  auto_install = true,
+
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false,
+  },
+}
+EOF

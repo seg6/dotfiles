@@ -11,17 +11,27 @@ plugins=(
     git
 )
 
+alias n="./n.py"
+alias nv="nvim"
+alias nd="neovide"
+alias lg="lazygit"
 alias premake="premake5"
 alias ipython="ipython --no-banner"
 alias hexdump="hexdump -e '\"%08_ax  \" 8/1 \"%02x \" \"  \" 8/1 \"%02x \" \"\n\"'"
 
-precmd() { rehash; printf "\e[4 q"; }
+precmd() {
+    rehash;
+    # printf "\e[4 q";
+}
 
 osu() {
     pkill warpd;
     pkill dunst;
 
-    WINEPREFIX=~/.osu-wine WINEARCH=win32 wine $HOME/.osu/osu\!.exe;
+    # WINEPREFIX=~/.osu-wine WINEARCH=win32 wine $HOME/.osu/osu\!.exe;
+    cd ~/.steam/steam/steamapps/common/McOsu/
+    ./McEngine
+    cd ~
 
     warpd;
     dunst & disown;
@@ -38,3 +48,8 @@ source $ZSH/oh-my-zsh.sh
 source $HOME/.profile
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# opam configuration
+[[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+
+source ~/.config/broot/launcher/bash/br
