@@ -130,5 +130,5 @@ exec --no-startup-id xfce4-power-manager
 
 # exec --no-startup-id setxkbmap -option caps:escape_shifted_capslock
 # exec --no-startup-id xrandr --output DisplayPort-0 --auto --output eDP --off
-exec --no-startup-id autorandr --cycle
+exec --no-startup-id autorandr --load docked
 exec --no-startup-id xinput set-prop "SYNA32B9:00 06CB:CE7D Touchpad" "libinput Tapping Enabled" 1

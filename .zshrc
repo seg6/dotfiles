@@ -9,6 +9,7 @@ ZSH_THEME="daveverwer"
 
 plugins=(
     git
+    zsh-vi-mode
 )
 
 alias n="./n.py"
@@ -21,7 +22,6 @@ alias hexdump="hexdump -e '\"%08_ax  \" 8/1 \"%02x \" \"  \" 8/1 \"%02x \" \"\n\
 
 precmd() {
     rehash;
-    # printf "\e[4 q";
 }
 
 osu() {

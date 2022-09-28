@@ -7,9 +7,9 @@ window:
     x: 10
     y: 10
 
-cursor:
-  shape: Block
-  vi_mode_style: Block
+# cursor:
+#   shape: Block
+#   vi_mode_style: Block
 
 font:
   size: 10
