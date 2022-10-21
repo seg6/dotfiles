@@ -7,75 +7,40 @@ window:
     x: 10
     y: 10
 
-# cursor:
-#   shape: Block
-#   vi_mode_style: Block
-
 font:
-  size: 10
+  size: 14
   normal:
-    family: MonoLisa
-    # family: Fantasque Sans Mono
-    # family: Cascadia Code
-    # family: Terminus
-
-# colors:
-#   primary:
-#     foreground: '#4a484d'
-#     background: '#efefef'
-#
-#   cursor:
-#     text: '#ffffff'
-#     cursor: '#4a484d'
-#
-#   selection:
-#     text: '#ffffff'
-#     background: '#4a484d'
-#
-#   normal:
-#     black: '#4a484d'
-#     red: '#a50000'
-#     green: '#005d26'
-#     yellow: '#714700'
-#     blue: '#1d3ccf'
-#     magenta: '#88267a'
-#     cyan: '#185570'
-#     white: '#efefef'
-#
-#   bright:
-#     black: '#5e4b4f'
-#     red: '#992030'
-#     green: '#4a5500'
-#     yellow: '#8a3600'
-#     blue: '#2d45b0'
-#     magenta: '#700dc9'
-#     cyan: '#005289'
-#     white: '#ffffff'
+    family: Fantasque Sans Mono
 
 colors:
-  # Default colors
   primary:
-    background: '0x151515'
-    foreground: '0xd0d0d0'
+    foreground: '#aeadaf'
+    background: '#232323'
 
-  # Normal colors
+  cursor:
+    text: '#232323'
+    cursor: '#aeadaf'
+
+  selection:
+    text: '#232323'
+    background: '#aeadaf'
+
   normal:
-    black:   '0x151515'
-    red:     '0xac4142'
-    green:   '0x90a959'
-    yellow:  '0xf4bf75'
-    blue:    '0x6a9fb5'
-    magenta: '0xaa759f'
-    cyan:    '0x75b5aa'
-    white:   '0xd0d0d0'
+    black: '#232323'
+    red: '#d4823d'
+    green: '#8c9e3d'
+    yellow: '#b1942b'
+    blue: '#6e9cb0'
+    magenta: '#b58d88'
+    cyan: '#6da280'
+    white: '#949d9f'
 
-  # Bright colors
   bright:
-    black:   '0x505050'
-    red:     '0xac4142'
-    green:   '0x90a959'
-    yellow:  '0xf4bf75'
-    blue:    '0x6a9fb5'
-    magenta: '0xaa759f'
-    cyan:    '0x75b5aa'
-    white:   '0xf5f5f5'
+    black: '#312e30'
+    red: '#d0913d'
+    green: '#96a42d'
+    yellow: '#a8a030'
+    blue: '#8e9cc0'
+    magenta: '#d58888'
+    cyan: '#7aa880'
+    white: '#aeadaf'

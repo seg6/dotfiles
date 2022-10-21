@@ -1,4 +1,3 @@
-" directly nvim related settings
 set nocompatible
 set noshowmode
 set showmatch
@@ -14,7 +13,7 @@ set rnu nu
 set shortmess+=c
 set signcolumn=yes
 set completeopt=menuone,noinsert,noselect
-set guifont=MonoLisa:h11
+set guifont=Fantasque\ Sans\ Mono:h13
 
 call plug#begin('~/.vim/plugged')
   Plug 'hrsh7th/vim-vsnip'
@@ -38,6 +37,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'tomtom/tcomment_vim'
   Plug 'ellisonleao/glow.nvim'
 
+  Plug 'gmist/vim-palette'
   Plug 'https://gitlab.com/protesilaos/tempus-themes-vim.git'
   Plug 'nvim-lualine/lualine.nvim'
   Plug 'mhinz/vim-startify'
@@ -46,7 +46,7 @@ call plug#begin('~/.vim/plugged')
 call plug#end()
 
 if (has('termguicolors'))
-    set termguicolors
+  set termguicolors
 end
 
 syntax on
@@ -58,7 +58,9 @@ filetype plugin indent on
 " colorscheme oxocarbon-lua
 " colorscheme PaperColor
 " colorscheme antarctic
-colorscheme tempus_winter
+" colorscheme base16-embers
+" colorscheme tir_black
+colorscheme tempus_classic
 
 let g:mapleader=','
 let g:neovide_no_idle=v:true
@@ -69,7 +71,7 @@ set autoread
 autocmd FocusGained,BufEnter,CursorHold,CursorHoldI * if mode() != 'c' | checktime | endif
 " notification after file change
 autocmd FileChangedShellPost *
-    \ echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None
+  \ echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None
 
 " Vim jump to the last position when reopening a file
 if has('autocmd')
@@ -81,7 +83,6 @@ nmap <Leader>c "+y
 vmap <Leader>c "+y
 nmap <Leader>v "+p
 vmap <Leader>v "+p
-vmap ff <ESC><cmd>lua vim.lsp.buf.range_formatting()<CR>
 
 nnoremap <Leader>pp  <cmd>lua require'telescope.builtin'.builtin{}<CR>
 nnoremap <Leader>m   <cmd>lua require'telescope.builtin'.oldfiles{}<CR>
@@ -102,7 +103,7 @@ nnoremap <silent> gi    <cmd>lua vim.lsp.buf.implementation()<CR>
 nnoremap <silent> <c-k> <cmd>lua vim.lsp.buf.signature_help()<CR>
 nnoremap <silent> gt    <cmd>lua vim.lsp.buf.type_definition()<CR>
 nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
-nnoremap <silent> gf    <cmd>lua vim.lsp.buf.formatting()<CR>
+nnoremap <silent> gf    <cmd>lua vim.lsp.buf.format()<CR>
 nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
 nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
 nnoremap <silent> gd    <cmd>lua vim.lsp.buf.definition()<CR>
@@ -139,7 +140,7 @@ cmp.setup({
   snippet = {
     expand = function(args)
       vim.fn['vsnip#anonymous'](args.body)
-      end,
+    end,
   },
   mapping = {
     ['<C-p>'] = cmp.mapping.select_prev_item(),
@@ -153,7 +154,7 @@ cmp.setup({
     ['<C-e>'] = cmp.mapping.close(),
     ['<CR>'] = cmp.mapping.confirm({
       behavior = cmp.ConfirmBehavior.Insert,
-      select = false,
+      select = true,
     })
   },
 
@@ -167,7 +168,7 @@ cmp.setup({
 })
 
 local theme = require('lualine.themes.auto')
-local bgcol = '#202427'
+local bgcol = '#232323'
 
 theme.normal.a.fg = theme.normal.a.bg;
 theme.normal.a.bg = bgcol
@@ -196,8 +197,8 @@ theme.command.c.bg = bgcol
 
 require('lualine').setup{
   options = {
-      theme = theme,
-      icons_enabled = false,
+    theme = theme,
+    icons_enabled = false,
   }
 }
 
