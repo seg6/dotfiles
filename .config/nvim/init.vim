@@ -37,6 +37,8 @@ call plug#begin('~/.vim/plugged')
   Plug 'tomtom/tcomment_vim'
   Plug 'ellisonleao/glow.nvim'
 
+  Plug 'B4mbus/oxocarbon-lua.nvim'
+  Plug 'RRethy/nvim-base16'
   Plug 'gmist/vim-palette'
   Plug 'https://gitlab.com/protesilaos/tempus-themes-vim.git'
   Plug 'nvim-lualine/lualine.nvim'
@@ -60,7 +62,9 @@ filetype plugin indent on
 " colorscheme antarctic
 " colorscheme base16-embers
 " colorscheme tir_black
-colorscheme tempus_classic
+" colorscheme tempus_classic
+" colorscheme habamax
+colorscheme colorsbox-stnight
 
 let g:mapleader=','
 let g:neovide_no_idle=v:true
@@ -128,7 +132,10 @@ end)
 EOF
 
 lua <<EOF
-require('rust-tools').setup({server = {}})
+require('rust-tools').setup({
+    server = {
+    }
+})
 require('fidget').setup({})
 require('twilight').setup({})
 require('clangd_extensions').setup()
@@ -168,7 +175,7 @@ cmp.setup({
 })
 
 local theme = require('lualine.themes.auto')
-local bgcol = '#232323'
+local bgcol = '#1d1f21'
 
 theme.normal.a.fg = theme.normal.a.bg;
 theme.normal.a.bg = bgcol

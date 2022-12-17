@@ -1,6 +1,6 @@
 env:
   WINIT_X11_SCALE_FACTOR: "1.0"
-  NEOVIDE_MULTIGRID: "1.0"
+  NEOVIDE_MULTIGRID: "true"
 
 window:
   padding:
