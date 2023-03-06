@@ -4,7 +4,7 @@ output DisplayPort-0
 crtc 1
 mode 1920x1080
 pos 0x0
-rate 60.00
+rate 74.97
 x-prop-max_bpc 8
 x-prop-non_desktop 0
 x-prop-scaling_mode None

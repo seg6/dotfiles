@@ -27,23 +27,27 @@ workspace_auto_back_and_forth yes
 
 gaps inner 20
 gaps bottom 60
-assign [class="zoom"] 5
 
 for_window [class=".*"] border none
 for_window [class=".*"] floating enable
 
+# for_window [class=".*"] border pixel 4
+# for_window [class=".*"] floating enable
+
+for_window [class="discord"] border none
 for_window [class="discord"] floating disable
-for_window [class="neovide"] floating disable
+for_window [class="Spotify"] border none
 for_window [class="Spotify"] floating disable
+for_window [class="firefox"] border none
 for_window [class="firefox"] floating disable
 for_window [class="Alacritty"] floating disable
 
-client.focused          #999999 #6272A4 #F8F8F2 #6272A4   #999999
-client.focused_inactive #44475A #44475A #F8F8F2 #44475A   #44475A
-client.unfocused        #282A36 #282A36 #BFBFBF #282A36   #282A36
-client.urgent           #44475A #FF5555 #F8F8F2 #FF5555   #FF5555
-client.placeholder      #282A36 #282A36 #F8F8F2 #282A36   #282A36
-client.background       #F8F8F2
+# client.focused            #00ff00
+# client.focused_inactive   #44475A #44475A #F8F8F2 #44475A   #44475A
+# client.unfocused          #282A36 #282A36 #BFBFBF #282A36   #282A36
+# client.urgent             #44475A #FF5555 #F8F8F2 #FF5555   #FF5555
+# client.placeholder        #282A36 #282A36 #F8F8F2 #282A36   #282A36
+# client.background         #F8F8F2
 
 bindsym $mod+q kill
 bindsym $mod+d exec --no-startup-id rofi -show run
@@ -125,8 +129,7 @@ mode "resize" {
 }
 
 exec --no-startup-id warpd
-exec --no-startup-id $HOME/.config/polybar/launch.sh
-# exec --no-startup-id feh --bg-fill $HOME/pictures/wall.png
+exec --no-startup-id feh --bg-fill $HOME/pictures/wall.jpg
 exec --no-startup-id hsetroot -solid '#404a5b'
 exec --no-startup-id picom --vsync
 
@@ -140,3 +143,5 @@ exec --no-startup-id xfce4-power-manager
 # exec --no-startup-id xrandr --output DisplayPort-0 --auto --output eDP --off
 exec --no-startup-id autorandr --load docked
 exec --no-startup-id xinput set-prop "SYNA32B9:00 06CB:CE7D Touchpad" "libinput Tapping Enabled" 1
+
+exec --no-startup-id polybar main

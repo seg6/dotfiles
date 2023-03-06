@@ -37,9 +37,9 @@ call plug#begin('~/.vim/plugged')
   Plug 'tomtom/tcomment_vim'
   Plug 'ellisonleao/glow.nvim'
 
-  Plug 'B4mbus/oxocarbon-lua.nvim'
-  Plug 'RRethy/nvim-base16'
-  Plug 'gmist/vim-palette'
+  " Plug 'B4mbus/oxocarbon-lua.nvim'
+  " Plug 'RRethy/nvim-base16'
+  " Plug 'gmist/vim-palette'
   Plug 'https://gitlab.com/protesilaos/tempus-themes-vim.git'
   Plug 'nvim-lualine/lualine.nvim'
   Plug 'mhinz/vim-startify'
@@ -47,16 +47,16 @@ call plug#begin('~/.vim/plugged')
   Plug 'j-hui/fidget.nvim'
 call plug#end()
 
-if (has('termguicolors'))
-  set termguicolors
-end
+" if (has('termguicolors'))
+"   set termguicolors
+" end
 
 syntax on
 filetype plugin on
 filetype plugin indent on
 
 " let g:oxocarbon_lua_alternative_telescope = 1
-" set background=light
+set background=light
 " colorscheme oxocarbon-lua
 " colorscheme PaperColor
 " colorscheme antarctic
@@ -64,7 +64,9 @@ filetype plugin indent on
 " colorscheme tir_black
 " colorscheme tempus_classic
 " colorscheme habamax
-colorscheme colorsbox-stnight
+" colorscheme colorsbox-stnight
+
+" colorscheme tempus_day
 
 let g:mapleader=','
 let g:neovide_no_idle=v:true
@@ -174,37 +176,37 @@ cmp.setup({
   },
 })
 
-local theme = require('lualine.themes.auto')
-local bgcol = '#1d1f21'
-
-theme.normal.a.fg = theme.normal.a.bg;
-theme.normal.a.bg = bgcol
-theme.normal.b.bg = bgcol
-theme.normal.c.bg = bgcol
-
-theme.insert.a.fg = theme.insert.a.bg;
-theme.insert.a.bg = bgcol
-theme.insert.b.bg = bgcol
-theme.insert.c.bg = bgcol
-
-theme.visual.a.fg = theme.visual.a.bg;
-theme.visual.a.bg = bgcol
-theme.visual.b.bg = bgcol
-theme.visual.c.bg = bgcol
-
-theme.replace.a.fg = theme.replace.a.bg;
-theme.replace.a.bg = bgcol
-theme.replace.b.bg = bgcol
-theme.replace.c.bg = bgcol
-
-theme.command.a.fg = theme.command.a.bg;
-theme.command.a.bg = bgcol
-theme.command.b.bg = bgcol
-theme.command.c.bg = bgcol
+-- local theme = require('lualine.themes.auto')
+-- local bgcol = '#1d1f21'
+-- 
+-- theme.normal.a.fg = theme.normal.a.bg;
+-- theme.normal.a.bg = bgcol
+-- theme.normal.b.bg = bgcol
+-- theme.normal.c.bg = bgcol
+-- 
+-- theme.insert.a.fg = theme.insert.a.bg;
+-- theme.insert.a.bg = bgcol
+-- theme.insert.b.bg = bgcol
+-- theme.insert.c.bg = bgcol
+-- 
+-- theme.visual.a.fg = theme.visual.a.bg;
+-- theme.visual.a.bg = bgcol
+-- theme.visual.b.bg = bgcol
+-- theme.visual.c.bg = bgcol
+-- 
+-- theme.replace.a.fg = theme.replace.a.bg;
+-- theme.replace.a.bg = bgcol
+-- theme.replace.b.bg = bgcol
+-- theme.replace.c.bg = bgcol
+-- 
+-- theme.command.a.fg = theme.command.a.bg;
+-- theme.command.a.bg = bgcol
+-- theme.command.b.bg = bgcol
+-- theme.command.c.bg = bgcol
 
 require('lualine').setup{
   options = {
-    theme = theme,
+--    theme = theme,
     icons_enabled = false,
   }
 }
