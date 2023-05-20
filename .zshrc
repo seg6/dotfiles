@@ -7,22 +7,16 @@ plugins=(
   # zsh-vi-mode
 )
 
-source $ZSH/oh-my-zsh.sh
-
-# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-# [[ ! -r ~/.opam/opam-init/init.zsh ]] || source ~/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-# source ~/.config/broot/launcher/bash/br
-
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
 else
-  export EDITOR='nvim'
+  export EDITOR='helix'
 fi
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.poetry/bin:$PATH"
-export PATH="$HOME/.local/share/neovim/bin:$PATH"
+export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 
 export PYTHONDONTWRITEBYTECODE=1
 export SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR=0
@@ -42,22 +36,7 @@ alias ipython="ipython --no-banner"
 alias hexdump="hexdump -e '\"%08_ax  \" 8/1 \"%02x \" \"  \" 8/1 \"%02x \" \"\n\"'"
 
 precmd() { rehash; }
-export PATH=$PATH:~/.spicetify
 
-source ~/.config/broot/launcher/bash/br
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-# __conda_setup="$('~/.anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-# if [ $? -eq 0 ]; then
-#     eval "$__conda_setup"
-# else
-if [ -f "~/.anaconda3/etc/profile.d/conda.sh" ]; then
-    . "~/.anaconda3/etc/profile.d/conda.sh"
-else
-    export PATH="~/.anaconda3/bin:$PATH"
-fi
-# fi
-unset __conda_setup
-# <<< conda initialize <<<
-
+source /home/null/.config/broot/launcher/bash/br
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+source $ZSH/oh-my-zsh.sh

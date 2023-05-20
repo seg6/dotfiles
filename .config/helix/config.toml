@@ -1,16 +1,21 @@
-theme = "flatwhite"
+theme = "rose_pine_moon"
 
 [editor]
 mouse = false
 line-number = "relative"
-auto-format = false
+auto-format = true
 idle-timeout = 0
+lsp.display-inlay-hints = false
+
+[editor.soft-wrap]
+enable = true
 
 [editor.statusline]
 left = ["mode", "spinner", "file-name"]
 right = [
-  "diagnostics", "workspace-diagnostics", "selections",
-  "position", "file-encoding", "file-line-ending", "file-type"]
+  "diagnostics", "workspace-diagnostics",
+  "version-control", "selections", "position",
+  "file-encoding", "file-line-ending", "file-type"]
 
 mode.normal = "NORMAL"
 mode.insert = "INSERT"

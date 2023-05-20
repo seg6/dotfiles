@@ -129,8 +129,8 @@ mode "resize" {
 }
 
 exec --no-startup-id warpd
-exec --no-startup-id feh --bg-fill $HOME/pictures/wall.jpg
-exec --no-startup-id hsetroot -solid '#404a5b'
+exec --no-startup-id feh --bg-fill $HOME/pictures/wall.png
+# exec --no-startup-id hsetroot -solid '#404a5b'
 exec --no-startup-id picom --vsync
 
 exec --no-startup-id nm-applet
