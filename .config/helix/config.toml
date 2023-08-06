@@ -1,4 +1,4 @@
-theme = "rose_pine_moon"
+theme = "kanagawa"
 
 [editor]
 mouse = false
@@ -9,6 +9,11 @@ lsp.display-inlay-hints = false
 
 [editor.soft-wrap]
 enable = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
 
 [editor.statusline]
 left = ["mode", "spinner", "file-name"]
