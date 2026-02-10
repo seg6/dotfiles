@@ -1,0 +1,14 @@
+@define-color background #c1c1c1;
+@define-color foreground #0e0e0e;
+@define-color accent #646464;
+@define-color dim #414141;
+@define-color bright #000000;
+@define-color red #8f2424;
+@define-color green #268f24;
+@define-color yellow #8f8e24;
+@define-color blue #24288f;
+@define-color magenta #8f248f;
+@define-color cyan #248f8f;
+
+@define-color background-alpha alpha(@background, 0.9);
+@define-color accent-alpha alpha(@accent, 0.8);

@@ -1,0 +1,14 @@
+output * bg /home/null/pictures/wallpaper.png fill
+
+set $bg #c1c1c1
+set $fg #0e0e0e
+set $accent #646464
+set $dim #414141
+set $urgent #8f2424
+
+set $menu /home/null/.config/chromasync/bemenu-run -p 'run:'
+
+client.focused          $accent   $bg         $fg     $accent     $accent
+client.focused_inactive $dim      $bg         $dim    $dim        $dim
+client.unfocused        $bg       $bg         $dim    $bg         $bg
+client.urgent           $urgent   $bg         $fg     $urgent     $urgent

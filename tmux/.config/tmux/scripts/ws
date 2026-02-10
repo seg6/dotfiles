@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly WORKSPACE_DIR="${HOME%/}/workspace"
+readonly STATE_DIR="$HOME/.cache/ws"
+readonly STATE_FILE="$STATE_DIR/stack"
+readonly EDITOR_CMD='fish -C "hx ."'
+readonly FILES_CMD='fx'
+
+normalize_name() { echo "$1" | tr '.:' '__'; }
+
+refresh_state() {
+    mkdir -p "$STATE_DIR"
+    [[ ! -f "$STATE_FILE" ]] && touch "$STATE_FILE"
+
+    if cd "$WORKSPACE_DIR"; then
+        local tmp_disk="${STATE_FILE}.disk"
+        local tmp_stack="${STATE_FILE}.stack"
+        local tmp_new="${STATE_FILE}.new"
+        
+        if ! fd --min-depth 2 --max-depth 2 --type d --color=never | sed 's|/$||' > "$tmp_disk"; then
+            echo "Error running fd" >&2
+            exit 1
+        fi
+
+        if [[ ! -s "$tmp_disk" ]]; then
+            echo "Warning: No projects found in $WORKSPACE_DIR (depth 2)" >&2
+            rm -f "$tmp_disk"
+            return 0
+        fi
+
+        awk 'NR==FNR{a[$0]=1; next} a[$0]' "$tmp_disk" "$STATE_FILE" > "$tmp_stack"
+        cat "$tmp_stack" "$tmp_disk" | awk '!seen[$0]++' > "$tmp_new"
+
+        mv "$tmp_new" "$STATE_FILE"
+        rm -f "$tmp_disk" "$tmp_stack"
+    else
+        echo "Error: Cannot cd to $WORKSPACE_DIR" >&2
+        exit 1
+    fi
+}
+
+bump_stack() {
+    local path="$1"
+    path="${path%/}"
+    local tmp="${STATE_FILE}.tmp"
+    
+    { 
+        echo "$path"
+        grep -vxF "$path" "$STATE_FILE" || true
+    } > "$tmp" && mv "$tmp" "$STATE_FILE"
+}
+
+list_all() {
+    if [[ ! -s "$STATE_FILE" ]]; then
+        refresh_state > /dev/null
+    fi
+    
+    tmux list-sessions -F "#{?session_last_attached,#{session_last_attached},#{session_created}} session  #{session_name}" 2>/dev/null | \
+        sort -k1,1nr | \
+        cut -d' ' -f2- || true
+
+    awk '
+        FILENAME==ARGV[1] {
+            sub(/\/$/, "", $0)
+            running[$0] = 1
+            next
+        }
+        {
+            path = $0
+            sub(/\/$/, "", path)
+            if (!running[path]) {
+                print "project  " path
+            }
+        }
+    ' <(tmux list-sessions -F "#{session_path}" 2>/dev/null | sed "s|^$WORKSPACE_DIR/||" || true) "$STATE_FILE"
+}
+
+resolve_session_name() {
+    local path="$1"
+    local base; base=$(basename "$path")
+    local clean_base; clean_base=$(normalize_name "$base")
+
+    if tmux has-session -t="$clean_base" 2>/dev/null; then
+        local existing_path
+        existing_path=$(tmux display-message -p -t "$clean_base" "#{session_path}")
+        if [[ "$existing_path" == "$path" ]]; then
+            echo "$clean_base"
+        else
+            local parent; parent=$(basename "$(dirname "$path")")
+            echo "$(normalize_name "${parent}_${base}")"
+        fi
+    else
+        echo "$clean_base"
+    fi
+}
+
+create_session() {
+    local project_path="$1"
+    local session_name; session_name=$(resolve_session_name "$project_path")
+
+    if ! tmux has-session -t="$session_name" 2>/dev/null; then
+        tmux new-session -d -s "$session_name" -c "$project_path" -n 'editor' "$EDITOR_CMD"
+        tmux new-window -t "${session_name}:9" -c "$project_path" -n 'files' "$FILES_CMD"
+        tmux select-window -t "${session_name}:1"
+    fi
+    echo "$session_name"
+}
+
+switch_to() {
+    local target="$1"
+    if [[ -n "${TMUX:-}" ]]; then
+        tmux switch-client -t "$target"
+    else
+        tmux attach-session -t "$target"
+    fi
+}
+
+run_back() {
+    [[ -n "${TMUX:-}" ]] && tmux switch-client -l
+}
+
+run_kill() {
+    local selected
+    selected=$(tmux list-sessions -F "#{?session_last_attached,#{session_last_attached},#{session_created}} #{session_name}" 2>/dev/null | \
+        sort -k1,1nr | \
+        cut -d' ' -f2- | \
+        fzf --layout=reverse \
+            --info=hidden \
+            --prompt='kill> ' \
+            --color=bw \
+            --pointer=' ' \
+            --marker=' ' \
+            --gutter=' ' \
+            --no-sort)
+
+    [[ -z "$selected" ]] && exit 0
+
+    local current_session=""
+    [[ -n "${TMUX:-}" ]] && current_session=$(tmux display-message -p '#{session_name}')
+
+    if [[ "$selected" == "$current_session" ]]; then
+        local fallback
+        fallback=$(tmux list-sessions -F "#{?session_last_attached,#{session_last_attached},#{session_created}} #{session_name}" | \
+                   sort -k1,1nr | \
+                   awk -v ignore="$selected" '$2 != ignore {print $2; exit}')
+        
+        if [[ -n "$fallback" ]]; then
+            tmux switch-client -t "$fallback"
+            tmux kill-session -t "$selected"
+        else
+            tmux kill-session -t "$selected"
+        fi
+    else
+        tmux kill-session -t "$selected"
+    fi
+}
+
+run_pick() {
+    local selected
+    selected=$(list_all | \
+               fzf --layout=reverse \
+                   --info=hidden \
+                   --color=bw \
+                   --no-bold \
+                   --no-sort \
+                   --prompt='> ' \
+                   --pointer=' ' \
+                   --marker=' ' \
+                   --gutter=' ' \
+                   --bind 'tab:down,btab:up')
+
+    [[ -z "$selected" ]] && exit 0
+
+    local type="${selected%%  *}"
+    local value="${selected#*  }"
+
+    if [[ "$type" == "session" ]]; then
+        local sess_path
+        sess_path=$(tmux display-message -p -t "$value" "#{session_path}")
+        local relative_path="${sess_path#$WORKSPACE_DIR/}"
+        bump_stack "$relative_path"
+        switch_to "$value"
+    elif [[ "$type" == "project" ]]; then
+        bump_stack "$value"
+        local full_path="$WORKSPACE_DIR/$value"
+        local target_session
+        target_session=$(create_session "$full_path")
+        switch_to "$target_session"
+    fi
+}
+
+case "${1:-pick}" in
+    kill)    run_kill ;;
+    pick)    run_pick ;;
+    back)    run_back ;;
+    refresh) refresh_state ;;
+    *)       run_pick ;;
+esac

@@ -1,0 +1,12 @@
+[user]
+	name = seg6
+	email = hi@seg6.space
+
+[push]
+	autoSetupRemote = true
+
+[core]
+	whitespace = fix
+
+[init]
+	defaultBranch = main
