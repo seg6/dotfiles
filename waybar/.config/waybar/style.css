@@ -1,0 +1,105 @@
+@import "colors.css";
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+    font-size: 12px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @foreground;
+}
+
+#workspaces {
+    background: alpha(@background, 0.7);
+    border-radius: 4px;
+    padding: 0 2px;
+}
+
+#workspaces button {
+    padding: 0 8px;
+    background: transparent;
+    color: @dim;
+    border: none;
+    border-radius: 4px;
+    margin: 2px 1px;
+}
+
+#workspaces button.focused {
+    background: @accent;
+    color: @background;
+}
+
+#workspaces button.urgent {
+    color: @red;
+}
+
+#workspaces button:hover {
+    background: alpha(@foreground, 0.1);
+}
+
+#mode {
+    background: alpha(@red, 0.8);
+    color: @background;
+    padding: 0 8px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.modules-right {
+    background: alpha(@background, 0.7);
+    border-radius: 4px;
+    padding: 0 4px;
+}
+
+#pulseaudio,
+#network,
+#battery,
+#clock {
+    padding: 0 8px;
+    color: @foreground;
+}
+
+#pulseaudio.muted {
+    color: @dim;
+}
+
+#battery.warning {
+    color: @yellow;
+}
+
+#battery.critical {
+    color: @red;
+}
+
+#network.disconnected {
+    color: @dim;
+}
+
+#tray {
+    padding: 0 8px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    color: @red;
+}
+
+tooltip {
+    background: alpha(@background, 0.9);
+    border: 1px solid @accent;
+    border-radius: 4px;
+}
+
+tooltip label {
+    color: @foreground;
+    padding: 4px;
+}

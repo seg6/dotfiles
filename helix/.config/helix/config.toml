@@ -1,0 +1,44 @@
+# theme = "rasmus"
+# theme = "flatwhite"
+# theme = "ttox"
+# theme = "rose_pine_moon"
+# theme = "dark_plus"
+theme = "generated"  # chromasync
+
+[editor]
+mouse = false
+line-number = "relative"
+auto-format = false
+idle-timeout = 0
+lsp.display-inlay-hints = false
+
+[editor.soft-wrap]
+enable = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name"]
+right = [
+  "diagnostics", "workspace-diagnostics",
+  "version-control", "selections", "position",
+  "file-encoding", "file-line-ending", "file-type"]
+
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+[keys.normal]
+"G" = "goto_last_line"
+"0" = "goto_line_start"
+"$" = "goto_line_end"
+"D" = "kill_to_line_end"
+
+[keys.select]
+"G" = "goto_last_line"
+"0" = "goto_line_start"
+"$" = "goto_line_end"
+"D" = "kill_to_line_end"
