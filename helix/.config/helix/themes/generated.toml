@@ -1,0 +1,127 @@
+"attribute" = "yellow"
+"comment" = { fg = "gray", modifiers = ["italic"] }
+"constant" = "cyan"
+"constant.numeric" = "magenta"
+"constant.character.escape" = "orange"
+"constructor" = "yellow"
+"function" = "green"
+"function.builtin" = "green"
+"function.macro" = "blue"
+"keyword" = "magenta"
+"keyword.control" = "magenta"
+"keyword.function" = "magenta"
+"keyword.operator" = "magenta"
+"keyword.storage" = "magenta"
+"label" = "magenta"
+"namespace" = "fg1"
+"operator" = "fg1"
+"punctuation" = "fg2"
+"punctuation.delimiter" = "fg2"
+"punctuation.bracket" = "fg2"
+"special" = "orange"
+"string" = "green"
+"string.regexp" = "orange"
+"tag" = "blue"
+"type" = "yellow"
+"type.builtin" = "yellow"
+"variable" = "fg1"
+"variable.builtin" = { fg = "orange", modifiers = ["italic"] }
+"variable.parameter" = { fg = "cyan", modifiers = ["italic"] }
+"variable.other.member" = "cyan"
+
+"markup.heading" = { fg = "blue", modifiers = ["bold"] }
+"markup.bold" = { modifiers = ["bold"] }
+"markup.italic" = { modifiers = ["italic"] }
+"markup.strikethrough" = { modifiers = ["crossed_out"] }
+"markup.link.url" = { fg = "cyan", modifiers = ["underlined"] }
+"markup.link.text" = "blue"
+"markup.list" = "fg1"
+"markup.quote" = { fg = "gray", modifiers = ["italic"] }
+"markup.raw" = "green"
+
+"diff.plus" = "green"
+"diff.minus" = "red"
+"diff.delta" = "yellow"
+
+"diagnostic.error" = { underline = { color = "red", style = "curl" } }
+"diagnostic.warning" = { underline = { color = "yellow", style = "curl" } }
+"diagnostic.info" = { underline = { color = "blue", style = "curl" } }
+"diagnostic.hint" = { underline = { color = "cyan", style = "curl" } }
+"diagnostic.unnecessary" = { modifiers = ["dim"] }
+"diagnostic.deprecated" = { modifiers = ["crossed_out"] }
+
+"error" = "red"
+"warning" = "yellow"
+"info" = "blue"
+"hint" = "cyan"
+
+"ui.background" = { fg = "accent", bg = "bg0" }
+"ui.background.separator" = { fg = "accent" }
+"ui.text" = "fg1"
+"ui.text.focus" = "fg0"
+"ui.text.inactive" = "gray"
+"ui.text.directory" = "blue"
+
+"ui.cursor" = { fg = "bg0", bg = "fg2" }
+"ui.cursor.insert" = { fg = "bg0", bg = "green" }
+"ui.cursor.select" = { fg = "bg0", bg = "orange" }
+"ui.cursor.match" = { fg = "fg0", bg = "bg3" }
+"ui.cursor.primary" = { fg = "bg0", bg = "accent" }
+"ui.cursor.primary.insert" = { fg = "bg0", bg = "green" }
+"ui.cursor.primary.select" = { fg = "bg0", bg = "orange" }
+
+"ui.selection" = { bg = "bg2" }
+"ui.selection.primary" = { bg = "bg3" }
+
+"ui.cursorline" = { bg = "bg1" }
+"ui.cursorline.primary" = { bg = "bg1" }
+
+"ui.linenr" = "gray"
+"ui.linenr.selected" = "fg1"
+
+"ui.statusline" = { fg = "fg1", bg = "bg2" }
+"ui.statusline.inactive" = { fg = "gray", bg = "bg1" }
+"ui.statusline.normal" = { fg = "bg0", bg = "accent", modifiers = ["bold"] }
+"ui.statusline.insert" = { fg = "bg0", bg = "green", modifiers = ["bold"] }
+"ui.statusline.select" = { fg = "bg0", bg = "orange", modifiers = ["bold"] }
+
+"ui.popup" = { fg = "fg1", bg = "bg1" }
+"ui.popup.info" = { fg = "fg1", bg = "bg2" }
+"ui.window" = { fg = "accent" }
+"ui.help" = { fg = "fg1", bg = "bg2" }
+"ui.menu" = { fg = "fg1", bg = "bg1" }
+"ui.menu.selected" = { fg = "bg0", bg = "accent", modifiers = ["bold"] }
+"ui.menu.scroll" = { fg = "gray", bg = "bg2" }
+"ui.text.info" = { fg = "fg0", bg = "bg2" }
+
+"ui.virtual.whitespace" = "bg2"
+"ui.virtual.ruler" = { bg = "bg1" }
+"ui.virtual.indent-guide" = "bg2"
+"ui.virtual.inlay-hint" = "gray"
+"ui.virtual.jump-label" = { fg = "orange", modifiers = ["bold"] }
+"ui.virtual.wrap" = "bg2"
+
+"ui.bufferline" = { fg = "gray", bg = "bg1" }
+"ui.bufferline.active" = { fg = "fg0", bg = "bg0", modifiers = ["bold"] }
+"ui.bufferline.background" = { bg = "bg1" }
+
+"ui.picker.header.column" = { underline.style = "line" }
+"ui.picker.header.column.active" = { modifiers = ["bold"], underline.style = "line" }
+
+[palette]
+bg0 = "#c1c1c1"
+bg1 = "#b9b9b9"
+bg2 = "#afafaf"
+bg3 = "#a2a2a2"
+fg0 = "#010101"
+fg1 = "#0e0e0e"
+fg2 = "#272727"
+gray = "#4d4d4d"
+accent = "#646464"
+red = "#8f2424"
+orange = "#8f5924"
+yellow = "#8f8e24"
+green = "#268f24"
+cyan = "#248f8f"
+blue = "#24288f"
+magenta = "#8f248f"

@@ -1,0 +1,18 @@
+[user]
+	name = seg6
+	email = hi@seg6.space
+
+[includeIf "gitdir:~/workspace/meyer"]
+	path = ~/workspace/meyer/.gitconfig
+
+[includeIf "gitdir:~/workspace/meyer/**"]
+	path = ~/workspace/meyer/.gitconfig
+
+[push]
+	autoSetupRemote = true
+
+[core]
+	whitespace = fix
+
+[init]
+	defaultBranch = main
