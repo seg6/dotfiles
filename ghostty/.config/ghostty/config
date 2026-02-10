@@ -1,0 +1,47 @@
+# theme=0x96f
+# theme=GitHub Light High Contrast
+# theme=Rose Pine Moon
+# theme=Belafonte Day
+theme=Dark+
+
+font-family="Fantasque Sans Mono"
+font-size=20
+font-thicken=true
+font-thicken-strength=128
+
+window-padding-x=10
+window-padding-y=10
+window-padding-balance=true
+window-inherit-working-directory=true
+window-inherit-font-size=true
+window-save-state=always
+
+macos-titlebar-style=hidden
+macos-option-as-alt=true
+macos-non-native-fullscreen=true
+
+cursor-style=block
+cursor-style-blink=false
+cursor-opacity=1.0
+
+shell-integration=fish
+shell-integration-features=cursor,sudo,title
+
+copy-on-select=true
+clipboard-trim-trailing-spaces=true
+confirm-close-surface=true
+mouse-hide-while-typing=true
+focus-follows-mouse=false
+
+background-opacity=1.0
+background-blur=20
+unfocused-split-opacity=0.5
+resize-overlay=after-first
+resize-overlay-position=center
+
+keybind=ctrl+shift+d=new_split:down
+keybind=ctrl+shift+s=new_split:right
+keybind=ctrl+shift+h=goto_split:left
+keybind=ctrl+shift+l=goto_split:right
+keybind=ctrl+shift+k=goto_split:top
+keybind=ctrl+shift+j=goto_split:bottom
