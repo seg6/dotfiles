@@ -17,7 +17,7 @@ function concat
         ".git" "node_modules" "target" "build" "dist" "venv" "__pycache__" ".DS_Store" \
         "*.pyc" "*.exe" "*.dll" "*.so" "*.dylib" "*.class" "*.o" "*.obj" \
         "*.bin" "*.dat" "*.db" "*.sqlite" "*.log" "*.lock" "*.sum" \
-        ".Spotlight-V100" ".Trashes" "ehthumbs.db" "Thumbs.db"
+        ".Spotlight-V100" ".Trashes" "ehthumbs.db" "Thumbs.db" ".venv" ".pytest_cache"
 
     echo "# Project Structure"
     echo '```'
@@ -34,7 +34,7 @@ function concat
     end
 
     for ext in $extensions
-        fd -e $ext . $dir $ignore_args --type f | while read -l file
+        fd -H -e $ext . $dir $ignore_args --type f | while read -l file
             if file --mime-encoding $file | string match -q "*binary"
                 continue
             end
@@ -52,7 +52,7 @@ function concat
         end
     end
 
-    fd "LICENSE*" $dir $ignore_args --type f --glob | while read -l file
+    fd -H "LICENSE*" $dir $ignore_args --type f --glob | while read -l file
         if test (stat -c %s $file) -le 1048576
             echo "## File: $file"
             echo '```'

@@ -11,4 +11,6 @@ function fish_user_key_bindings
 end
 
 nvm use 22 > /dev/null
+
+direnv hook fish | source
 zoxide init fish | source
