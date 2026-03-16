@@ -4,13 +4,19 @@
 # theme = "rose_pine_moon"
 # theme = "dark_plus"
 theme = "generated"  # chromasync
+# theme = "vim_dark_high_contrast"
 
 [editor]
 mouse = false
 line-number = "relative"
 auto-format = false
 idle-timeout = 0
-lsp.display-inlay-hints = false
+gutters = ["diff", "diagnostics", "line-numbers", "spacer"]
+
+[editor.indent-guides]
+render = true
+character = "⸽"
+skip-levels = 1
 
 [editor.soft-wrap]
 enable = true

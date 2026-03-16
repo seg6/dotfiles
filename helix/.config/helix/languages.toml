@@ -1,9 +1,10 @@
-zk = { command = "zk", args = ["lsp"]}
+[language-server.nb-lsp]
+command = "/home/null/.cargo/bin/nb-lsp"
 
 [[language]]
 name = "markdown"
 injection-regex = "md|markdown"
-language-servers = [{ name = "zk"}, { name = "marksman" }]
-roots = [".zk"]
+language-servers = ["nb-lsp", "marksman"]
+roots = [".current", ".zk", ".git"]
 scope = "source.md"
 file-types = ["md"]

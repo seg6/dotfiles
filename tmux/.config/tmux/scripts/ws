@@ -128,12 +128,13 @@ run_kill() {
         cut -d' ' -f2- | \
         fzf --layout=reverse \
             --info=hidden \
-            --prompt='kill> ' \
             --color=bw \
+            --no-sort \
+            --prompt='kill> ' \
             --pointer=' ' \
             --marker=' ' \
             --gutter=' ' \
-            --no-sort)
+            --bind 'tab:down,btab:up')
 
     [[ -z "$selected" ]] && exit 0
 
@@ -169,6 +170,7 @@ run_pick() {
                    --pointer=' ' \
                    --marker=' ' \
                    --gutter=' ' \
+                   --nth=2.. \
                    --bind 'tab:down,btab:up')
 
     [[ -z "$selected" ]] && exit 0

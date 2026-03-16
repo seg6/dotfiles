@@ -2,7 +2,7 @@ function fish_prompt
     set -l dir (basename $PWD)
     echo -n " "
 
-    set_color blue
+    # set_color gray
     echo -n "$dir"
 
     echo -n " "

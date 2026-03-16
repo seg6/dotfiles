@@ -1,10 +1,10 @@
 output * bg /home/null/pictures/wallpaper.png fill
 
-set $bg #c1c1c1
-set $fg #0e0e0e
-set $accent #646464
-set $dim #414141
-set $urgent #8f2424
+set $bg #000000
+set $fg #bababa
+set $accent #535353
+set $dim #878787
+set $urgent #e83731
 
 set $menu /home/null/.config/chromasync/bemenu-run -p 'run:'
 
