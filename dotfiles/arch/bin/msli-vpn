@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+profile=${MSLI_VPN_PROFILE:-msli}
+item_name=${MSLI_OP_ITEM:-MSLI}
+vault=${MSLI_OP_VAULT:-Employee}
+
+require() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    printf 'msli-vpn: required command not found: %s\n' "$1" >&2
+    exit 1
+  fi
+}
+
+item_field() {
+  local filter=$1
+  jq -er "first($filter) | select(type == \"string\" and length > 0)" <<<"$item"
+}
+
+case "${1:-connect}" in
+  connect)
+    require op
+    require jq
+    require openvpn3
+    item="$(op item get "$item_name" --vault "$vault" --format json --reveal)"
+    username="$(item_field '.fields[] | select(.purpose == "USERNAME") | .value')"
+    password="$(item_field '.fields[] | select(.purpose == "PASSWORD") | .value')"
+    otp="$(item_field '.fields[] | select(.type == "OTP") | .totp')"
+    printf '%s\n%s\n%s\n' "$username" "$password" "$otp" | openvpn3 session-start --config "$profile" --background
+    ;;
+  disconnect)
+    require openvpn3
+    openvpn3 session-manage --config "$profile" --disconnect
+    ;;
+  status)
+    require openvpn3
+    openvpn3 sessions-list
+    ;;
+  logs)
+    require openvpn3
+    openvpn3 log --config "$profile"
+    ;;
+  *)
+    printf 'usage: %s [connect|disconnect|status|logs]\n' "${0##*/}" >&2
+    exit 2
+    ;;
+esac

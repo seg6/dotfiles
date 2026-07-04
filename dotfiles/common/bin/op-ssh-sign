@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+signer=${OP_SSH_SIGN_PROGRAM:-}
+if [[ -z $signer ]]; then
+    case $(uname -s) in
+        Darwin)
+            app=/Applications/1Password.app
+            if [[ ! -d $app ]]; then
+                app=$(mdfind 'kMDItemCFBundleIdentifier == "com.1password.1password"' | sed -n '1p')
+            fi
+            if [[ -n $app ]]; then
+                signer=$app/Contents/MacOS/op-ssh-sign
+            fi
+            ;;
+        Linux)
+            signer=$(pacman -Qql 1password | awk '/\/op-ssh-sign$/ { print; exit }')
+            ;;
+    esac
+fi
+
+if [[ -z $signer || ! -x $signer ]]; then
+    printf '%s\n' 'op-ssh-sign: unable to locate the 1Password SSH signing helper' >&2
+    exit 1
+fi
+
+exec "$signer" "$@"

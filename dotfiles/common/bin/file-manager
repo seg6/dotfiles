@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+
+if command -v felix >/dev/null 2>&1; then
+    exec felix "$@"
+fi
+
+cargo_root=${CARGO_INSTALL_ROOT:-${CARGO_HOME:-"$HOME/.cargo"}}
+if [ -x "$cargo_root/bin/fx" ]; then
+    exec "$cargo_root/bin/fx" "$@"
+fi
+
+printf '%s\n' 'file-manager: Felix is not installed (expected felix or Cargo-installed fx)' >&2
+exit 1

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config=${MSLI_VPN_CONFIG:-$HOME/.config/openvpn/msli/meyer.ovpn}
+state=${XDG_STATE_HOME:-$HOME/.local/state}/msli-vpn
+pid=$state/openvpn.pid
+log=$state/openvpn.log
+install -d -m 700 "$state"
+
+running() {
+  [[ -s $pid ]] &&
+    [[ $(ps -p "$(<"$pid")" -o command= 2>/dev/null) == *openvpn*"$config"* ]]
+}
+
+field() { jq -er "first(.fields[] | $1) | select(type == \"string\" and length > 0)" <<<"$item"; }
+
+case ${1:-connect} in
+  connect)
+    running && { printf '%s\n' 'MSLI VPN is already running.'; exit; }
+    [[ -r $config ]] || { printf 'msli-vpn: missing profile: %s\n' "$config" >&2; exit 1; }
+    rm -f -- "$pid"
+
+    item=$(op item get "${MSLI_OP_ITEM:-MSLI}" --vault "${MSLI_OP_VAULT:-Employee}" --format json --reveal)
+    username=$(field 'select(.purpose == "USERNAME") | .value')
+    password=$(field 'select(.purpose == "PASSWORD") | .value')
+    otp=$(field 'select(.type == "OTP") | .totp')
+
+    auth=$(mktemp "$state/auth.XXXXXX")
+    trap 'rm -f -- "$auth"' EXIT
+    printf '%s\n%s\n' "$username" "$password" >"$auth"
+    : >"$log"
+    chmod 600 "$auth" "$log"
+
+    sudo -v
+    printf '%s\n' "$otp" | sudo -n "$(command -v openvpn)" --config "$config" \
+      --auth-user-pass "$auth" --daemon msli-vpn --writepid "$pid" --log-append "$log"
+    rm -f -- "$auth"
+    trap - EXIT
+    printf '%s\n' 'MSLI VPN started.'
+    ;;
+  disconnect)
+    running || { rm -f -- "$pid"; printf '%s\n' 'MSLI VPN is not running.'; exit; }
+    sudo kill -TERM "$(<"$pid")"
+    rm -f -- "$pid"
+    printf '%s\n' 'MSLI VPN disconnected.'
+    ;;
+  status)
+    if running; then
+      printf 'MSLI VPN is running (pid %s).\n' "$(<"$pid")"
+    else
+      printf '%s\n' 'MSLI VPN is not running.'
+      exit 1
+    fi
+    ;;
+  logs)
+    [[ -f $log ]] || { printf '%s\n' 'msli-vpn: no log yet' >&2; exit 1; }
+    [[ ${2:-} == -f ]] && exec tail -n 100 -f "$log"
+    tail -n 100 "$log"
+    ;;
+  *) printf 'usage: %s [connect|disconnect|status|logs [-f]]\n' "${0##*/}" >&2; exit 2 ;;
+esac

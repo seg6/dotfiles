@@ -1,0 +1,26 @@
+name = "nord"
+display = "Nord"
+mode = "dark"
+
+[colors]
+bg = "#2e3440"
+bg_alt = "#242933"
+surface = "#3b4252"
+surface_alt = "#4c566a"
+fg = "#eceff4"
+dim = "#7b8496"
+accent = "#88c0d0"
+red = "#bf616a"
+green = "#a3be8c"
+yellow = "#ebcb8b"
+blue = "#81a1c1"
+magenta = "#b48ead"
+cyan = "#8fbcbb"
+
+[ui]
+radius = 8
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "nord"

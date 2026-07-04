@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DOTFILES_DIR=${DOTFILES_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}
+TARGET_HOME=${TARGET_HOME:-$HOME}
+
+if [[ $(id -u) -eq 0 ]]; then
+    printf '%s\n' 'bootstrap: run as the target user, not root' >&2
+    exit 1
+fi
+
+read_packages() {
+    local package_file
+    for package_file in "$@"; do
+        [[ -f $package_file ]] || continue
+        sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' "$package_file"
+    done
+}
+
+pacman_install() {
+    local device=$1
+    mapfile -t packages < <(read_packages \
+        "$DOTFILES_DIR/packages.arch" \
+        "$DOTFILES_DIR/packages.$device.arch")
+    sudo pacman -S --needed --noconfirm base-devel "${packages[@]}"
+}
+
+paru_install() {
+    local device=$1
+    if ! command -v paru >/dev/null 2>&1; then
+        (
+            build_dir=$(mktemp -d)
+            trap 'rm -rf -- "$build_dir"' EXIT
+
+            git clone https://aur.archlinux.org/paru.git "$build_dir/paru"
+            cd "$build_dir/paru"
+            makepkg -si --noconfirm
+        )
+    fi
+
+    mapfile -t packages < <(read_packages \
+        "$DOTFILES_DIR/packages.aur" \
+        "$DOTFILES_DIR/packages.$device.aur")
+    if ((${#packages[@]})); then
+        paru -S --needed --noconfirm "${packages[@]}"
+    fi
+}
+
+write_agent_config() {
+    local value=$1
+    install -d -m 700 "$TARGET_HOME/.ssh/config.d"
+    (umask 077; printf 'IdentityAgent %s\n' "$value" >"$TARGET_HOME/.ssh/config.d/agent")
+}
+
+set_default_browser() {
+    local desktop_file=$1 mime_type
+    command -v xdg-settings >/dev/null 2>&1 || return 0
+    command -v xdg-mime >/dev/null 2>&1 || return 0
+
+    xdg-settings set default-web-browser "$desktop_file"
+    for mime_type in \
+        x-scheme-handler/http \
+        x-scheme-handler/https \
+        x-scheme-handler/chrome \
+        x-scheme-handler/about \
+        x-scheme-handler/unknown \
+        x-scheme-handler/webcal \
+        text/html \
+        application/xhtml+xml \
+        application/x-extension-htm \
+        application/x-extension-html \
+        application/x-extension-shtml \
+        application/x-extension-xhtml \
+        application/x-extension-xht
+    do
+        xdg-mime default "$desktop_file" "$mime_type"
+    done
+}
+
+profile_exists() {
+    local config=$1 profile=$2
+    dotdrop --cfg="$config" profiles 2>/dev/null | grep -Fq -- "-> $profile ("
+}
+
+install_system_profile() {
+    local profile=$1
+    sudo dotdrop --cfg="$DOTFILES_DIR/config-root.yaml" --profile="$profile" install --force
+}
+
+install_go_tools() {
+    local target_dir="$TARGET_HOME/.local/bin"
+    local tool target temporary
+
+    install -d -m 755 "$target_dir"
+    for tool in theme ws; do
+        target="$target_dir/$tool"
+        temporary=$(mktemp "$target_dir/.$tool.XXXXXX")
+        if ! (cd "$DOTFILES_DIR/tools/cli" && go build -trimpath -o "$temporary" "./cmd/$tool"); then
+            rm -f -- "$temporary"
+            return 1
+        fi
+        chmod 755 "$temporary"
+        mv -f -- "$temporary" "$target"
+    done
+}
+
+configure_login_shell() {
+    [[ ${DOTFILES_KEEP_LOGIN_SHELL:-0} == 1 ]] && return 0
+
+    local fish_path current_shell target_user
+    fish_path=$(command -v fish)
+    target_user=$(id -un)
+    case $(uname -s) in
+        Darwin)
+            current_shell=$(dscl . -read "/Users/$target_user" UserShell 2>/dev/null | awk '{ print $2 }')
+            ;;
+        Linux)
+            current_shell=$(getent passwd "$target_user" | cut -d: -f7)
+            ;;
+    esac
+    [[ $current_shell == "$fish_path" ]] && return 0
+
+    if ! grep -Fxq -- "$fish_path" /etc/shells; then
+        printf '%s\n' "$fish_path" | sudo tee -a /etc/shells >/dev/null
+    fi
+    chsh -s "$fish_path"
+}
+
+case $(uname -s) in
+    Darwin)
+        if ! command -v brew >/dev/null 2>&1; then
+            for brew_prefix in /opt/homebrew /usr/local; do
+                if [[ -x $brew_prefix/bin/brew ]]; then
+                    PATH=$brew_prefix/bin:$brew_prefix/sbin:$PATH
+                    export PATH
+                    break
+                fi
+            done
+        fi
+        brew bundle --file="$DOTFILES_DIR/Brewfile"
+        device_profile=$(hostname -s)
+        if [[ -f $DOTFILES_DIR/Brewfile.$device_profile ]]; then
+            brew bundle --file="$DOTFILES_DIR/Brewfile.$device_profile"
+        fi
+        profile=macos
+        if profile_exists "$DOTFILES_DIR/config.yaml" "$device_profile"; then
+            profile=$device_profile
+        fi
+        "$DOTFILES_DIR/macos/defaults"
+        write_agent_config '"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"'
+        ;;
+    Linux)
+        if [[ ! -f /etc/arch-release ]]; then
+            printf '%s\n' 'bootstrap: only Arch Linux and macOS are currently supported' >&2
+            exit 1
+        fi
+        device_profile=$(hostname -s)
+        pacman_install "$device_profile"
+        paru_install "$device_profile"
+        profile=arch
+        if profile_exists "$DOTFILES_DIR/config.yaml" "$device_profile"; then
+            profile=$device_profile
+        fi
+        if profile_exists "$DOTFILES_DIR/config-root.yaml" "$profile"; then
+            install_system_profile "$profile"
+        fi
+        set_default_browser helium.desktop
+        write_agent_config '"~/.1password/agent.sock"'
+        ;;
+    *)
+        printf 'bootstrap: unsupported operating system: %s\n' "$(uname -s)" >&2
+        exit 1
+        ;;
+esac
+
+configure_login_shell
+dotdrop --cfg="$DOTFILES_DIR/config.yaml" --profile="$profile" install --force
+install_go_tools
+chmod 700 "$TARGET_HOME/.ssh"
+
+if [[ $(uname -s) == Linux ]]; then
+    systemctl --user daemon-reload
+    systemctl --user disable waybar.service mako.service >/dev/null 2>&1 || true
+    if [[ -n ${SWAYSOCK:-} ]]; then
+        systemctl --user start sway-session.target
+    fi
+fi
+
+state_dir=${XDG_CONFIG_HOME:-$TARGET_HOME/.config}/dotfiles
+install -d -m 700 "$state_dir"
+printf '%s\n' "$DOTFILES_DIR" >"$state_dir/root"
+printf '%s\n' "$profile" >"$state_dir/profile"
+
+if ! fish -lc 'functions -q fisher'; then
+    fish -lc 'curl -fsSL https://raw.githubusercontent.com/jorgebucaran/fisher/4.4.8/functions/fisher.fish | source; fisher install jorgebucaran/fisher@4.4.8'
+fi
+fish -lc 'fisher update'
+
+DOTFILES_DIR="$DOTFILES_DIR" "$TARGET_HOME/.local/bin/theme" apply --no-reload

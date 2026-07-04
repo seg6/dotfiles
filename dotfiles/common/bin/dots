@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+
+state_dir=${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles
+root=${DOTFILES_DIR:-}
+if [ -z "$root" ] && [ -r "$state_dir/root" ]; then
+    IFS= read -r root <"$state_dir/root"
+fi
+if [ -z "$root" ] || [ ! -f "$root/config.yaml" ]; then
+    printf '%s\n' 'dots: cannot locate the dotfiles checkout; set DOTFILES_DIR' >&2
+    exit 1
+fi
+
+if ! command -v dotdrop >/dev/null 2>&1; then
+    printf '%s\n' 'dots: dotdrop is not installed' >&2
+    exit 1
+fi
+
+if [ -n "${DOTDROP_PROFILE:-}" ]; then
+    profile=$DOTDROP_PROFILE
+elif [ -r "$state_dir/profile" ]; then
+    IFS= read -r profile <"$state_dir/profile"
+else
+    profile=common
+fi
+
+case ${1:-} in
+    profiles | gencfg | --help | --version)
+        exec dotdrop --cfg="$root/config.yaml" "$@"
+        ;;
+    *)
+        exec dotdrop --cfg="$root/config.yaml" --profile="$profile" "$@"
+        ;;
+esac

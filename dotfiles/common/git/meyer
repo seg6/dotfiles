@@ -1,0 +1,10 @@
+[user]
+	name = Ömer Bayram
+	email = omerb@meyersound.com
+	signingkey = ~/.ssh/meyer.pub
+
+[gpg]
+	format = ssh
+
+[commit]
+	gpgsign = true

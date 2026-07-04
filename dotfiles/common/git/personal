@@ -1,0 +1,10 @@
+[user]
+	name = seg6
+	email = hi@seg6.space
+	signingkey = ~/.ssh/seg6.pub
+
+[gpg]
+	format = ssh
+
+[commit]
+	gpgsign = true

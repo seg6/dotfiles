@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REPO=${DOTFILES_REPO:-https://github.com/seg6/dotfiles}
+
+if [[ $(id -u) -eq 0 ]]; then
+    TARGET_USER=${TARGET_USER:-${SUDO_USER:-}}
+    if [[ -z $TARGET_USER ]]; then
+        printf '%s\n' 'install: run as your normal user, or set TARGET_USER' >&2
+        exit 1
+    fi
+else
+    TARGET_USER=${TARGET_USER:-$(id -un)}
+fi
+
+resolve_home() {
+    if [[ -n ${TARGET_HOME:-} ]]; then
+        printf '%s\n' "$TARGET_HOME"
+    elif command -v getent >/dev/null 2>&1; then
+        getent passwd "$TARGET_USER" | cut -d: -f6
+    elif [[ $(uname -s) == Darwin ]]; then
+        dscacheutil -q user -a name "$TARGET_USER" |
+            awk -F ': ' '$1 == "dir" { print $2; exit }'
+    fi
+}
+
+TARGET_HOME=$(resolve_home)
+if [[ -z $TARGET_HOME ]]; then
+    printf 'install: unable to determine home directory for %s\n' "$TARGET_USER" >&2
+    exit 1
+fi
+
+if [[ -z ${DOTFILES_DIR:-} ]]; then
+    if [[ $(id -u) -ne 0 && -n ${XDG_DATA_HOME:-} ]]; then
+        DOTFILES_DIR=$XDG_DATA_HOME/dotfiles
+    else
+        DOTFILES_DIR=$TARGET_HOME/.local/share/dotfiles
+    fi
+fi
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+run_as_user() {
+    if [[ $(id -u) -eq 0 && $TARGET_USER != root ]]; then
+        sudo -H -u "$TARGET_USER" env HOME="$TARGET_HOME" PATH="$PATH" "$@"
+    else
+        "$@"
+    fi
+}
+
+add_homebrew_to_path() {
+    local prefix
+    for prefix in /opt/homebrew /usr/local; do
+        if [[ -x $prefix/bin/brew ]]; then
+            PATH=$prefix/bin:$prefix/sbin:$PATH
+            export PATH
+            return 0
+        fi
+    done
+    return 1
+}
+
+case $(uname -s) in
+    Darwin)
+        if ! command -v git >/dev/null 2>&1; then
+            printf '%s\n' 'Installing Xcode Command Line Tools...'
+            xcode-select --install
+            printf '%s\n' 'Re-run this script after the installation completes.'
+            exit 0
+        fi
+        add_homebrew_to_path || true
+        if ! command -v brew >/dev/null 2>&1; then
+            run_as_user /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            if ! add_homebrew_to_path; then
+                printf '%s\n' 'install: Homebrew was installed but brew is not available on PATH' >&2
+                exit 1
+            fi
+        fi
+        ;;
+    Linux)
+        if [[ ! -f /etc/arch-release ]]; then
+            printf '%s\n' 'install: only Arch Linux and macOS are currently supported' >&2
+            exit 1
+        fi
+        if [[ $(id -u) -eq 0 ]]; then
+            pacman -S --needed --noconfirm git sudo
+        else
+            sudo pacman -S --needed --noconfirm git sudo
+        fi
+        ;;
+    *)
+        printf 'install: unsupported operating system: %s\n' "$(uname -s)" >&2
+        exit 1
+        ;;
+esac
+
+if [[ -f $SCRIPT_DIR/bootstrap && $SCRIPT_DIR == "$DOTFILES_DIR" ]]; then
+    printf 'Using local dotfiles checkout: %s\n' "$DOTFILES_DIR"
+else
+    run_as_user mkdir -p "$(dirname "$DOTFILES_DIR")"
+    if [[ ! -d $DOTFILES_DIR/.git ]]; then
+        run_as_user git clone "$REPO" "$DOTFILES_DIR"
+    elif [[ -z $(run_as_user git -C "$DOTFILES_DIR" status --porcelain) ]]; then
+        run_as_user git -C "$DOTFILES_DIR" pull --ff-only
+    else
+        printf '%s\n' 'Existing checkout has local changes; skipping git pull.'
+    fi
+fi
+
+run_as_user env DOTFILES_DIR="$DOTFILES_DIR" TARGET_HOME="$TARGET_HOME" bash "$DOTFILES_DIR/bootstrap"

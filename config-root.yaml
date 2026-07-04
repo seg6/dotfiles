@@ -1,0 +1,21 @@
+config:
+  backup: true
+  banner: false
+  create: true
+  dotpath: system
+  keepdot: true
+  link_dotfile_default: nolink
+  link_on_import: nolink
+  longkey: true
+  showdiff: true
+
+dotfiles:
+  f_sway_nvidia_session:
+    src: workstation/sway-nvidia.desktop
+    dst: /usr/share/wayland-sessions/sway-nvidia.desktop
+    chmod: '644'
+
+profiles:
+  workstation:
+    dotfiles:
+      - f_sway_nvidia_session

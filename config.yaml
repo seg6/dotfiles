@@ -1,0 +1,209 @@
+config:
+  backup: true
+  banner: false
+  create: true
+  dotpath: dotfiles
+  keepdot: true
+  link_dotfile_default: nolink
+  link_on_import: nolink
+  longkey: true
+  showdiff: true
+
+dotfiles:
+  f_fish_config:
+    src: common/fish/config.fish
+    dst: ~/.config/fish/config.fish
+  f_fish_plugins:
+    src: common/fish/fish_plugins
+    dst: ~/.config/fish/fish_plugins
+  f_fish_clone:
+    src: common/fish/functions/clone.fish
+    dst: ~/.config/fish/functions/clone.fish
+  f_fish_greeting:
+    src: common/fish/functions/fish_greeting.fish
+    dst: ~/.config/fish/functions/fish_greeting.fish
+  f_fish_mode_prompt:
+    src: common/fish/functions/fish_mode_prompt.fish
+    dst: ~/.config/fish/functions/fish_mode_prompt.fish
+  f_fish_prompt:
+    src: common/fish/functions/fish_prompt.fish
+    dst: ~/.config/fish/functions/fish_prompt.fish
+  f_fish_gamend:
+    src: common/fish/functions/gamend.fish
+    dst: ~/.config/fish/functions/gamend.fish
+  f_fish_gfixup:
+    src: common/fish/functions/gfixup.fish
+    dst: ~/.config/fish/functions/gfixup.fish
+  f_fish_ggone:
+    src: common/fish/functions/ggone.fish
+    dst: ~/.config/fish/functions/ggone.fish
+  f_fish_grecent:
+    src: common/fish/functions/grecent.fish
+    dst: ~/.config/fish/functions/grecent.fish
+  f_fish_gria:
+    src: common/fish/functions/gria.fish
+    dst: ~/.config/fish/functions/gria.fish
+  f_fish_gsync:
+    src: common/fish/functions/gsync.fish
+    dst: ~/.config/fish/functions/gsync.fish
+  f_gitconfig:
+    src: common/git/config
+    dst: ~/.gitconfig
+  f_git_meyer:
+    src: common/git/meyer
+    dst: ~/.config/git/meyer
+  f_git_personal:
+    src: common/git/personal
+    dst: ~/.config/git/personal
+  f_helix_config:
+    src: common/helix/config.toml
+    dst: ~/.config/helix/config.toml
+  f_helix_languages:
+    src: common/helix/languages.toml
+    dst: ~/.config/helix/languages.toml
+  f_kitty_fonts:
+    src: common/kitty/fonts.conf
+    dst: ~/.config/kitty/fonts.conf
+  f_kitty_config:
+    src: common/kitty/kitty.conf
+    dst: ~/.config/kitty/kitty.conf
+  f_tmux_config:
+    src: common/tmux/tmux.conf
+    dst: ~/.config/tmux/tmux.conf
+  f_ws_config:
+    src: common/ws/config.toml
+    dst: ~/.config/ws/config.toml
+  f_bin_dots:
+    src: common/bin/dots
+    dst: ~/.local/bin/dots
+    chmod: '755'
+  f_bin_file_manager:
+    src: common/bin/file-manager
+    dst: ~/.local/bin/file-manager
+    chmod: '755'
+  f_bin_op_ssh_sign:
+    src: common/bin/op-ssh-sign
+    dst: ~/.local/bin/op-ssh-sign
+    chmod: '755'
+  f_ssh_config:
+    src: common/ssh/config
+    dst: ~/.ssh/config
+    chmod: '600'
+  f_ssh_meyer_public_key:
+    src: common/ssh/meyer.pub
+    dst: ~/.ssh/meyer.pub
+    chmod: '644'
+  f_ssh_seg6_public_key:
+    src: common/ssh/seg6.pub
+    dst: ~/.ssh/seg6.pub
+    chmod: '644'
+  f_wallpaper:
+    src: common/wallpaper.png
+    dst: ~/pictures/wallpaper.png
+
+  f_sway_config:
+    src: arch/sway/config
+    dst: ~/.config/sway/config
+  f_sway_arch_fragment:
+    src: arch/sway/conf.d/50-arch.conf
+    dst: ~/.config/sway/conf.d/50-arch.conf
+  f_waybar_config:
+    src: arch/waybar/config
+    dst: ~/.config/waybar/config
+  f_waybar_style:
+    src: arch/waybar/style.css
+    dst: ~/.config/waybar/style.css
+  f_fuzzel_config:
+    src: arch/fuzzel/fuzzel.ini
+    dst: ~/.config/fuzzel/fuzzel.ini
+  f_systemd_sway_session_target:
+    src: arch/systemd/user/sway-session.target
+    dst: ~/.config/systemd/user/sway-session.target
+  f_bin_record_window:
+    src: arch/bin/record-window
+    dst: ~/.local/bin/record-window
+    chmod: '755'
+  f_bin_polkit_agent:
+    src: arch/bin/polkit-agent
+    dst: ~/.local/bin/polkit-agent
+    chmod: '755'
+
+  f_aerospace_config:
+    src: macos/aerospace.toml
+    dst: ~/.aerospace.toml
+  f_karabiner_config:
+    src: macos/karabiner.json
+    dst: ~/.config/karabiner/karabiner.json
+  f_bin_msli_vpn_macos:
+    src: macos/bin/msli-vpn
+    dst: ~/.local/bin/msli-vpn
+    chmod: '755'
+
+  f_sway_workstation_outputs:
+    src: workstation/sway/outputs.conf
+    dst: ~/.config/sway/conf.d/90-workstation.conf
+  f_sway_workstation_session:
+    src: workstation/sway/session.conf
+    dst: ~/.config/sway/conf.d/91-workstation-session.conf
+  f_bin_msli_vpn_arch:
+    src: arch/bin/msli-vpn
+    dst: ~/.local/bin/msli-vpn
+    chmod: '755'
+
+profiles:
+  common:
+    dotfiles:
+      - f_fish_config
+      - f_fish_plugins
+      - f_fish_clone
+      - f_fish_greeting
+      - f_fish_mode_prompt
+      - f_fish_prompt
+      - f_fish_gamend
+      - f_fish_gfixup
+      - f_fish_ggone
+      - f_fish_grecent
+      - f_fish_gria
+      - f_fish_gsync
+      - f_gitconfig
+      - f_git_meyer
+      - f_git_personal
+      - f_helix_config
+      - f_helix_languages
+      - f_kitty_fonts
+      - f_kitty_config
+      - f_tmux_config
+      - f_ws_config
+      - f_bin_dots
+      - f_bin_file_manager
+      - f_bin_op_ssh_sign
+      - f_ssh_config
+      - f_ssh_meyer_public_key
+      - f_ssh_seg6_public_key
+      - f_wallpaper
+  arch:
+    include:
+      - common
+    dotfiles:
+      - f_sway_config
+      - f_sway_arch_fragment
+      - f_waybar_config
+      - f_waybar_style
+      - f_fuzzel_config
+      - f_systemd_sway_session_target
+      - f_bin_record_window
+      - f_bin_polkit_agent
+      - f_bin_msli_vpn_arch
+  macos:
+    include:
+      - common
+    dotfiles:
+      - f_aerospace_config
+      - f_karabiner_config
+      - f_bin_msli_vpn_macos
+  workstation:
+    include:
+      - arch
+    dotfiles:
+      - f_sway_workstation_outputs
+      - f_sway_workstation_session

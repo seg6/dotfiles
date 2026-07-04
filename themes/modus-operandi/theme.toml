@@ -1,0 +1,26 @@
+name = "modus-operandi"
+display = "Modus Operandi"
+mode = "light"
+
+[colors]
+bg = "#ffffff"
+bg_alt = "#f8f8f8"
+surface = "#f0f0f0"
+surface_alt = "#c4c4c4"
+fg = "#000000"
+dim = "#595959"
+accent = "#0031a9"
+red = "#a60000"
+green = "#006800"
+yellow = "#6f5500"
+blue = "#0031a9"
+magenta = "#721045"
+cyan = "#005e8b"
+
+[ui]
+radius = 4
+shadow = false
+blur = false
+
+[apps.helix]
+theme = "modus_operandi"

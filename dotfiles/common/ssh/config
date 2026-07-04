@@ -1,0 +1,36 @@
+Include ~/.ssh/config.d/*
+
+Host meyer
+	HostName github.com
+	User git
+	IdentityFile ~/.ssh/meyer.pub
+	IdentitiesOnly yes
+
+Host seg6
+	HostName github.com
+	User git
+	IdentityFile ~/.ssh/seg6.pub
+	IdentitiesOnly yes
+
+Host telefon
+	HostName 192.168.2.127
+	Port 8022
+	User u0_a364
+	IdentityFile ~/.ssh/seg6.pub
+	IdentitiesOnly yes
+
+Host ipad
+	HostName 192.168.2.128
+	User root
+	IdentityFile ~/.ssh/seg6.pub
+	IdentitiesOnly yes
+	StrictHostKeyChecking accept-new
+	HostKeyAlgorithms +ssh-rsa
+	PubkeyAcceptedAlgorithms +ssh-rsa
+
+Host cmf
+	HostName 192.168.2.129
+	Port 8022
+	User u0_a271
+	IdentityFile ~/.ssh/cmf_automation
+	IdentitiesOnly yes

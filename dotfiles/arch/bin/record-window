@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  printf '%s\n' \
+    'usage: record-window [-a] [-o FILE]' \
+    '' \
+    'Select a visible Sway window and record it.' \
+    '' \
+    '  -o FILE  output file (default: window-YYYY-MM-DD-HHMMSS.mp4)' \
+    '  -a       record audio from the default source' \
+    '  -h       show this help'
+}
+
+record_output="window-$(date +%F-%H%M%S).mp4"
+record_audio=0
+
+while getopts ':o:ah' option; do
+  case "$option" in
+    o) record_output=$OPTARG ;;
+    a) record_audio=1 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      printf 'record-window: -%s requires a value\n' "$OPTARG" >&2
+      exit 2
+      ;;
+    \?)
+      printf 'record-window: unknown option: -%s\n' "$OPTARG" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+shift "$((OPTIND - 1))"
+
+if (($#)); then
+  printf 'record-window: unexpected argument: %s\n' "$1" >&2
+  usage >&2
+  exit 2
+fi
+
+record_name=${record_output##*/}
+if [[ $record_name != *.* ]]; then
+  record_output+=.mp4
+fi
+
+if [[ -e $record_output || -L $record_output ]]; then
+  printf 'record-window: output already exists: %s\n' "$record_output" >&2
+  exit 1
+fi
+
+for required_command in swaymsg jq slurp wf-recorder; do
+  if ! command -v "$required_command" >/dev/null 2>&1; then
+    printf 'record-window: missing command: %s\n' "$required_command" >&2
+    exit 1
+  fi
+done
+
+record_boxes="$(
+  swaymsg -t get_tree -r |
+    jq -r '.. | objects |
+      select(.pid? != null and .visible? == true) |
+      "\(.rect.x),\(.rect.y) \(.rect.width)x\(.rect.height) \((.name // "window") | gsub("[\\r\\n]"; " "))"'
+)"
+
+if [[ -z $record_boxes ]]; then
+  printf 'record-window: no visible windows found\n' >&2
+  exit 1
+fi
+
+if ! record_geometry="$(slurp -r <<<"$record_boxes")"; then
+  printf 'record-window: selection cancelled\n' >&2
+  exit 1
+fi
+
+record_args=(-g "$record_geometry" -f "$record_output")
+if ((record_audio)); then
+  record_args=(-a "${record_args[@]}")
+fi
+
+printf 'recording %s — press Ctrl+C to stop\n' "$record_output"
+exec wf-recorder "${record_args[@]}"

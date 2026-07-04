@@ -1,0 +1,33 @@
+[workspace]
+root = "~/workspace"
+max_depth = 4
+ignore = ["node_modules", "target", "vendor"]
+
+[ui]
+max_width = 88
+side_padding = 2
+column_gap = 4
+
+[ui.colors]
+accent = "4"
+muted = "8"
+session = "2"
+branch = "6"
+warning = "3"
+error = "1"
+selected_foreground = "0"
+
+[[session.windows]]
+index = 1
+name = "editor"
+command = 'fish -C "hx ."'
+
+[[session.windows]]
+index = 8
+name = "git"
+command = "lazygit"
+
+[[session.windows]]
+index = 9
+name = "files"
+command = "file-manager"

@@ -1,0 +1,8 @@
+[[language]]
+name = "markdown"
+injection-regex = "md|markdown"
+language-servers = ["marksman"]
+roots = [".zk", ".git", ".current", ".marksman.toml"]
+word-completion.trigger-length = 4
+scope = "source.md"
+file-types = ["md"]

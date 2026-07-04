@@ -1,0 +1,26 @@
+name = "poimandres"
+display = "Poimandres"
+mode = "dark"
+
+[colors]
+bg = "#1b1e28"
+bg_alt = "#14171f"
+surface = "#252b37"
+surface_alt = "#3b4252"
+fg = "#a6accd"
+dim = "#767c9d"
+accent = "#89ddff"
+red = "#d0679d"
+green = "#5de4c7"
+yellow = "#fffac2"
+blue = "#89ddff"
+magenta = "#fcc5e9"
+cyan = "#5de4c7"
+
+[ui]
+radius = 8
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "poimandres"

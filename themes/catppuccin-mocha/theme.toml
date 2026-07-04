@@ -1,0 +1,26 @@
+name = "catppuccin-mocha"
+display = "Catppuccin Mocha"
+mode = "dark"
+
+[colors]
+bg = "#1e1e2e"
+bg_alt = "#181825"
+surface = "#313244"
+surface_alt = "#45475a"
+fg = "#cdd6f4"
+dim = "#7f849c"
+accent = "#89b4fa"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#cba6f7"
+cyan = "#94e2d5"
+
+[ui]
+radius = 10
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "catppuccin_mocha"

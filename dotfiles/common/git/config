@@ -1,0 +1,42 @@
+[user]
+	name = seg6
+	email = hi@seg6.space
+
+[includeIf "gitdir:~/workspace/personal/"]
+	path = ~/.config/git/personal
+
+[includeIf "gitdir:~/workspace/meyer/"]
+	path = ~/.config/git/meyer
+
+[gpg "ssh"]
+	program = ~/.local/bin/op-ssh-sign
+
+[core]
+	pager = delta
+
+[apply]
+	whitespace = fix
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	side-by-side = true
+
+[init]
+	defaultBranch = main
+
+[push]
+	autoSetupRemote = true
+
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
