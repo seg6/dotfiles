@@ -1,0 +1,26 @@
+name = "dracula"
+display = "Dracula"
+mode = "dark"
+
+[colors]
+bg = "#282a36"
+bg_alt = "#21222c"
+surface = "#343746"
+surface_alt = "#44475a"
+fg = "#f8f8f2"
+dim = "#6272a4"
+accent = "#bd93f9"
+red = "#ff5555"
+green = "#50fa7b"
+yellow = "#f1fa8c"
+blue = "#8be9fd"
+magenta = "#ff79c6"
+cyan = "#8be9fd"
+
+[ui]
+radius = 8
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "dracula"

@@ -1,0 +1,26 @@
+name = "monokai-pro"
+display = "Monokai Pro"
+mode = "dark"
+
+[colors]
+bg = "#2d2a2e"
+bg_alt = "#221f22"
+surface = "#403e41"
+surface_alt = "#5b595c"
+fg = "#fcfcfa"
+dim = "#939293"
+accent = "#78dce8"
+red = "#ff6188"
+green = "#a9dc76"
+yellow = "#ffd866"
+blue = "#78dce8"
+magenta = "#ab9df2"
+cyan = "#78dce8"
+
+[ui]
+radius = 8
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "monokai_pro"

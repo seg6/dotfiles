@@ -1,0 +1,26 @@
+name = "oxocarbon"
+display = "Oxocarbon"
+mode = "dark"
+
+[colors]
+bg = "#161616"
+bg_alt = "#0f0f0f"
+surface = "#262626"
+surface_alt = "#393939"
+fg = "#f2f4f8"
+dim = "#6f6f6f"
+accent = "#78a9ff"
+red = "#ee5396"
+green = "#42be65"
+yellow = "#ffe97b"
+blue = "#78a9ff"
+magenta = "#be95ff"
+cyan = "#33b1ff"
+
+[ui]
+radius = 4
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "carbonfox"

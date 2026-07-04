@@ -1,0 +1,99 @@
+@import "colors.css";
+
+* {
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+    font-size: 12px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @foreground;
+}
+
+#workspaces {
+    background: @surface-alpha;
+    border: 1px solid @surface_alt;
+    border-radius: 5px;
+    padding: 1px 3px;
+}
+
+#workspaces button {
+    padding: 0 7px;
+    background: transparent;
+    color: @dim;
+    border: none;
+    border-radius: 3px;
+    margin: 0 1px;
+}
+
+#workspaces button.focused {
+    background: @accent;
+    color: @background;
+}
+
+#workspaces button.urgent {
+    color: @red;
+}
+
+#workspaces button:hover {
+    background: @surface_alt;
+    color: @foreground;
+}
+
+#mode {
+    background: @red;
+    color: @background;
+    border-radius: 5px;
+    padding: 0 7px;
+    margin-left: 4px;
+}
+
+.modules-right {
+    background: @surface-alpha;
+    border: 1px solid @surface_alt;
+    border-radius: 5px;
+    padding: 1px 5px;
+}
+
+#pulseaudio,
+#network,
+#clock {
+    padding: 0 6px;
+    color: @foreground;
+}
+
+#pulseaudio.muted {
+    color: @dim;
+}
+
+#network.disconnected {
+    color: @dim;
+}
+
+#tray {
+    padding: 0 3px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    color: @red;
+}
+
+tooltip {
+    background: @background-alpha;
+    border: 1px solid @surface_alt;
+    border-radius: 6px;
+}
+
+tooltip label {
+    color: @foreground;
+    padding: 4px;
+}

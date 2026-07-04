@@ -1,0 +1,49 @@
+name = "kanagawa"
+display = "Kanagawa"
+mode = "dark"
+
+[colors]
+bg = "#1f1f28"
+bg_alt = "#16161d"
+surface = "#2a2a37"
+surface_alt = "#363646"
+fg = "#dcd7ba"
+dim = "#727169"
+accent = "#7e9cd8"
+red = "#e46876"
+green = "#98bb6c"
+yellow = "#e6c384"
+blue = "#7e9cd8"
+magenta = "#957fb8"
+cyan = "#7aa89f"
+
+[ansi]
+black = "#16161d"
+red = "#c34043"
+green = "#76946a"
+yellow = "#c0a36e"
+blue = "#7e9cd8"
+magenta = "#957fb8"
+cyan = "#6a9589"
+white = "#c8c093"
+bright_black = "#727169"
+bright_red = "#e82424"
+bright_green = "#98bb6c"
+bright_yellow = "#e6c384"
+bright_blue = "#7fb4ca"
+bright_magenta = "#938aa9"
+bright_cyan = "#7aa89f"
+bright_white = "#dcd7ba"
+cursor = "#c8c093"
+selection = "#2d4f67"
+
+[ui]
+radius = 8
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "kanagawa"
+
+[apps.mako]
+timeout = 6000

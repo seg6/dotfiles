@@ -1,0 +1,46 @@
+name = "gruvbox-material"
+display = "Gruvbox Material"
+mode = "dark"
+
+[colors]
+bg = "#1d2021"
+bg_alt = "#141617"
+surface = "#282828"
+surface_alt = "#3c3836"
+fg = "#d4be98"
+dim = "#928374"
+accent = "#7daea3"
+red = "#ea6962"
+green = "#a9b665"
+yellow = "#d8a657"
+blue = "#7daea3"
+magenta = "#d3869b"
+cyan = "#89b482"
+
+[ansi]
+black = "#1d2021"
+red = "#ea6962"
+green = "#a9b665"
+yellow = "#d8a657"
+blue = "#7daea3"
+magenta = "#d3869b"
+cyan = "#89b482"
+white = "#d4be98"
+bright_black = "#928374"
+bright_red = "#ea6962"
+bright_green = "#a9b665"
+bright_yellow = "#d8a657"
+bright_blue = "#7daea3"
+bright_magenta = "#d3869b"
+bright_cyan = "#89b482"
+bright_white = "#ddc7a1"
+cursor = "#d4be98"
+selection = "#3c3836"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "gruvbox_material_dark_medium"

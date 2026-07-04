@@ -1,0 +1,26 @@
+name = "material-deep-ocean"
+display = "Material Deep Ocean"
+mode = "dark"
+
+[colors]
+bg = "#0f111a"
+bg_alt = "#090b10"
+surface = "#1a1c25"
+surface_alt = "#2b2f3a"
+fg = "#a6accd"
+dim = "#676e95"
+accent = "#82aaff"
+red = "#ff5370"
+green = "#c3e88d"
+yellow = "#ffcb6b"
+blue = "#82aaff"
+magenta = "#c792ea"
+cyan = "#89ddff"
+
+[ui]
+radius = 8
+shadow = true
+blur = true
+
+[apps.helix]
+theme = "material_deep_ocean"

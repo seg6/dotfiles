@@ -1,0 +1,26 @@
+name = "gruber-darker"
+display = "Gruber Darker"
+mode = "dark"
+
+[colors]
+bg = "#181818"
+bg_alt = "#101010"
+surface = "#282828"
+surface_alt = "#484848"
+fg = "#e4e4ef"
+dim = "#928374"
+accent = "#96a6c8"
+red = "#f43841"
+green = "#73c936"
+yellow = "#ffdd33"
+blue = "#96a6c8"
+magenta = "#9e95c7"
+cyan = "#95a99f"
+
+[ui]
+radius = 4
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "gruber-darker"

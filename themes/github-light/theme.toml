@@ -1,0 +1,26 @@
+name = "github-light"
+display = "GitHub Light"
+mode = "light"
+
+[colors]
+bg = "#ffffff"
+bg_alt = "#f6f8fa"
+surface = "#f6f8fa"
+surface_alt = "#d0d7de"
+fg = "#24292f"
+dim = "#57606a"
+accent = "#0969da"
+red = "#cf222e"
+green = "#1a7f37"
+yellow = "#9a6700"
+blue = "#0969da"
+magenta = "#8250df"
+cyan = "#1b7c83"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "github_light"

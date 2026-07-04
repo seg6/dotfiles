@@ -1,0 +1,46 @@
+name = "flexoki-dark"
+display = "Flexoki Dark"
+mode = "dark"
+
+[colors]
+bg = "#100f0f"
+bg_alt = "#1c1b1a"
+surface = "#282726"
+surface_alt = "#403e3c"
+fg = "#cecdc3"
+dim = "#878580"
+accent = "#4385be"
+red = "#d14d41"
+green = "#879a39"
+yellow = "#d0a215"
+blue = "#4385be"
+magenta = "#ce5d97"
+cyan = "#3aa99f"
+
+[ansi]
+black = "#100f0f"
+red = "#af3029"
+green = "#66800b"
+yellow = "#ad8301"
+blue = "#205ea6"
+magenta = "#a02f6f"
+cyan = "#24837b"
+white = "#cecdc3"
+bright_black = "#575653"
+bright_red = "#d14d41"
+bright_green = "#879a39"
+bright_yellow = "#d0a215"
+bright_blue = "#4385be"
+bright_magenta = "#ce5d97"
+bright_cyan = "#3aa99f"
+bright_white = "#fffcf0"
+cursor = "#cecdc3"
+selection = "#403e3c"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "flexoki_dark"

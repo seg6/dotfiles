@@ -1,0 +1,26 @@
+name = "ayu-dark"
+display = "Ayu Dark"
+mode = "dark"
+
+[colors]
+bg = "#0f1419"
+bg_alt = "#0b0e14"
+surface = "#1f2430"
+surface_alt = "#38404a"
+fg = "#e6e1cf"
+dim = "#5c6773"
+accent = "#59c2ff"
+red = "#f07178"
+green = "#b8cc52"
+yellow = "#ffb454"
+blue = "#59c2ff"
+magenta = "#d2a6ff"
+cyan = "#95e6cb"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "ayu_dark"

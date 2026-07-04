@@ -1,0 +1,26 @@
+name = "onedark"
+display = "One Dark"
+mode = "dark"
+
+[colors]
+bg = "#282c34"
+bg_alt = "#21252b"
+surface = "#2c313c"
+surface_alt = "#3e4451"
+fg = "#abb2bf"
+dim = "#5c6370"
+accent = "#61afef"
+red = "#e06c75"
+green = "#98c379"
+yellow = "#e5c07b"
+blue = "#61afef"
+magenta = "#c678dd"
+cyan = "#56b6c2"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "onedark"

@@ -1,0 +1,26 @@
+name = "solarized-dark"
+display = "Solarized Dark"
+mode = "dark"
+
+[colors]
+bg = "#002b36"
+bg_alt = "#073642"
+surface = "#073642"
+surface_alt = "#586e75"
+fg = "#eee8d5"
+dim = "#839496"
+accent = "#268bd2"
+red = "#dc322f"
+green = "#859900"
+yellow = "#b58900"
+blue = "#268bd2"
+magenta = "#d33682"
+cyan = "#2aa198"
+
+[ui]
+radius = 6
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "solarized_dark"

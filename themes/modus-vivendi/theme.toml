@@ -1,0 +1,26 @@
+name = "modus-vivendi"
+display = "Modus Vivendi"
+mode = "dark"
+
+[colors]
+bg = "#000000"
+bg_alt = "#110b11"
+surface = "#1e1e1e"
+surface_alt = "#444444"
+fg = "#ffffff"
+dim = "#989898"
+accent = "#2fafff"
+red = "#ff5f59"
+green = "#44bc44"
+yellow = "#d0bc00"
+blue = "#2fafff"
+magenta = "#feacd0"
+cyan = "#00d3d0"
+
+[ui]
+radius = 4
+shadow = false
+blur = false
+
+[apps.helix]
+theme = "modus_vivendi"

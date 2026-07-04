@@ -1,0 +1,26 @@
+name = "nightfox"
+display = "Nightfox"
+mode = "dark"
+
+[colors]
+bg = "#192330"
+bg_alt = "#131a24"
+surface = "#212e3f"
+surface_alt = "#39506d"
+fg = "#cdcecf"
+dim = "#71839b"
+accent = "#719cd6"
+red = "#c94f6d"
+green = "#81b29a"
+yellow = "#dbc074"
+blue = "#719cd6"
+magenta = "#9d79d6"
+cyan = "#63cdcf"
+
+[ui]
+radius = 8
+shadow = true
+blur = false
+
+[apps.helix]
+theme = "nightfox"

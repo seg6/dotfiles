@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+agent=$(pacman -Qql polkit-gnome | awk '/\/polkit-gnome-authentication-agent-1$/ { print; exit }')
+if [[ -z $agent || ! -x $agent ]]; then
+    printf '%s\n' 'polkit-agent: unable to locate the polkit-gnome authentication agent' >&2
+    exit 1
+fi
+
+exec "$agent" "$@"
