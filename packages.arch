@@ -25,7 +25,6 @@ fuzzel
 github-cli
 git
 git-delta
-helix
 go
 go-yq
 gopls
@@ -51,6 +50,7 @@ noto-fonts-emoji
 ntfs-3g
 obs-studio
 openssh
+openvpn
 otf-font-awesome
 otf-monaspace
 pasystray

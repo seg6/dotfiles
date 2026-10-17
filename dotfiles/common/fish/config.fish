@@ -2,6 +2,13 @@ if command -q brew
     brew shellenv | source
 end
 
+switch (uname -s)
+    case Darwin
+        set -gx SSH_AUTH_SOCK "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+    case Linux
+        set -gx SSH_AUTH_SOCK "$HOME/.1password/agent.sock"
+end
+
 if status is-interactive
     set fish_cursor_default block
     set fish_cursor_insert block
@@ -52,4 +59,11 @@ end
 
 if command -q zoxide
     zoxide init fish | source
+end
+
+# ZVM
+set -gx ZVM_INSTALL "$HOME/.zvm/self"
+if test -d "$ZVM_INSTALL"
+    set -gx PATH $PATH "$HOME/.zvm/bin"
+    set -gx PATH $PATH "$ZVM_INSTALL"
 end

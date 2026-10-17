@@ -13,11 +13,11 @@ exec pasystray
 exec openvpn3-indicator
 exec polkit-agent
 
-exec swayidle -w \
-    timeout 300 '$lock' \
-    timeout 600 'swaymsg "output * power off"' \
-    resume 'swaymsg "output * power on"' \
-    before-sleep '$lock'
+# exec swayidle -w \
+#     timeout 300 '$lock' \
+#     timeout 600 'swaymsg "output * power off"' \
+#     resume 'swaymsg "output * power on"' \
+#     before-sleep '$lock'
 
 gaps inner 8
 gaps outer 4
@@ -132,12 +132,6 @@ bindsym $mod+Space exec $menu
 bindsym $mod+Shift+f exec $browser
 bindsym Ctrl+Shift+space exec 1password --quick-access
 bindsym $mod+Shift+v exec cliphist list | fuzzel --dmenu --prompt='clipboard: ' | cliphist decode | wl-copy
-
-bindsym $mod+x exec sh -lc 'pkill -x warpd >/dev/null 2>&1 || true; exec warpd --hint'
-bindsym $mod+Shift+x exec sh -lc 'pkill -x warpd >/dev/null 2>&1 || true; exec warpd --hint2'
-bindsym $mod+m exec sh -lc 'pkill -x warpd >/dev/null 2>&1 || true; exec warpd --normal'
-bindsym $mod+g exec sh -lc 'pkill -x warpd >/dev/null 2>&1 || true; exec warpd --grid'
-bindsym $mod+semicolon exec sh -lc 'pkill -x warpd >/dev/null 2>&1 || true; exec warpd --history'
 
 bindsym $mod+s exec sh -lc 'directory="$HOME/pictures/screenshots"; mkdir -p "$directory"; grim -g "$(slurp)" "$directory/$(date +%Y%m%d_%H%M%S).png"'
 bindsym $mod+Shift+s exec flameshot gui
