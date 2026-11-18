@@ -90,6 +90,11 @@ func (app *App) Run(ctx context.Context, args []string) error {
 			return errors.New("usage: ws scratchpad")
 		}
 		return app.runScratchpad(ctx)
+	case "open":
+		if len(args) != 2 {
+			return errors.New("usage: ws open <project>")
+		}
+		return app.runOpen(ctx, args[1])
 	case "doctor":
 		if len(args) != 1 {
 			return errors.New("usage: ws doctor")
@@ -113,6 +118,25 @@ func (app *App) runWorkspace(ctx context.Context) error {
 		return err
 	}
 	return app.activate(ctx, candidates[selected])
+}
+
+// runOpen goes straight to a project named as the picker lists it
+// ("personal/dotfiles"), for anything that already knows which one it wants.
+func (app *App) runOpen(ctx context.Context, id string) error {
+	projects, err := DiscoverProjects(app.Config.Workspace)
+	if err != nil {
+		return err
+	}
+	for _, project := range projects {
+		if project.ID == id {
+			sessions, err := app.sessionsWithAdoption(ctx, projects)
+			if err != nil {
+				return err
+			}
+			return app.openProject(ctx, project, sessions)
+		}
+	}
+	return fmt.Errorf("no project %q under %s", id, app.Config.Workspace.Root)
 }
 
 func (app *App) runKill(ctx context.Context) error {
@@ -418,6 +442,7 @@ func (app *App) printUsage() {
 
 commands:
   ws                       open the workspace picker
+  ws open <project>        open a project by name, without the picker
   ws kill                  choose a session to kill
   ws back [tmux-client]    switch to the previous session
   ws scratchpad            switch to the persistent scratchpad

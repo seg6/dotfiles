@@ -1,0 +1,27 @@
+import QtQuick
+import Quickshell
+
+// A slip of the page that opens beside a word: a hairline and what it holds.
+// A click anywhere else puts it away.
+PopupWindow {
+    id: sheet
+    property real pad: 18
+    default property alias contents: inside.data
+    implicitWidth: Math.ceil(inside.childrenRect.width + 2 * pad)
+    implicitHeight: Math.ceil(inside.childrenRect.height + 2 * pad)
+    color: Theme.bg
+    grabFocus: true
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.bg
+        border {
+            width: 1
+            color: Theme.fg
+        }
+    }
+    Item {
+        id: inside
+        x: sheet.pad
+        y: sheet.pad
+    }
+}

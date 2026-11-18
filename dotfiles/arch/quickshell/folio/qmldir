@@ -1,0 +1,11 @@
+singleton Theme 1.0 Theme.qml
+singleton ShellState 1.0 ShellState.qml
+singleton Desktop 1.0 Desktop.qml
+singleton Notices 1.0 Notices.qml
+Small 1.0 Small.qml
+Sheet 1.0 Sheet.qml
+TopLine 1.0 TopLine.qml
+BottomLine 1.0 BottomLine.qml
+Page 1.0 Page.qml
+Ask 1.0 Ask.qml
+Lock 1.0 Lock.qml

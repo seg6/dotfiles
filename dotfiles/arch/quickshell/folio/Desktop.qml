@@ -10,10 +10,10 @@ QtObject {
     property var windows: []
     // Which workspace each output shows: {"DP-1": "2"}.
     property var showing: ({})
-    // Each wall as it last looked, for the salon: {"2": "file:///…/2.png?stamp"}.
+    // Each desk as it last looked, in the page's two colors: {"2": "file:///…/2.png?stamp"}.
     property var pictures: ({})
-    readonly property string pictureDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/salon"
-    // Take the current wall's picture now; ready() follows when it is saved.
+    readonly property string pictureDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/folio"
+    // Take the current desk's picture now; ready() follows when it is saved.
     signal ready
     function capture(): void {
         if (shutter.running)
@@ -21,11 +21,39 @@ QtObject {
         const output = Object.keys(showing)[0];
         if (!output || !showing[output])
             return;
-        shutter.wall = showing[output];
-        shutter.command = ["sh", "-c", 'mkdir -p "$1" && grim -o "$2" -s 0.25 -t png "$1/$3.png"', "salon-shutter", pictureDir, output, shutter.wall];
+        shutter.desk = showing[output];
+        // A quarter-size picture, dithered to the page's two colors.
+        shutter.command = ["sh", "-c", 'mkdir -p "$1" && grim -o "$2" -s 0.25 -t png - | magick png:- -colorspace Gray -monochrome +level-colors "$4","$5" "png:$1/$3.png"', "folio-shutter", pictureDir, output, shutter.desk, String(Theme.bg), String(Theme.fg)];
         shutter.running = true;
     }
     readonly property var occupied: Array.from(new Set(windows.map(w => w.workspace)))
+    // When each project was last opened, as the `ws` tool records it.
+    property var recent: ({})
+    property FileView history: FileView {
+        path: Theme.stateHome + "/ws/state.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            try {
+                desktop.recent = JSON.parse(text()).recent || {};
+            } catch (_) {
+                desktop.recent = {};
+            }
+        }
+    }
+    // Which desks want attention, and since when: {"8": Date}.
+    property var waitingSince: ({})
+    function noteWaiting(desks): void {
+        const next = {};
+        let changed = Object.keys(waitingSince).length !== desks.length;
+        for (const desk of desks) {
+            next[desk] = waitingSince[desk] || new Date();
+            changed = changed || !waitingSince[desk];
+        }
+        if (changed)
+            waitingSince = next;
+    }
     property bool pending: false
     // The icon a window's application is known by, or "" to fall back to letters.
     function iconFor(app: string): string {
@@ -58,8 +86,8 @@ QtObject {
                     const tree = JSON.parse(text);
                     desktop.windows = Logic.windows(tree);
                     desktop.showing = Logic.showing(tree);
-                    // The salon covers the screen; a picture taken then would be of itself.
-                    if (!ShellState.open)
+                    // The request covers the screen; a picture taken then would be of itself.
+                    if (!ShellState.asking && !ShellState.locked)
                         desktop.snap.restart();
                     // Windows opened under another layout still wear its frame.
                     const frames = Logic.frameUpdates(tree);
@@ -68,7 +96,7 @@ QtObject {
                         framer.running = true;
                     }
                 } catch (error) {
-                    console.warn("Salon window list:", error);
+                    console.warn("Folio window list:", error);
                 }
             }
         }
@@ -78,25 +106,25 @@ QtObject {
         }
     }
     property Process shutter: Process {
-        property string wall: ""
+        property string desk: ""
         stdout: StdioCollector {}
         onExited: code => {
             if (code === 0) {
                 const next = Object.assign({}, desktop.pictures);
-                next[wall] = "file://" + desktop.pictureDir + "/" + wall + ".png?" + Date.now();
+                next[desk] = "file://" + desktop.pictureDir + "/" + desk + ".png?" + Date.now();
                 desktop.pictures = next;
             }
             desktop.ready();
         }
     }
-    // A wall changes without telling Sway (a terminal scrolls), so look again now and then.
+    // A desk changes without telling Sway (a terminal scrolls), so look again now and then.
     property Timer snap: Timer {
         interval: 700
         onTriggered: desktop.capture()
     }
     property Timer glance: Timer {
         interval: 12000
-        running: !ShellState.open
+        running: !ShellState.asking && !ShellState.locked
         repeat: true
         onTriggered: desktop.capture()
     }

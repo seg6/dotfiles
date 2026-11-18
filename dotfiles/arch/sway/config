@@ -131,12 +131,12 @@ bindsym $mod+Space exec $menu
 bindsym $mod+Shift+f exec $browser
 bindsym Ctrl+Shift+space exec 1password --quick-access
 bindsym $mod+Shift+v exec desktop-menu clipboard
-bindsym $mod+Tab exec desktop-menu salon
+bindsym $mod+Tab exec desktop-menu launcher
 
 bindsym $mod+s exec sh -lc 'directory="$HOME/pictures/screenshots"; mkdir -p "$directory"; grim -g "$(slurp)" "$directory/$(date +%Y%m%d_%H%M%S).png"'
 bindsym $mod+Shift+s exec flameshot gui
 
-bindsym $mod+Escape exec $lock
+bindsym $mod+Escape exec desktop-menu lock
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes' 'swaymsg exit' -s "$nagstyle"
 bindsym $mod+Shift+c reload
 

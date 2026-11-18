@@ -1,0 +1,45 @@
+name = "folio"
+display = "Folio"
+mode = "dark"
+layout = "folio"
+wallpaper = "wallpaper.jpg"
+
+[colors]
+bg = "#0d0d0e"
+bg_alt = "#0a0a0b"
+surface = "#1c1b1a"
+surface_alt = "#343330"
+fg = "#e6e1d5"
+dim = "#8b877d"
+accent = "#e6e1d5"
+red = "#ff4a2b"
+green = "#c9c4b8"
+yellow = "#d9d4c7"
+blue = "#a39f95"
+magenta = "#b7b2a6"
+cyan = "#bdb8ac"
+
+[ansi]
+black = "#0a0a0b"
+red = "#ff4a2b"
+green = "#c9c4b8"
+yellow = "#d9d4c7"
+blue = "#a39f95"
+magenta = "#b7b2a6"
+cyan = "#bdb8ac"
+white = "#e6e1d5"
+bright_black = "#5f5c55"
+bright_red = "#ff7a62"
+bright_green = "#e6e1d5"
+bright_yellow = "#f1ede3"
+bright_blue = "#c9c4b8"
+bright_magenta = "#d9d4c7"
+bright_cyan = "#e6e1d5"
+bright_white = "#ffffff"
+cursor = "#e6e1d5"
+selection = "#343330"
+
+[ui]
+radius = 0
+shadow = false
+blur = false

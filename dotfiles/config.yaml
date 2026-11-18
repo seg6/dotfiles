@@ -115,9 +115,12 @@ dotfiles:
   d_overprint:
     src: arch/quickshell/overprint
     dst: ~/.config/quickshell/overprint
-  d_salon:
-    src: arch/quickshell/salon
-    dst: ~/.config/quickshell/salon
+  d_folio:
+    src: arch/quickshell/folio
+    dst: ~/.config/quickshell/folio
+  d_fonts:
+    src: arch/fonts
+    dst: ~/.local/share/fonts/dotfiles
   f_bin_desktop_menu:
     src: arch/bin/desktop-menu
     dst: ~/.local/bin/desktop-menu
@@ -185,7 +188,8 @@ profiles:
       - f_systemd_sway_session_target
       - f_systemd_desktop_shell
       - d_overprint
-      - d_salon
+      - d_folio
+      - d_fonts
       - f_bin_desktop_menu
       - f_bin_record_window
       - f_bin_polkit_agent

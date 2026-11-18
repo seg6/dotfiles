@@ -1,0 +1,368 @@
+pragma ComponentBehavior: Bound
+import QtQuick
+import Quickshell
+import Quickshell.I3
+import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Services.Mpris
+import Quickshell.Services.Pipewire
+import "Search.js" as Search
+import "Logic.js" as Logic
+
+// A request. Type what you want and the page finishes the sentence: go to a
+// window, resume a project, open an application, or simply lock or shut down.
+// Tab turns it to what you have copied.
+PanelWindow {
+    id: ask
+    screen: ShellState.screen || Quickshell.screens[0]
+    readonly property real u: Theme.unit(screen)
+    readonly property bool clipboard: ShellState.about === "clipboard"
+    property var used: ({})
+    property var clips: []
+    property int chosen: 0
+    // A request that cannot be undone waits for Enter a second time.
+    property string armed: ""
+    readonly property var results: clipboard ? Search.rank(clips, input.text, {}, true).slice(0, 7).map(clip => ({
+                kind: "clip",
+                verb: "Copy",
+                name: clip.name,
+                detail: "",
+                clip: clip.id
+            })) : Logic.ask(input.text, {
+        windows: Desktop.windows,
+        recent: Desktop.recent,
+        apps: DesktopEntries.applications.values,
+        used: used
+    }, new Date(), 7)
+    readonly property var first: results[chosen] ?? null
+    function run(result): void {
+        if (!result)
+            return;
+        if (result.confirm && armed !== result.command) {
+            armed = result.command;
+            return;
+        }
+        ShellState.close();
+        const home = Quickshell.env("HOME");
+        // systemd user services can have a system-only PATH. env performs
+        // executable lookup with the same path inherited by the app.
+        const path = [home + "/.local/bin", home + "/.cargo/bin", Quickshell.env("PATH") || "/usr/local/bin:/usr/bin"].join(":");
+        if (result.kind === "window") {
+            I3.dispatch("[con_id=" + result.window.id + "] focus");
+        } else if (result.kind === "project") {
+            Quickshell.execDetached({
+                command: ["/usr/bin/env", "PATH=" + path, "kitty", "ws", "open", result.project]
+            });
+        } else if (result.kind === "clip") {
+            // Only the numeric cliphist ID is passed as data; display text never becomes shell code.
+            Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | cliphist decode | wl-copy", "folio-clipboard", result.clip]);
+        } else if (result.kind === "app") {
+            // DesktopEntry.execute() does not honor Terminal=true. Use its
+            // parsed argument list, keeping quoted arguments and Path intact.
+            const command = Array.from(result.app.command || []);
+            if (command.length === 0)
+                return;
+            if (result.app.runInTerminal)
+                command.unshift("kitty", "--");
+            Quickshell.execDetached({
+                command: ["/usr/bin/env", "PATH=" + path].concat(command),
+                workingDirectory: result.app.workingDirectory || home
+            });
+            const next = Object.assign({}, used);
+            next[result.app.id] = Date.now();
+            used = next;
+            usedFile.setText(JSON.stringify(used));
+        } else if (result.kind === "command") {
+            const audio = Pipewire.defaultAudioSink?.audio;
+            const player = Mpris.players.values.find(p => p.isPlaying) || Mpris.players.values[0];
+            switch (result.command) {
+            case "lock":
+                ShellState.locked = true;
+                break;
+            case "sleep":
+                Quickshell.execDetached(["systemctl", "suspend"]);
+                break;
+            case "quiet":
+                Notices.quiet = true;
+                break;
+            case "loud":
+                Notices.quiet = false;
+                break;
+            case "mute":
+                if (audio)
+                    audio.muted = !audio.muted;
+                break;
+            case "pause":
+                player?.togglePlaying();
+                break;
+            case "next":
+                player?.next();
+                break;
+            case "logout":
+                Quickshell.execDetached(["swaymsg", "exit"]);
+                break;
+            case "restart":
+                Quickshell.execDetached(["systemctl", "reboot"]);
+                break;
+            case "shutdown":
+                Quickshell.execDetached(["systemctl", "poweroff"]);
+                break;
+            }
+        }
+    }
+    anchors {
+        left: true
+        right: true
+        top: true
+        bottom: true
+    }
+    exclusionMode: ExclusionMode.Ignore
+    color: Theme.bg
+    visible: ShellState.asking
+    WlrLayershell.namespace: "folio"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    onVisibleChanged: {
+        if (visible) {
+            input.text = "";
+            chosen = 0;
+            armed = "";
+            input.forceActiveFocus();
+            if (clipboard)
+                clipReader.running = true;
+        }
+    }
+    onClipboardChanged: {
+        chosen = 0;
+        if (clipboard)
+            clipReader.running = true;
+    }
+    PwObjectTracker {
+        objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : []
+    }
+    FileView {
+        id: usedFile
+        path: Quickshell.statePath("launcher-history.json")
+        printErrors: false
+        atomicWrites: true
+        onLoaded: {
+            try {
+                const value = JSON.parse(text());
+                if (value && typeof value === "object" && !Array.isArray(value))
+                    ask.used = value;
+            } catch (_) {
+                ask.used = {};
+            }
+        }
+    }
+    Process {
+        id: clipReader
+        command: ["cliphist", "list"]
+        stdout: StdioCollector {
+            onStreamFinished: ask.clips = Search.clipboard(text)
+        }
+    }
+    Image {
+        anchors.bottom: parent.bottom
+        width: parent.width
+        height: Math.round(width * 360 / 640)
+        source: "file://" + Theme.configHome + "/quickshell/folio/page.png"
+        smooth: false
+        cache: false
+        opacity: 0.45
+    }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: ShellState.close()
+    }
+    Small {
+        x: 36 * ask.u
+        y: 19 * ask.u
+        screen: ask.screen
+        text: (Theme.who.name || "you") + "."
+    }
+    Small {
+        anchors {
+            right: parent.right
+            rightMargin: 36 * ask.u
+        }
+        y: 19 * ask.u
+        screen: ask.screen
+        lit: false
+        text: input.text.trim().length > 0 || ask.clipboard ? ask.results.length + (ask.results.length === 1 ? " answer" : " answers") : ""
+    }
+
+    Column {
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: ask.height * 0.15
+        width: Math.min(1400 * ask.u, ask.width * 0.8)
+        // The request, as a sentence that finishes itself.
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 0
+            Text {
+                text: (ask.armed.length > 0 ? "Really " + (ask.first?.verb ?? "").toLowerCase() : (ask.first?.verb ?? (ask.clipboard ? "Copy" : "Find"))) + " "
+                color: ask.armed.length > 0 ? Theme.signal : Theme.dim
+                font: input.font
+            }
+            TextInput {
+                id: input
+                color: Theme.fg
+                selectionColor: Theme.fg
+                selectedTextColor: Theme.bg
+                focus: true
+                font {
+                    family: Theme.serif
+                    pixelSize: 52 * ask.u
+                }
+                cursorDelegate: Rectangle {
+                    width: Math.max(2, 3 * ask.u)
+                    color: Theme.signal
+                    visible: input.activeFocus
+                }
+                onTextChanged: {
+                    ask.chosen = 0;
+                    ask.armed = "";
+                }
+                Rectangle {
+                    anchors.top: parent.bottom
+                    anchors.topMargin: -6 * ask.u
+                    width: Math.max(parent.width, 12 * ask.u)
+                    height: 1
+                    color: Theme.fg
+                }
+                Keys.onPressed: event => {
+                    const control = event.modifiers & Qt.ControlModifier;
+                    const count = ask.results.length;
+                    if (event.key === Qt.Key_Escape) {
+                        ShellState.close();
+                    } else if (event.key === Qt.Key_Tab) {
+                        ShellState.about = ask.clipboard ? "anything" : "clipboard";
+                    } else if (count > 0 && (event.key === Qt.Key_Down || (control && (event.key === Qt.Key_J || event.key === Qt.Key_N)))) {
+                        ask.chosen = (ask.chosen + 1) % count;
+                        ask.armed = "";
+                    } else if (count > 0 && (event.key === Qt.Key_Up || (control && (event.key === Qt.Key_K || event.key === Qt.Key_P)))) {
+                        ask.chosen = (ask.chosen + count - 1) % count;
+                        ask.armed = "";
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        ask.run(ask.first);
+                    } else if (input.text.length === 0 && !ask.clipboard && event.key >= Qt.Key_0 && event.key <= Qt.Key_9) {
+                        // A bare number goes to that desk.
+                        ShellState.close();
+                        I3.dispatch("workspace " + JSON.stringify(event.key === Qt.Key_0 ? "10" : String(event.key - Qt.Key_0)));
+                    } else {
+                        return;
+                    }
+                    event.accepted = true;
+                }
+            }
+            Text {
+                readonly property string rest: ask.first && ask.first.kind !== "clip" ? Logic.rest(input.text, ask.first.name) : ""
+                text: {
+                    if (input.text.length === 0)
+                        return ask.clipboard ? "something you copied." : "a window, a project, an application, or say what to do.";
+                    if (!ask.first)
+                        return "";
+                    if (ask.armed.length > 0)
+                        return "? Press ↵ again.";
+                    const tail = ask.first.detail ? ", " + ask.first.detail + "." : ".";
+                    return rest.length > 0 ? rest + tail : "";
+                }
+                textFormat: Text.PlainText
+                color: Theme.dim
+                font {
+                    family: Theme.serif
+                    pixelSize: 52 * ask.u
+                    italic: true
+                }
+                width: Math.min(implicitWidth, ask.width * 0.5)
+                elide: Text.ElideRight
+            }
+        }
+        Item {
+            width: 1
+            height: 64 * ask.u
+        }
+        Repeater {
+            model: ask.results
+            Item {
+                id: answer
+                required property var modelData
+                required property int index
+                readonly property bool chosen: ask.chosen === index
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: line.width
+                height: line.height + 12 * ask.u
+                Row {
+                    id: line
+                    spacing: 14 * ask.u
+                    Small {
+                        anchors.verticalCenter: parent.verticalCenter
+                        screen: ask.screen
+                        color: Theme.signal
+                        opacity: answer.chosen ? 1 : 0
+                        text: "→"
+                    }
+                    Text {
+                        text: answer.modelData.verb + " " + answer.modelData.name.replace(/\s+/g, " ")
+                        textFormat: Text.PlainText
+                        width: Math.min(implicitWidth, ask.width * 0.5)
+                        elide: Text.ElideRight
+                        color: answer.chosen ? Theme.fg : Qt.alpha(Theme.fg, 0.82)
+                        font {
+                            family: Theme.serif
+                            pixelSize: 34 * ask.u
+                        }
+                    }
+                    Text {
+                        visible: text.length > 0
+                        text: answer.modelData.detail
+                        textFormat: Text.PlainText
+                        width: Math.min(implicitWidth, ask.width * 0.32)
+                        elide: Text.ElideRight
+                        color: Theme.dim
+                        font {
+                            family: Theme.serif
+                            pixelSize: 34 * ask.u
+                        }
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onPositionChanged: ask.chosen = answer.index
+                    onClicked: ask.run(answer.modelData)
+                }
+            }
+        }
+        Text {
+            visible: (input.text.trim().length > 0 || ask.clipboard) && ask.results.length === 0
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: ask.clipboard ? "Nothing copied matches that." : "Nothing answers to that."
+            color: Theme.dim
+            font {
+                family: Theme.serif
+                pixelSize: 34 * ask.u
+                italic: true
+            }
+        }
+        Item {
+            width: 1
+            height: 60 * ask.u
+        }
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 38 * ask.u
+            Repeater {
+                model: ["↵ " + (ask.clipboard ? "copy" : "do it"), "↑↓ choose", "tab · " + (ask.clipboard ? "anything" : "what you copied"), "1–9 · go to a desk", "esc · never mind"]
+                Small {
+                    required property string modelData
+                    screen: ask.screen
+                    lit: false
+                    text: modelData
+                }
+            }
+        }
+    }
+}

@@ -53,62 +53,68 @@ window frames, spacing, and how Kitty, Helix, and tmux are dressed. Both need
 `quickshell` 0.3.2 or newer.
 
 ```sh
-theme use salon           # Salon, with its own palette and painting
+theme use folio           # Folio, with its own palette and picture
 theme use overprint       # Overprint
-theme layout salon        # keep the current palette, change the layout
-theme use coast --layout salon
+theme layout folio        # keep the current palette, change the layout
+theme use coast --layout folio
 ```
 
 `theme use <name>` without `--layout` takes the theme's own layout, so a plain
 palette returns to Overprint. Super+Space opens the launcher and Super+Shift+V
 the clipboard history in both.
 
-## Salon
+## Folio
 
-A gallery wall. There is no bar. Windows are the works hung on the wall: no
-title bars, a gilt frame, a deep shadow. The one in focus has a picture light
-over it and a bright frame; the rest are a shade dimmer. A wall with nothing on
-it shows the theme's painting, framed and lit, with a museum label beside it.
+A page. Two colors, bone on near-black, and one red that only ever means
+something wants you. Two typefaces, both installed with the dotfiles: Departure
+Mono for the small capitals in the margins, Newsreader for sentences. Windows
+are a hairline: no title bars, no shadows, the one in focus has the brighter line.
 
-The one thing always on screen is a brass plaque under the works, engraved with
-the wall's number, the work that is lit, and the hour. Scroll over it for the
-volume, right click to mute; the change is engraved for a moment in place of
-the title. A red jewel in the brass means another wall wants attention.
+The top margin is one line of small type:
 
-Notifications arrive as cards slipped onto the wall in the lower corner. They
-leave on their own; the pointer over one keeps it, and a click dismisses it.
+- your name, then the window in focus;
+- the desks, each named for what is on it. Click one to go there; hover for a
+  picture of it as it last looked. A red dot means it wants attention;
+- what is playing (click to pause, right click for the next track, middle for
+  the last), the tray applications as words (left click activates, right click
+  opens the application's own menu as a list), and the volume (scroll to
+  change, click to mute, right click for the mixer).
 
-Super+Tab, or a click on the plaque, opens the salon:
+The bottom margin has the city the clock is set to and the time; click the time
+for the month, with week numbers. On the right are the moon, how long the
+machine has been up, and a switch that keeps notifications quiet, letting only
+critical ones through. A notification is written into that margin in place of
+them, with its actions and LATER beside it. It leaves on its own; the pointer
+over it keeps it.
 
-- Every wall is a framed picture of itself as it last looked, hung around the
-  one you are on, each with a plaque saying what hangs there. Click one to walk
-  to it, or press its number.
-- Start typing and the catalogue answers with applications; Enter opens the
-  entry that is inked in. Tab turns the catalogue to the clipboard history.
-  Super+Space and Super+Shift+V open the salon on either.
-- On the shelf below the rail: the clock (click it for the month, with week
-  numbers) and tonight's moon; what is playing, with its controls; a brass push
-  for each tray application (left click activates, right click opens its menu);
-  the sound (click to mute, scroll to change, right click for the mixer); a push
-  that keeps notifications quiet, letting only critical ones through; and the
-  lights, which lock, sleep, log out, restart, or shut down. The last three ask
-  for a second press.
+A desk with nothing open says what is going on in a sentence, such as "It is
+twenty to one on a Wednesday in Berlin. Nothing is open on this desk. Helium is
+elsewhere, and Discord has been waiting eleven minutes." The names are links.
+Under it are the projects `ws` opened last; click one to resume it. Along the
+foot of the page is the theme's wallpaper, dithered to the two colors.
 
-The painting is the theme's wallpaper, and its label comes from the theme:
+Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
+the page finishes the sentence:
 
-```toml
-wallpaper = "wallpaper.jpg"
+- "Go to" a window that is open, "Resume" a `ws` project, "Open" an application;
+- or say what to do: lock, sleep, quiet, loud, mute, pause, next, log out,
+  restart, shut down. The last three ask for Enter a second time;
+- a bare number goes to that desk;
+- Tab, or Super+Shift+V, turns the request to what you have copied.
 
-[art]
-artist = "Vincent van Gogh"
-life = "1853 – 1890"
-title = "Wheatfield under Thunderclouds"
-date = "1890"
-medium = "oil on canvas"
+Super+Escape locks the screen with the same page. It checks the password
+against the `swaylock` PAM service. If the lock screen ever misbehaves,
+`desktop-menu unlock` from a virtual terminal lets you back in.
+
+`theme` writes your name (from Git) and the clock's city into the page. For
+coordinates in the bottom margin, write them yourself; nothing is looked up:
+
+```sh
+echo "52.52 13.40" > ~/.config/dotfiles/place
 ```
 
-`theme wallpaper picture.jpg --name harvest --layout salon` hangs any image and
-takes the palette from it. The wall is painted the palette's `wall` color.
+`theme wallpaper picture.jpg --name harvest --layout folio` puts any image at
+the foot of the page and takes the palette from it.
 
 ## Overprint
 
@@ -157,7 +163,7 @@ The other entries in `themes/` are wallpaper palettes. They work in either layou
 ```sh
 theme list
 theme use coast
-theme use coast --layout salon
+theme use coast --layout folio
 theme use overprint   # the original
 ```
 
@@ -165,7 +171,7 @@ Make one from any image:
 
 ```sh
 theme wallpaper ~/Pictures/wallpaper.jpg --name forest
-theme wallpaper ~/Pictures/wallpaper.jpg --name forest --layout salon
+theme wallpaper ~/Pictures/wallpaper.jpg --name forest --layout folio
 theme wallpaper ~/Pictures/wallpaper.jpg --name forest --preview   # HTML preview only
 ```
 

@@ -12,7 +12,7 @@ import (
 func generateWS(config string, theme Theme) {
 	// The picker's Overprint style is square rules on a painted surface.
 	style := "overprint"
-	if salon(theme) {
+	if folio(theme) {
 		style = "classic"
 	}
 	content := fmt.Sprintf(`[ui]

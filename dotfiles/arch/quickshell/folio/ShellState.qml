@@ -4,57 +4,60 @@ import Quickshell
 import Quickshell.I3
 import Quickshell.Io
 
-// Whether the salon is open, on which screen, and what its catalogue lists.
+// Whether a request is being typed, what it searches, and whether the screen is locked.
 QtObject {
     id: root
-    property bool open: false
+    property bool asking: false
+    // "anything" or "clipboard".
+    property string about: "anything"
     property var screen: null
-    // "apps" or "clipboard".
-    property string listing: "apps"
+    property bool locked: false
     readonly property var focusedScreen: Quickshell.screens.find(s => s.name === I3.focusedMonitor?.name) || Quickshell.screens[0]
-    function show(what: string): void {
-        if (open && listing === what) {
-            open = false;
+    function ask(what: string): void {
+        if (asking && about === what) {
+            asking = false;
             return;
         }
-        listing = what;
-        if (open)
+        about = what;
+        if (asking)
             return;
         screen = focusedScreen;
-        // Take the wall's picture before the salon covers it.
+        // Take this desk's picture before the request covers it.
         Desktop.capture();
         opener.restart();
     }
     function close(): void {
-        open = false;
+        asking = false;
     }
     property Connections taken: Connections {
         target: Desktop
         function onReady() {
             if (root.opener.running) {
                 root.opener.stop();
-                root.open = true;
+                root.asking = true;
             }
         }
     }
     // If the picture is slow or cannot be taken, open anyway.
     property Timer opener: Timer {
         interval: 600
-        onTriggered: root.open = true
+        onTriggered: root.asking = true
     }
     property IpcHandler ipc: IpcHandler {
         target: "shell"
-        function salon(): void {
-            root.show("apps");
-        }
         function launcher(): void {
-            root.show("apps");
+            root.ask("anything");
         }
         function clipboard(): void {
-            root.show("clipboard");
+            root.ask("clipboard");
         }
-        function calendar(): void {
-            root.show("apps");
+        function lock(): void {
+            root.asking = false;
+            root.locked = true;
+        }
+        // The way back in from another terminal if the lock screen misbehaves.
+        function unlock(): void {
+            root.locked = false;
         }
         function close(): void {
             root.close();

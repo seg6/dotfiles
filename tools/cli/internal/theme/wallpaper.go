@@ -217,8 +217,6 @@ func paletteFromSamples(samples []colorful.Color) map[string]string {
 		"edge": tone(.50, .045, inkHue).Hex(), "active": tone(.43, .075, inkHue).Hex(),
 		"desk":   tone(.74, math.Min(.12, chroma*.7), hue).Hex(),
 		"header": tone(.44, .055, inkHue).Hex(), "shadow": tone(.36, .04, inkHue).Hex(),
-		// Salon paints its wall in the picture's own shadow color.
-		"wall": tone(.29, .06, inkHue).Hex(), "wall_light": tone(.37, .065, inkHue).Hex(), "wall_dark": tone(.19, .04, inkHue).Hex(),
 	}
 	fg, _ := colorful.Hex(result["fg"])
 	header, _ := colorful.Hex(result["header"])
@@ -336,11 +334,6 @@ func createWallpaperTheme(root, config, path, name, layout string) (Theme, strin
 	runes := []rune(words)
 	runes[0] = unicode.ToUpper(runes[0])
 	theme.Display = string(runes)
-	// The label beside the picture says what it was named, not whose palette it began as.
-	theme.Art = nil
-	if layout == "salon" {
-		theme.Art = map[string]string{"title": theme.Display}
-	}
 	theme.Colors = paletteFromSamples(samples)
 	theme.ANSI = map[string]string{"black": theme.Colors["bg_alt"], "white": theme.Colors["fg"], "bright_black": theme.Colors["dim"], "bright_white": theme.Colors["fg"], "cursor": theme.Colors["accent"], "selection": theme.Colors["surface_alt"]}
 	bg, _ := colorful.Hex(theme.Colors["bg"])
