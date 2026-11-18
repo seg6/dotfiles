@@ -40,6 +40,7 @@ PanelWindow {
     onDesksChanged: Desktop.noteWaiting(I3.workspaces.values.filter(w => w.urgent).map(w => w.name))
 
     Row {
+        id: who
         x: 36 * line.u
         anchors.verticalCenter: parent.verticalCenter
         spacing: 14 * line.u
@@ -51,14 +52,17 @@ PanelWindow {
             screen: line.screen
             lit: false
             visible: line.lit !== null
-            width: Math.min(implicitWidth, line.width * 0.26)
+            width: Math.min(implicitWidth, line.width * 0.16)
             elide: Text.ElideRight
             text: line.lit ? "→ " + Logic.proper(line.lit.app) + ", " + line.lit.title : ""
         }
     }
 
+    // The desks sit in the middle of the line, and give way when the right side is long.
     Row {
-        anchors.centerIn: parent
+        readonly property real gap: 48 * line.u
+        x: Math.round(Math.max(who.x + who.width + gap, Math.min((line.width - width) / 2, status.x - gap - width)))
+        anchors.verticalCenter: parent.verticalCenter
         spacing: 38 * line.u
         Repeater {
             model: line.desks
@@ -125,6 +129,7 @@ PanelWindow {
     }
 
     Row {
+        id: status
         anchors {
             right: parent.right
             rightMargin: 36 * line.u
@@ -153,7 +158,7 @@ PanelWindow {
             Small {
                 screen: line.screen
                 link: true
-                width: Math.min(implicitWidth, 420 * line.u)
+                width: Math.min(implicitWidth, 300 * line.u)
                 elide: Text.ElideRight
                 text: line.player?.trackTitle || line.player?.identity || ""
                 // Click to play or pause; right click for the next track, middle for the last.

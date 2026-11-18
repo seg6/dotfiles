@@ -8,8 +8,6 @@ Text {
     property bool lit: true
     signal pressed(var event)
     signal wheeled(var event)
-    signal entered
-    signal left
     color: lit ? Theme.fg : Theme.dim
     textFormat: Text.PlainText
     font {
@@ -35,7 +33,5 @@ Text {
         cursorShape: Qt.PointingHandCursor
         onClicked: event => word.pressed(event)
         onWheel: event => word.wheeled(event)
-        onEntered: word.entered()
-        onExited: word.left()
     }
 }
