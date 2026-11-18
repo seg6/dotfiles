@@ -12,6 +12,8 @@ fi
 action=${1:-launcher}
 case $action in
     launcher | clipboard | close) ;;
+    # Folio can show what its keys do.
+    keys) [ "$layout" = folio ] || exit 0 ;;
     # Folio has a lock screen of its own; `unlock` is the way back in from
     # another terminal if it misbehaves. Overprint locks with swaylock.
     lock | unlock)
@@ -28,7 +30,7 @@ case $action in
     # Run the shell itself; this is what desktop-shell.service starts.
     serve) exec qs -c "$layout" --no-duplicate ;;
     *)
-        printf '%s\n' 'usage: desktop-menu [launcher|clipboard|lock|unlock|close|view [next|prev|NAME]|serve]' >&2
+        printf '%s\n' 'usage: desktop-menu [launcher|clipboard|keys|lock|unlock|close|view [next|prev|NAME]|serve]' >&2
         exit 2
         ;;
 esac

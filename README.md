@@ -139,6 +139,9 @@ run headed by what kind of thing it is:
 - a bare number goes to that desk;
 - Tab, or Super+Shift+V, turns the request to what you have copied.
 
+Nothing on the desktop explains itself. Super+/ shows one sheet of what the
+keys and the pointer do; any key puts it away.
+
 Super+Escape locks the screen with the same page. It checks the password
 against the `swaylock` PAM service. If the lock screen ever misbehaves,
 `desktop-menu unlock` from a virtual terminal lets you back in.

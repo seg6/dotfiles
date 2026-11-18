@@ -245,28 +245,6 @@ Item {
             }
         }
     }
-    // What the rings are, to the right.
-    Column {
-        x: (dial.centerX + 172) * dial.dot
-        y: (dial.centerY - 60) * dial.dot
-        spacing: 14 * dial.u
-        Repeater {
-            model: [["outer", "the day, and its daylight"], ["middle", "where you have been"], ["inner", "the track that is playing"]]
-            Column {
-                id: key
-                required property var modelData
-                Small {
-                    screen: dial.screen
-                    text: key.modelData[0]
-                }
-                Small {
-                    screen: dial.screen
-                    lit: false
-                    text: key.modelData[1]
-                }
-            }
-        }
-    }
     // What the pointer is on.
     Rectangle {
         visible: dial.read !== null

@@ -304,7 +304,7 @@ PanelWindow {
                 readonly property string rest: ask.first && ask.first.kind !== "clip" && ask.first.kind !== "sum" ? Logic.rest(input.text, ask.first.name) : ""
                 text: {
                     if (input.text.length === 0)
-                        return ask.clipboard ? "something you copied." : "a window, a project, an application, or say what to do.";
+                        return ask.clipboard ? "something you copied." : "something.";
                     if (!ask.first)
                         return "";
                     if (ask.armed.length > 0)
@@ -329,14 +329,6 @@ PanelWindow {
         }
         // The answers, as a list with a margin: what kind of thing each is, the
         // thing, and a few words about it.
-        Small {
-            visible: input.text.length === 0 && !ask.clipboard && ask.results.length > 0
-            x: answers.x + answers.gutter
-            screen: ask.screen
-            lit: false
-            text: "or one of these, used last"
-            bottomPadding: 14 * ask.u
-        }
         Column {
             id: answers
             readonly property real gutter: 190 * ask.u
@@ -451,23 +443,6 @@ PanelWindow {
                 family: Theme.serif
                 pixelSize: 34 * ask.u
                 italic: true
-            }
-        }
-        Item {
-            width: 1
-            height: 60 * ask.u
-        }
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 38 * ask.u
-            Repeater {
-                model: ["↵ " + (ask.clipboard ? "copy" : "do it"), "↑↓ choose", "tab · " + (ask.clipboard ? "anything" : "what you copied"), "1–9 · go to a desk", "esc · never mind"]
-                Small {
-                    required property string modelData
-                    screen: ask.screen
-                    lit: false
-                    text: modelData
-                }
             }
         }
     }

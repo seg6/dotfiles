@@ -27,5 +27,6 @@ ShellRoot {
     }
     Ask {}
     TrayMenu {}
+    KeySheet {}
     Lock {}
 }

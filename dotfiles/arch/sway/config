@@ -133,6 +133,7 @@ bindsym Ctrl+Shift+space exec 1password --quick-access
 bindsym $mod+Shift+v exec desktop-menu clipboard
 bindsym $mod+Tab exec desktop-menu launcher
 bindsym $mod+grave exec desktop-menu view next
+bindsym $mod+slash exec desktop-menu keys
 bindsym $mod+Shift+grave exec desktop-menu view prev
 
 bindsym $mod+s exec sh -lc 'directory="$HOME/pictures/screenshots"; mkdir -p "$directory"; grim -g "$(slurp)" "$directory/$(date +%Y%m%d_%H%M%S).png"'

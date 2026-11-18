@@ -144,13 +144,6 @@ Item {
         anchors.fill: parent
         fragmentShader: Qt.resolvedUrl("Dither.frag.qsb")
     }
-    Small {
-        x: orbit.centerX * orbit.dot - width / 2
-        y: (orbit.centerY + 9) * orbit.dot
-        screen: orbit.screen
-        lit: false
-        text: orbit.desks.length > 0 ? "you are here" : "nothing else is open"
-    }
     // Each body's name, on the side away from the middle, on a patch of clear page so it can be read.
     Repeater {
         model: orbit.placed

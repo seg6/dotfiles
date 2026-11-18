@@ -12,6 +12,8 @@ QtObject {
     property string about: "anything"
     property var screen: null
     property bool locked: false
+    // The sheet of what the keys do.
+    property bool keys: false
     // The tray item whose menu is open, and where its icon ends on that screen.
     property var menuItem: null
     property var menuScreen: null
@@ -55,6 +57,7 @@ QtObject {
             return;
         }
         about = what;
+        keys = false;
         menuItem = null;
         if (asking)
             return;
@@ -91,6 +94,11 @@ QtObject {
         }
         function view(name: string): void {
             root.show(name);
+        }
+        function keys(): void {
+            root.asking = false;
+            root.menuItem = null;
+            root.keys = !root.keys;
         }
     }
 }

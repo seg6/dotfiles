@@ -76,7 +76,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             screen: plate.screen
             lit: false
-            text: Qt.formatDate(plate.today, "d MMMM yyyy") + " · drag a point · click for another"
+            text: Qt.formatDate(plate.today, "d MMMM yyyy")
         }
     }
     MouseArea {
