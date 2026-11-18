@@ -40,6 +40,8 @@ PanelWindow {
     // What the empty desk shows: one of the views, or the words where there is no GPU to draw a view.
     readonly property string view: wind.GraphicsInfo.api === GraphicsInfo.Software ? "words" : ShellState.view
     readonly property bool worded: bare && view === "words"
+    // With a song playing whose words are known, the page is the song.
+    readonly property bool sung: Lyrics.lines.length > 0 && Media.player !== null
     anchors {
         left: true
         right: true
@@ -161,7 +163,7 @@ PanelWindow {
     Column {
         // The words come up as the desk empties.
         visible: opacity > 0
-        opacity: page.worded ? 1 : 0
+        opacity: page.worded && !page.sung ? 1 : 0
         anchors.horizontalCenter: parent.horizontalCenter
         y: page.height * (0.15 + (1 - opacity) * 0.012)
         Behavior on opacity {
@@ -239,6 +241,96 @@ PanelWindow {
             }
         }
     }
+    // The song's words: the line being sung in the middle, what came before
+    // and what comes next around it. Click a line to go to it.
+    Item {
+        id: song
+        visible: opacity > 0
+        opacity: page.worded && page.sung ? 1 : 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: page.height * 0.11
+        width: Math.min(1500 * page.u, page.width * 0.8)
+        height: page.height * 0.36
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 320
+                easing.type: Easing.OutCubic
+            }
+        }
+        Small {
+            id: credit
+            anchors.horizontalCenter: parent.horizontalCenter
+            screen: page.screen
+            lit: false
+            text: Lyrics.title + " · " + Lyrics.artist
+        }
+        ListView {
+            id: verses
+            anchors {
+                top: credit.bottom
+                topMargin: 18 * page.u
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+            clip: true
+            interactive: false
+            model: Lyrics.lines
+            currentIndex: Math.max(0, Lyrics.at)
+            // The line being sung is held a third of the way down.
+            preferredHighlightBegin: height * 0.32
+            preferredHighlightEnd: height * 0.32
+            highlightRangeMode: ListView.StrictlyEnforceRange
+            highlightMoveDuration: 450
+            delegate: Text {
+                id: verse
+                required property var modelData
+                required property int index
+                readonly property bool now: index === Lyrics.at
+                readonly property int away: Math.abs(index - Math.max(0, Lyrics.at))
+                width: verses.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                textFormat: Text.PlainText
+                // A rest in the words is a rest on the page.
+                text: modelData.text || "·"
+                color: now ? Theme.fg : Theme.dim
+                opacity: now ? 1 : Math.max(0.12, 0.62 - 0.17 * (away - 1))
+                bottomPadding: 12 * page.u
+                font {
+                    family: Theme.serif
+                    pixelSize: 44 * page.u
+                    italic: !now
+                }
+                scale: now ? 1.18 : 1
+                transformOrigin: Item.Center
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 300
+                    }
+                }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 300
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (Media.player?.canSeek)
+                            Media.player.position = verse.modelData.at;
+                    }
+                }
+            }
+        }
+    }
     // The views: each is the whole page, drawn in dots, and something to do.
     Item {
         id: views
@@ -289,7 +381,16 @@ PanelWindow {
         }
     }
     // Which view, and the others a click away. Super+` turns to the next.
+    Rectangle {
+        visible: turner.visible
+        opacity: turner.opacity
+        anchors.centerIn: turner
+        width: turner.width + 36 * page.u
+        height: turner.height + 18 * page.u
+        color: Theme.bg
+    }
     Row {
+        id: turner
         visible: opacity > 0
         opacity: page.bare && wind.GraphicsInfo.api !== GraphicsInfo.Software ? 1 : 0
         anchors.horizontalCenter: parent.horizontalCenter

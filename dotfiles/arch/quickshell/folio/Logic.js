@@ -397,3 +397,37 @@ function orbits(all, here, waiting, lastSeen) {
         };
     }).sort(function(a, b) { return b.seen - a.seen || (a.desk < b.desk ? -1 : 1); });
 }
+
+// Lyrics with their times ("[01:07.27] Caught in a landslide") as
+// [{at: 67.27, text: "Caught in a landslide"}], in order. Lines with no
+// words are kept: they are the rests.
+function parseLyrics(text) {
+    var lines = [];
+    String(text || "").split(/\r?\n/).forEach(function(row) {
+        var stamps = [], rest = row, found;
+        while ((found = /^\s*\[(\d+):(\d+(?:[.:]\d+)?)\]/.exec(rest))) {
+            stamps.push(Number(found[1]) * 60 + Number(found[2].replace(":", ".")));
+            rest = rest.slice(found[0].length);
+        }
+        stamps.forEach(function(at) { lines.push({ at: at, text: rest.trim() }); });
+    });
+    return lines.sort(function(a, b) { return a.at - b.at; });
+}
+
+// Which line is being sung at `position` seconds: the last one begun, or -1 before the first.
+function lineAt(lines, position) {
+    var at = -1;
+    for (var i = 0; i < lines.length && lines[i].at <= position + 0.15; i++) at = i;
+    return at;
+}
+
+// Of the answers a lyrics search gives, the one with timed words whose length is nearest the track's.
+function bestLyrics(answers, length) {
+    var best = null;
+    (Array.isArray(answers) ? answers : []).forEach(function(a) {
+        if (!a || !a.syncedLyrics) return;
+        var off = length > 0 && a.duration > 0 ? Math.abs(a.duration - length) : 0;
+        if (!best || off < best.off) best = { off: off, text: a.syncedLyrics };
+    });
+    return best && best.off <= 12 ? parseLyrics(best.text) : [];
+}

@@ -118,7 +118,10 @@ That is one of five things the empty desk can be. Super+` turns to the next
 - **Plate.** Rings from three places, crossing. The date decides where they
   are, so each day has its own. Drag a point to move a source; click for
   another.
-- **Words.** The page described above.
+- **Words.** The page described above; or, while a song plays whose words
+  are known, the song: the line being sung in the middle of the page and the
+  lines round it. Click a line to go to it. The words are looked up at
+  lrclib.net by title and artist, and only while this view is on screen.
 
 Dial and Orbit read a record the shell keeps of which desk was on screen, a
 file a day under `~/.local/state/quickshell/`. Nothing else reads it and it
