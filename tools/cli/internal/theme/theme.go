@@ -532,6 +532,10 @@ layer_effects "overprint" blur disable
 layer_effects "overprint" corner_radius 0
 `, header, header, header, uiInt(theme, "radius", 0), shadow, shadow, ink, ink, enable(uiBool(theme, "blur", false)))
 	}
+	if folio(theme) {
+		// The shell's page is the background. A swaybg started on reload would land on top of it.
+		content = strings.TrimPrefix(content, strings.SplitAfter(content, "\n")[0])
+	}
 	if wallpaper := wallpaperPath(root, theme); wallpaper != "" && !folio(theme) {
 		content += fmt.Sprintf("\noutput * bg %s fill\n", strconv.Quote(wallpaper))
 	}
