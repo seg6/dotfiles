@@ -43,8 +43,8 @@ shadows disable
 shadows_on_csd disable
 blur disable
 default_dim_inactive 0.22
-# Windows open and close quickly, not at once.
-animation_duration_ms 120
+# SwayFX has one duration for windows and for the fade between desks, and its steps miss frames. Off.
+animation_duration_ms 0
 
 layer_effects "folio" shadows disable
 layer_effects "folio" blur disable
