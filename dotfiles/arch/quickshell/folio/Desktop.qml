@@ -13,8 +13,7 @@ QtObject {
     // Each desk as it last looked, in the page's two colors: {"2": "file:///…/2.png?stamp"}.
     property var pictures: ({})
     readonly property string pictureDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/folio"
-    // Take the current desk's picture now; ready() follows when it is saved.
-    signal ready
+    // Take the current desk's picture now.
     function capture(): void {
         if (shutter.running)
             return;
@@ -114,7 +113,6 @@ QtObject {
                 next[desk] = "file://" + desktop.pictureDir + "/" + desk + ".png?" + Date.now();
                 desktop.pictures = next;
             }
-            desktop.ready();
         }
     }
     // A desk changes without telling Sway (a terminal scrolls), so look again now and then.

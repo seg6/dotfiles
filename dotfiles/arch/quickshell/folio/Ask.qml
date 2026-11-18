@@ -118,20 +118,42 @@ PanelWindow {
         bottom: true
     }
     exclusionMode: ExclusionMode.Ignore
-    color: Theme.bg
-    visible: ShellState.asking
+    // It comes up out of the page and goes back into it.
+    property real shown: ShellState.asking ? 1 : 0
+    Behavior on shown {
+        NumberAnimation {
+            duration: 170
+            easing.type: Easing.OutCubic
+        }
+    }
+    color: "transparent"
+    visible: ShellState.asking || shown > 0
     WlrLayershell.namespace: "folio"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: ShellState.asking ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    function begin(): void {
+        input.text = "";
+        chosen = 0;
+        armed = "";
+        input.forceActiveFocus();
+        if (clipboard)
+            clipReader.running = true;
+    }
     onVisibleChanged: {
-        if (visible) {
-            input.text = "";
-            chosen = 0;
-            armed = "";
-            input.forceActiveFocus();
-            if (clipboard)
-                clipReader.running = true;
+        if (visible)
+            begin();
+    }
+    Connections {
+        target: ShellState
+        function onAskingChanged() {
+            if (ShellState.asking)
+                ask.begin();
         }
+    }
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.bg
+        opacity: ask.shown
     }
     onClipboardChanged: {
         chosen = 0;
@@ -170,7 +192,7 @@ PanelWindow {
         source: "file://" + Theme.configHome + "/quickshell/folio/page.png"
         smooth: false
         cache: false
-        opacity: 0.45
+        opacity: 0.45 * ask.shown
     }
     MouseArea {
         anchors.fill: parent
@@ -182,6 +204,7 @@ PanelWindow {
             rightMargin: 36 * ask.u
         }
         y: 19 * ask.u
+        opacity: ask.shown
         screen: ask.screen
         lit: false
         text: input.text.trim().length > 0 || ask.clipboard ? ask.results.length + (ask.results.length === 1 ? " answer" : " answers") : ""
@@ -189,7 +212,8 @@ PanelWindow {
 
     Column {
         anchors.horizontalCenter: parent.horizontalCenter
-        y: ask.height * 0.15
+        y: ask.height * 0.15 + (1 - ask.shown) * 28 * ask.u
+        opacity: ask.shown
         width: Math.min(1400 * ask.u, ask.width * 0.8)
         // The request, as a sentence that finishes itself.
         Row {

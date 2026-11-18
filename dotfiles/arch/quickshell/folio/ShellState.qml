@@ -33,26 +33,10 @@ QtObject {
         if (asking)
             return;
         screen = focusedScreen;
-        // Take this desk's picture before the request covers it.
-        Desktop.capture();
-        opener.restart();
+        asking = true;
     }
     function close(): void {
         asking = false;
-    }
-    property Connections taken: Connections {
-        target: Desktop
-        function onReady() {
-            if (root.opener.running) {
-                root.opener.stop();
-                root.asking = true;
-            }
-        }
-    }
-    // If the picture is slow or cannot be taken, open anyway.
-    property Timer opener: Timer {
-        interval: 600
-        onTriggered: root.asking = true
     }
     property IpcHandler ipc: IpcHandler {
         target: "shell"
