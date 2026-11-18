@@ -11,18 +11,8 @@
 [gpg "ssh"]
 	program = ~/.local/bin/op-ssh-sign
 
-[core]
-	pager = delta
-
 [apply]
 	whitespace = fix
-
-[interactive]
-	diffFilter = delta --color-only
-
-[delta]
-	navigate = true
-	side-by-side = true
 
 [init]
 	defaultBranch = main

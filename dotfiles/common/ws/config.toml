@@ -22,10 +22,10 @@ index = 1
 name = "editor"
 command = 'fish -C "hx ."'
 
-[[session.windows]]
-index = 8
-name = "git"
-command = "lazygit"
+# [[session.windows]]
+# index = 8
+# name = "git"
+# command = "lazygit"
 
 [[session.windows]]
 index = 9

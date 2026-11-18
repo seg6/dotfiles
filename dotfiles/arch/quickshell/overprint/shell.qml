@@ -10,5 +10,7 @@ ShellRoot {
         }
     }
     Launcher {}
+    TrayMenu {}
+    Calendar {}
     Notifications {}
 }

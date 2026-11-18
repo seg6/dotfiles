@@ -19,10 +19,15 @@ The installer builds the theme CLI, installs the relevant dotfiles with Dotdrop
 backups, and switches the running session. Existing Helix sessions reload
 automatically. Super+Space opens apps, Super+Shift+V opens clipboard history.
 The overlapping squares also open the launcher. Scroll over the volume number
-to adjust it, right click to mute, or click to open the mixer. Tray icons support
-their usual left, right, and middle clicks.
-The tray uses matching line drawings for system and common app icons; other apps
-use their initials. Workspace buttons appear for occupied workspaces and the
+to adjust it, right click to mute, or click to open the mixer.
+Applications in the tray keep their own icons, in an outlined box; the network,
+Bluetooth, audio, and VPN applets are drawn in the rail's line style below it.
+Hover any of them for its name. Left click activates, middle click is the
+secondary action, and right click opens the item's menu, drawn by the shell.
+Hover the clock for the full date; click it for a month calendar with week
+numbers (scroll or use the arrows to change month, click the heading for today).
+`qs ipc -c overprint call shell calendar` opens it from a key binding.
+Workspace buttons appear for occupied workspaces and the
 current workspace, including windows that float or use XWayland.
 The launcher opens terminal applications in Kitty and finds user applications
 under `~/.local/bin` and `~/.cargo/bin`, preserving desktop-entry arguments and

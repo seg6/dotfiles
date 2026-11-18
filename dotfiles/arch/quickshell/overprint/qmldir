@@ -4,5 +4,9 @@ singleton SwayState 1.0 SwayState.qml
 TrayGlyph 1.0 TrayGlyph.qml
 Rail 1.0 Rail.qml
 Launcher 1.0 Launcher.qml
+TrayMenu 1.0 TrayMenu.qml
+MenuRow 1.0 MenuRow.qml
+TrayButton 1.0 TrayButton.qml
+Calendar 1.0 Calendar.qml
 Notifications 1.0 Notifications.qml
 NotificationCard 1.0 NotificationCard.qml

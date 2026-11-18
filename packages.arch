@@ -24,7 +24,6 @@ fx
 fzf
 github-cli
 git
-git-delta
 go
 go-yq
 gopls

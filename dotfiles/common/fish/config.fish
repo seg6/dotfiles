@@ -42,10 +42,6 @@ if status is-interactive
         abbr -a gra 'git rebase --abort'
         abbr -a lg lazygit
     end
-
-    if command -q nvm
-        nvm use 24 >/dev/null 2>&1
-    end
 end
 
 function fish_user_key_bindings

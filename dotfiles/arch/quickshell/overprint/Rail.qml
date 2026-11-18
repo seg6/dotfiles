@@ -6,6 +6,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 import "RailLogic.js" as RailLogic
 
 PanelWindow {
@@ -13,7 +14,23 @@ PanelWindow {
     readonly property real u: Theme.unit(screen)
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var workspaces: RailLogic.workspaceNames(I3.workspaces.values, screen.name, SwayState.occupied)
-    property bool connected: false
+    readonly property var applications: SystemTray.items.values.filter(item => RailLogic.traySymbol(item) === "")
+    readonly property var applets: SystemTray.items.values.filter(item => RailLogic.traySymbol(item) !== "")
+    // The label beside the rail for whatever the pointer is over.
+    property string tip: ""
+    property var tipOwner: null
+    property real tipY: 0
+    function showTip(owner, text: string): void {
+        tipY = owner.mapToItem(null, 0, owner.height / 2).y;
+        tipOwner = owner;
+        tip = text;
+    }
+    function hideTip(owner): void {
+        if (tipOwner === owner) {
+            tipOwner = null;
+            tip = "";
+        }
+    }
     anchors {
         left: true
         top: true
@@ -36,22 +53,42 @@ PanelWindow {
         id: clock
         precision: SystemClock.Minutes
     }
-    Process {
-        id: network
-        command: ["nmcli", "-t", "-f", "STATE", "general"]
-        environment: ({
-                LC_ALL: "C"
-            })
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: rail.connected = text.trim().startsWith("connected")
+    PopupWindow {
+        id: tipWindow
+        anchor.window: rail
+        anchor.rect.x: Math.round(plate.width + 18 * rail.u)
+        anchor.rect.y: Math.round(rail.tipY - implicitHeight / 2)
+        implicitWidth: Math.ceil(tipLabel.implicitWidth + 34 * rail.u)
+        implicitHeight: Math.ceil(46 * rail.u)
+        visible: rail.tip.length > 0 && ShellState.menuItem === null && ShellState.calendarScreen === null
+        color: "transparent"
+        Rectangle {
+            x: 5 * rail.u
+            y: 5 * rail.u
+            width: parent.width - 5 * rail.u
+            height: parent.height - 5 * rail.u
+            color: Theme.ink
         }
-    }
-    Timer {
-        interval: 15000
-        running: true
-        repeat: true
-        onTriggered: network.running = true
+        Rectangle {
+            width: parent.width - 5 * rail.u
+            height: parent.height - 5 * rail.u
+            color: Theme.bg
+            border {
+                width: Math.max(1, 2 * rail.u)
+                color: Theme.edge
+            }
+            Text {
+                id: tipLabel
+                anchors.centerIn: parent
+                text: rail.tip
+                textFormat: Text.PlainText
+                color: Theme.fg
+                font {
+                    family: Theme.mono
+                    pixelSize: 19 * rail.u
+                }
+            }
+        }
     }
 
     Rectangle {
@@ -169,78 +206,88 @@ PanelWindow {
         Column {
             id: statusStack
             anchors {
-                bottom: timeBlock.top
-                bottomMargin: 34 * rail.u
+                bottom: clockArea.top
+                bottomMargin: 22 * rail.u
                 horizontalCenter: parent.horizontalCenter
             }
-            spacing: 18 * rail.u
-            Repeater {
-                model: SystemTray.items
-                Item {
-                    id: trayItem
-                    required property var modelData
-                    readonly property string symbol: RailLogic.traySymbol(modelData)
-                    width: 46 * rail.u
-                    height: 42 * rail.u
-                    Rectangle {
-                        anchors.fill: parent
-                        color: trayMouse.containsMouse ? Theme.accent : "transparent"
-                    }
-                    TrayGlyph {
-                        anchors.centerIn: parent
-                        width: 28 * rail.u
-                        height: width
-                        symbol: trayItem.symbol
-                        visible: trayItem.symbol.length > 0
-                    }
-                    Text {
-                        anchors.centerIn: parent
-                        visible: trayItem.symbol.length === 0
-                        text: RailLogic.trayInitials(trayItem.modelData)
-                        textFormat: Text.PlainText
-                        color: Theme.ink
-                        font {
-                            family: Theme.mono
-                            pixelSize: 22 * rail.u
-                            bold: true
+            spacing: 14 * rail.u
+            // Applications share one outlined box, with nothing behind their icons.
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: tray.width + 8 * rail.u
+                height: tray.height + 8 * rail.u
+                color: "transparent"
+                border {
+                    width: Math.max(1, 2 * rail.u)
+                    color: Theme.ink
+                }
+                visible: rail.applications.length > 0
+                Grid {
+                    id: tray
+                    anchors.centerIn: parent
+                    columns: 2
+                    Repeater {
+                        model: rail.applications
+                        TrayButton {
+                            required property var modelData
+                            item: modelData
+                            bar: rail
                         }
                     }
-                    MouseArea {
-                        id: trayMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: event => {
-                            if (event.button === Qt.RightButton || trayItem.modelData.onlyMenu) {
-                                const position = trayItem.mapToItem(plate, trayItem.width, trayItem.height / 2);
-                                trayItem.modelData.display(rail, Math.round(plate.width + 10 * rail.u), Math.round(position.y));
-                            } else if (event.button === Qt.MiddleButton)
-                                trayItem.modelData.secondaryActivate();
-                            else
-                                trayItem.modelData.activate();
-                        }
-                        onWheel: event => trayItem.modelData.scroll(event.angleDelta.y, false)
+                }
+            }
+            // The applets the rail draws itself sit with the volume, apart from applications.
+            Grid {
+                anchors.horizontalCenter: parent.horizontalCenter
+                columns: 2
+                spacing: 6 * rail.u
+                visible: rail.applets.length > 0
+                Repeater {
+                    model: rail.applets
+                    TrayButton {
+                        required property var modelData
+                        item: modelData
+                        bar: rail
                     }
                 }
             }
             Item {
-                width: 46 * rail.u
-                height: 40 * rail.u
-                Text {
+                id: volume
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 80 * rail.u
+                height: 38 * rail.u
+                Rectangle {
+                    anchors.fill: parent
+                    color: volumeMouse.containsMouse ? Theme.accent : "transparent"
+                }
+                Row {
                     anchors.centerIn: parent
-                    text: rail.sink?.audio?.muted ? "×" : (rail.sink?.audio ? Math.round(rail.sink.audio.volume * 100) : "—")
-                    color: Theme.ink
-                    font {
-                        family: Theme.mono
-                        pixelSize: 22 * rail.u
-                        bold: true
+                    spacing: 6 * rail.u
+                    TrayGlyph {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 22 * rail.u
+                        height: width
+                        symbol: "audio"
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: rail.sink?.audio?.muted ? "×" : (rail.sink?.audio ? Math.round(rail.sink.audio.volume * 100) : "—")
+                        color: Theme.ink
+                        font {
+                            family: Theme.mono
+                            pixelSize: 20 * rail.u
+                            bold: true
+                        }
                     }
                 }
                 MouseArea {
+                    id: volumeMouse
                     anchors.fill: parent
+                    hoverEnabled: true
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     cursorShape: Qt.PointingHandCursor
+                    onEntered: rail.showTip(volume, "volume · scroll to change, right click to mute")
+                    onExited: rail.hideTip(volume)
                     onClicked: event => {
                         if (event.button === Qt.RightButton && rail.sink?.audio)
                             rail.sink.audio.muted = !rail.sink.audio.muted;
@@ -253,62 +300,78 @@ PanelWindow {
                     }
                 }
             }
-            Item {
-                width: 46 * rail.u
-                height: 32 * rail.u
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 12 * rail.u
-                    height: width
-                    radius: width / 2
-                    color: rail.connected ? Theme.active : Theme.red
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Quickshell.execDetached(["nm-connection-editor"])
-                }
-            }
         }
-        Column {
-            id: timeBlock
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                bottom: dateLabel.top
-                bottomMargin: 24 * rail.u
-            }
-            Text {
-                text: Qt.formatDateTime(clock.date, "HH")
-                color: Theme.ink
-                font {
-                    family: Theme.mono
-                    pixelSize: 28 * rail.u
-                    bold: true
-                }
-            }
-            Text {
-                text: Qt.formatDateTime(clock.date, "mm")
-                color: Theme.ink
-                font {
-                    family: Theme.mono
-                    pixelSize: 28 * rail.u
-                    bold: true
-                }
-            }
-        }
-        Text {
-            id: dateLabel
+        Item {
+            id: clockArea
+            readonly property bool open: ShellState.calendarScreen === rail.screen
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
-                bottomMargin: 26 * rail.u
+                bottomMargin: 16 * rail.u
             }
-            text: Qt.formatDateTime(clock.date, "ddd").toUpperCase()
-            color: Theme.ink
-            font {
-                family: Theme.mono
-                pixelSize: 16 * rail.u
-                letterSpacing: 1.5 * rail.u
+            width: 74 * rail.u
+            height: 118 * rail.u
+            Rectangle {
+                x: 4 * rail.u
+                y: 4 * rail.u
+                width: parent.width
+                height: parent.height
+                color: Theme.ink
+                opacity: 0.4
+                visible: clockArea.open
+            }
+            Rectangle {
+                anchors.fill: parent
+                color: clockArea.open ? Theme.active : (clockMouse.containsMouse ? Theme.accent : "transparent")
+            }
+            Column {
+                id: timeBlock
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    top: parent.top
+                    topMargin: 8 * rail.u
+                }
+                Text {
+                    text: Qt.formatDateTime(clock.date, "HH")
+                    color: clockArea.open ? Theme.paper : Theme.ink
+                    font {
+                        family: Theme.mono
+                        pixelSize: 28 * rail.u
+                        bold: true
+                    }
+                }
+                Text {
+                    text: Qt.formatDateTime(clock.date, "mm")
+                    color: clockArea.open ? Theme.paper : Theme.ink
+                    font {
+                        family: Theme.mono
+                        pixelSize: 28 * rail.u
+                        bold: true
+                    }
+                }
+            }
+            Text {
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    bottom: parent.bottom
+                    bottomMargin: 8 * rail.u
+                }
+                text: Qt.formatDateTime(clock.date, "ddd d").toUpperCase()
+                color: clockArea.open ? Theme.paper : Theme.ink
+                font {
+                    family: Theme.mono
+                    pixelSize: 15 * rail.u
+                    letterSpacing: 1 * rail.u
+                }
+            }
+            MouseArea {
+                id: clockMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onEntered: rail.showTip(clockArea, Qt.formatDateTime(clock.date, "dddd, d MMMM yyyy"))
+                onExited: rail.hideTip(clockArea)
+                onClicked: ShellState.toggleCalendar(rail.screen)
             }
         }
     }

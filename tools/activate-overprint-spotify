@@ -37,13 +37,21 @@ position = player('position') if status else ''
 subprocess.run([spice, 'config', 'spotify_path', str(spotify), 'prefs_path', str(config / 'spotify/prefs'),
                 'current_theme', 'Overprint', 'color_scheme', 'Overprint', 'inject_css', '1', 'replace_colors', '1'], check=True)
 subprocess.run([spice, 'backup', 'apply', '--no-restart'], check=True)
+def wait_for_player(seconds):
+    for _ in range(seconds * 10):
+        time.sleep(0.1)
+        if player('status'):
+            return True
+    return False
+
 if running or status:
-    subprocess.run([spice, 'restart'], check=True)
-    if status:
-        for _ in range(100):
-            time.sleep(0.1)
-            if player('status'):
-                break
+    # Spicetify cannot always relaunch a client installed by spotify-launcher;
+    # it may only stop it. Start it the usual way if it has not come back.
+    subprocess.run([spice, 'restart'])
+    if not wait_for_player(10) and shutil.which('spotify-launcher'):
+        subprocess.Popen(['spotify-launcher'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+        wait_for_player(30)
     if position:
         player('position', position)
     if status == 'Playing': player('play')

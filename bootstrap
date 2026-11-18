@@ -195,5 +195,10 @@ if ! fish -lc 'functions -q fisher'; then
     fish -lc 'curl -fsSL https://raw.githubusercontent.com/jorgebucaran/fisher/4.4.8/functions/fisher.fish | source; fisher install jorgebucaran/fisher@4.4.8'
 fi
 fish -lc 'fisher update'
+# nvm.fish activates $nvm_default_version in every new shell; a universal
+# variable keeps the choice out of config.fish and lets each machine change it.
+# shellcheck disable=SC2016
+fish -lc 'set -q nvm_default_version; or set -U nvm_default_version 26; nvm install $nvm_default_version' ||
+    printf '%s\n' 'bootstrap: could not install the default Node version; run "nvm install" later' >&2
 
 DOTFILES_DIR="$DOTFILES_DIR" "$TARGET_HOME/.local/bin/theme" apply --no-reload
