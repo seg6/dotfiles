@@ -21,8 +21,8 @@ read_packages() {
 pacman_install() {
     local device=$1
     mapfile -t packages < <(read_packages \
-        "$DOTFILES_DIR/packages.arch" \
-        "$DOTFILES_DIR/packages.$device.arch")
+        "$DOTFILES_DIR/packages/arch" \
+        "$DOTFILES_DIR/packages/$device.arch")
     sudo pacman -S --needed --noconfirm base-devel "${packages[@]}"
 }
 
@@ -40,8 +40,8 @@ paru_install() {
     fi
 
     mapfile -t packages < <(read_packages \
-        "$DOTFILES_DIR/packages.aur" \
-        "$DOTFILES_DIR/packages.$device.aur")
+        "$DOTFILES_DIR/packages/aur" \
+        "$DOTFILES_DIR/packages/$device.aur")
     if ((${#packages[@]})); then
         paru -S --needed --noconfirm "${packages[@]}"
     fi
@@ -85,7 +85,7 @@ profile_exists() {
 
 install_system_profile() {
     local profile=$1
-    sudo dotdrop --cfg="$DOTFILES_DIR/config-root.yaml" --profile="$profile" install --force
+    sudo dotdrop --cfg="$DOTFILES_DIR/dotfiles/config-root.yaml" --profile="$profile" install --force
 }
 
 install_go_tools() {
@@ -138,16 +138,16 @@ case $(uname -s) in
                 fi
             done
         fi
-        brew bundle --file="$DOTFILES_DIR/Brewfile"
+        brew bundle --file="$DOTFILES_DIR/packages/Brewfile"
         device_profile=$(hostname -s)
-        if [[ -f $DOTFILES_DIR/Brewfile.$device_profile ]]; then
-            brew bundle --file="$DOTFILES_DIR/Brewfile.$device_profile"
+        if [[ -f $DOTFILES_DIR/packages/Brewfile.$device_profile ]]; then
+            brew bundle --file="$DOTFILES_DIR/packages/Brewfile.$device_profile"
         fi
         profile=macos
-        if profile_exists "$DOTFILES_DIR/config.yaml" "$device_profile"; then
+        if profile_exists "$DOTFILES_DIR/dotfiles/config.yaml" "$device_profile"; then
             profile=$device_profile
         fi
-        "$DOTFILES_DIR/macos/defaults"
+        "$DOTFILES_DIR/tools/macos-defaults"
         write_agent_config '"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"'
         ;;
     Linux)
@@ -159,10 +159,10 @@ case $(uname -s) in
         pacman_install "$device_profile"
         paru_install "$device_profile"
         profile=arch
-        if profile_exists "$DOTFILES_DIR/config.yaml" "$device_profile"; then
+        if profile_exists "$DOTFILES_DIR/dotfiles/config.yaml" "$device_profile"; then
             profile=$device_profile
         fi
-        if profile_exists "$DOTFILES_DIR/config-root.yaml" "$profile"; then
+        if profile_exists "$DOTFILES_DIR/dotfiles/config-root.yaml" "$profile"; then
             install_system_profile "$profile"
         fi
         set_default_browser helium.desktop
@@ -181,7 +181,7 @@ case $(uname -s) in
 esac
 
 configure_login_shell
-dotdrop --cfg="$DOTFILES_DIR/config.yaml" --profile="$profile" install --force
+dotdrop --cfg="$DOTFILES_DIR/dotfiles/config.yaml" --profile="$profile" install --force
 install_go_tools
 chmod 700 "$TARGET_HOME/.ssh"
 

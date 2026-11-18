@@ -12,18 +12,19 @@ builds the two Go tools, and generates the theme. Re-running it is safe.
 
 | Path | What it is |
 | --- | --- |
-| `config.yaml` | Dotdrop: which file goes where, grouped into profiles |
+| `dotfiles/config.yaml` | Dotdrop: which file goes where, grouped into profiles |
 | `dotfiles/common` | Both systems: fish, git, ssh, Helix, Kitty, tmux, `ws` |
 | `dotfiles/arch` | The Sway desktop: Sway, the Quickshell shell, Kitty's heading, systemd units |
 | `dotfiles/macos` | AeroSpace, Karabiner |
 | `dotfiles/workstation` | One machine: its outputs and autostarted applications |
-| `config-root.yaml`, `system/` | Files installed as root (a second Dotdrop config) |
-| `packages.arch`, `packages.aur`, `Brewfile` | Packages; `packages.<hostname>.arch` and `Brewfile.<hostname>` add to them |
+| `dotfiles/config-root.yaml`, `dotfiles/system` | Files installed as root (a second Dotdrop config) |
+| `packages/` | `arch`, `aur`, and `Brewfile`; `<hostname>.arch`, `<hostname>.aur`, and `Brewfile.<hostname>` add to them |
 | `themes/` | Overprint and its wallpaper palettes |
-| `tools/cli` | The `theme` and `ws` commands |
+| `tools/` | The `theme` and `ws` commands (`cli`), macOS preferences, Spotify helpers |
+| `tests/` | See below |
 
 Profiles build on each other: `common` → `arch` or `macos` → a machine. A machine
-gets its own profile by adding one to `config.yaml` named after its hostname;
+gets its own profile by adding one to `dotfiles/config.yaml` named after its hostname;
 otherwise the system's profile is used. `dots` is Dotdrop with this checkout and
 the installed profile filled in:
 
@@ -43,7 +44,7 @@ generates under `~/.config`, so one command recolors everything.
 macOS takes the shared shell, editor, terminal, and tmux setup, and the palette
 for Kitty, Helix, tmux, and `ws`. Kitty keeps its own window layout there: the
 larger type, padding, and heading strip belong to the Sway desktop. `theme use`
-also sets the desktop picture. `macos/defaults` holds the system preferences.
+also sets the desktop picture. `tools/macos-defaults` holds the system preferences.
 
 ## Overprint
 
