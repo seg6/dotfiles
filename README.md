@@ -100,6 +100,30 @@ falls; night is reckoned from the date and the latitude in
 `~/.config/dotfiles/place`, or 50° north without one. Where there is no GPU
 the theme's wallpaper stands in, dithered and still.
 
+That is one of five things the empty desk can be. Super+` turns to the next
+(Super+Shift+` back), as do the names at the foot of the page and
+`desktop-menu view next|prev|NAME`; the choice is kept.
+
+- **Orbit.** The other desks as bodies in orbit round this one: the desk used
+  last is nearest, more windows make a larger body, and one that wants
+  attention wears a red ring. Click one to go there; drag one onto another to
+  move its windows in with the other's.
+- **Dial.** The day as one instrument, midnight at the top. The outer ring is
+  the hours with the daylight marked, the middle ring is which desk you were
+  on and when, the inner ring is the track, and the red hand is now. Hover the
+  middle ring to read a stretch and click to go to its desk; click the inner
+  ring to move through the track; scroll to turn back to earlier days.
+- **Numeral.** The desk's number as large as the page allows, with the
+  weather inside it. It comes apart near the pointer.
+- **Plate.** Rings from three places, crossing. The date decides where they
+  are, so each day has its own. Drag a point to move a source; click for
+  another.
+- **Words.** The page described above.
+
+Dial and Orbit read a record the shell keeps of which desk was on screen, a
+file a day under `~/.local/state/quickshell/`. Nothing else reads it and it
+does not leave the machine. Without a GPU the empty desk is always Words.
+
 Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
 the page finishes the sentence:
 

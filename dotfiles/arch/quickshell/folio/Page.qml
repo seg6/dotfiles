@@ -37,6 +37,9 @@ PanelWindow {
             ShellState.showMissed(screen);
     }
     property int stamp: 0
+    // What the empty desk shows: one of the views, or the words where there is no GPU to draw a view.
+    readonly property string view: wind.GraphicsInfo.api === GraphicsInfo.Software ? "words" : ShellState.view
+    readonly property bool worded: bare && view === "words"
     anchors {
         left: true
         right: true
@@ -69,7 +72,7 @@ PanelWindow {
         cache: false
         fillMode: Image.Stretch
         // The picture belongs to the empty page; behind work it would only show as noise in the margins.
-        opacity: page.bare ? 1 : 0
+        opacity: page.worded ? 1 : 0
         // Without a GPU there is no shader, and the picture stands still.
         visible: !wind.visible
         Behavior on opacity {
@@ -150,7 +153,7 @@ PanelWindow {
     MouseArea {
         id: pointer
         anchors.fill: parent
-        enabled: page.bare
+        enabled: page.worded
         hoverEnabled: true
         onPositionChanged: settle.restart()
         onClicked: ShellState.ask("anything")
@@ -158,7 +161,7 @@ PanelWindow {
     Column {
         // The words come up as the desk empties.
         visible: opacity > 0
-        opacity: page.bare ? 1 : 0
+        opacity: page.worded ? 1 : 0
         anchors.horizontalCenter: parent.horizontalCenter
         y: page.height * (0.15 + (1 - opacity) * 0.012)
         Behavior on opacity {
@@ -233,6 +236,79 @@ PanelWindow {
                         cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
                     }
                 }
+            }
+        }
+    }
+    // The views: each is the whole page, drawn in dots, and something to do.
+    Item {
+        id: views
+        anchors.fill: picture
+        opacity: page.bare && page.view !== "words" ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 320
+                easing.type: Easing.OutCubic
+            }
+        }
+        Loader {
+            anchors.fill: parent
+            active: views.visible && page.view === "orbit"
+            sourceComponent: Orbit {
+                screen: page.screen
+                here: page.here
+                live: page.bare
+            }
+        }
+        Loader {
+            anchors.fill: parent
+            active: views.visible && page.view === "dial"
+            sourceComponent: Dial {
+                screen: page.screen
+                here: page.here
+                live: page.bare
+            }
+        }
+        Loader {
+            anchors.fill: parent
+            active: views.visible && page.view === "numeral"
+            sourceComponent: Numeral {
+                screen: page.screen
+                here: page.here
+                live: page.bare
+            }
+        }
+        Loader {
+            anchors.fill: parent
+            active: views.visible && page.view === "plate"
+            sourceComponent: Plate {
+                screen: page.screen
+                here: page.here
+                live: page.bare
+            }
+        }
+    }
+    // Which view, and the others a click away. Super+` turns to the next.
+    Row {
+        visible: opacity > 0
+        opacity: page.bare && wind.GraphicsInfo.api !== GraphicsInfo.Software ? 1 : 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: page.height - 104 * page.u
+        spacing: 26 * page.u
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 320
+            }
+        }
+        Repeater {
+            model: ShellState.views
+            Small {
+                required property string modelData
+                screen: page.screen
+                link: true
+                lit: modelData === page.view
+                text: modelData
+                onPressed: ShellState.show(modelData)
             }
         }
     }

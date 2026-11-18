@@ -314,5 +314,86 @@ function sky(now, latitude) {
     if (half >= 12) { up = true; light = 1; progress = hour / 24; }
     if (half <= 0) { up = false; light = 0; progress = hour / 24; }
     var months = (now.getTime() - Date.UTC(2000, 0, 6, 18, 14)) / 86400000 / 29.530588853;
-    return { progress: Math.max(0, Math.min(1, progress)), light: light, phase: months - Math.floor(months) };
+    return { progress: Math.max(0, Math.min(1, progress)), light: light, phase: months - Math.floor(months), rise: rise, set: set };
+}
+
+// Short forms for the small capitals: "just now", "4 min", "2 h", "3 d".
+function ago(ms) {
+    var minutes = Math.max(0, Math.round(ms / 60000));
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return minutes + " min";
+    if (minutes < 60 * 36) return Math.round(minutes / 60) + " h";
+    return Math.round(minutes / 1440) + " d";
+}
+
+// "48 min", "5 h 12 min", "2 h".
+function lasting(ms) {
+    var minutes = Math.max(0, Math.round(ms / 60000));
+    if (minutes < 60) return minutes + " min";
+    return Math.floor(minutes / 60) + " h" + (minutes % 60 ? " " + (minutes % 60) + " min" : "");
+}
+
+// "09:05".
+function hourMinute(when) {
+    var d = new Date(when);
+    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+}
+
+// "2026-11-18", in local time: the name a day's record is kept under.
+function dayKey(when) {
+    var d = new Date(when);
+    return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+}
+
+// Where in the day a moment falls, 0 at midnight to 1 at the next.
+function dayPart(when) {
+    var d = new Date(when);
+    return (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400;
+}
+
+// A day's record grows by what is on screen now. `spans` is
+// [{from, to, desk, name}] in milliseconds; a desk shown again within a few
+// minutes carries its span on, anything else starts a new one.
+function noteSpan(spans, now, desk, name) {
+    var next = spans.slice();
+    var last = next[next.length - 1];
+    if (last && last.desk === desk && last.name === name && now - last.to < 150000)
+        next[next.length - 1] = { from: last.from, to: now, desk: desk, name: name };
+    else
+        next.push({ from: now, to: now, desk: desk, name: name });
+    return next;
+}
+
+// What a day's record adds up to: {total, names: [{name, ms}], longest: {ms, from}}.
+// Stretches are runs of spans with no more than a few minutes between them.
+function dayStats(spans) {
+    var total = 0, tally = {}, longest = { ms: 0, from: 0 }, run = null;
+    (spans || []).forEach(function(s) {
+        var ms = Math.max(0, s.to - s.from);
+        total += ms;
+        var name = String(s.name || "").replace(/ \+\d+$/, "");
+        tally[name] = (tally[name] || 0) + ms;
+        if (run && s.from - run.to < 300000) run.to = s.to;
+        else run = { from: s.from, to: s.to };
+        if (run.to - run.from > longest.ms) longest = { ms: run.to - run.from, from: run.from };
+    });
+    var names = Object.keys(tally).map(function(name) { return { name: name, ms: tally[name] }; })
+        .sort(function(a, b) { return b.ms - a.ms; });
+    return { total: total, names: names, longest: longest };
+}
+
+// The other desks in use, the one seen most recently first:
+//   [{desk, name, count, urgent, seen}]
+function orbits(all, here, waiting, lastSeen) {
+    var desks = [];
+    all.forEach(function(w) { if (w.workspace !== here && desks.indexOf(w.workspace) === -1) desks.push(w.workspace); });
+    return desks.map(function(desk) {
+        return {
+            desk: desk,
+            name: deskName(all, desk).replace(/ \+\d+$/, ""),
+            count: all.filter(function(w) { return w.workspace === desk; }).length,
+            urgent: !!(waiting || {})[desk],
+            seen: (lastSeen || {})[desk] || 0
+        };
+    }).sort(function(a, b) { return b.seen - a.seen || (a.desk < b.desk ? -1 : 1); });
 }

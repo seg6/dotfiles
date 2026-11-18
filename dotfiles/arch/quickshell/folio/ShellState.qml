@@ -22,6 +22,32 @@ QtObject {
         menuX = x;
         menuItem = item;
     }
+    // What the empty desk shows. The choice is kept.
+    readonly property var views: ["orbit", "dial", "numeral", "plate", "words"]
+    property string view: "orbit"
+    // "next", "prev", or a view by name.
+    function show(name: string): void {
+        let at = views.indexOf(view);
+        if (name === "next")
+            at = (at + 1) % views.length;
+        else if (name === "prev")
+            at = (at + views.length - 1) % views.length;
+        else if (views.includes(name))
+            at = views.indexOf(name);
+        else
+            return;
+        view = views[at];
+        viewFile.setText(view);
+    }
+    property FileView viewFile: FileView {
+        path: Quickshell.statePath("view")
+        printErrors: false
+        onLoaded: {
+            const kept = text().trim();
+            if (root.views.includes(kept))
+                root.view = kept;
+        }
+    }
     readonly property var focusedScreen: Quickshell.screens.find(s => s.name === I3.focusedMonitor?.name) || Quickshell.screens[0]
     function ask(what: string): void {
         if (asking && about === what) {
@@ -62,6 +88,9 @@ QtObject {
         }
         function close(): void {
             root.close();
+        }
+        function view(name: string): void {
+            root.show(name);
         }
     }
 }

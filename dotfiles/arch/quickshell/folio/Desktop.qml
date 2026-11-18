@@ -53,6 +53,63 @@ QtObject {
         if (changed)
             waitingSince = next;
     }
+    // Where the day went: [{from, to, desk, name}], kept a day to a file, and
+    // when each desk was last on screen. Only desks with something open count.
+    property var spans: []
+    property var lastSeen: ({})
+    property string today: Logic.dayKey(Date.now())
+    property string notedDesk: ""
+    property bool notedBusy: false
+    function note(): void {
+        const now = Date.now();
+        const key = Logic.dayKey(now);
+        let next = spans;
+        if (key !== today) {
+            next = [];
+            today = key;
+        }
+        const output = Object.keys(showing)[0];
+        const desk = output ? showing[output] : "";
+        notedDesk = desk;
+        notedBusy = windows.some(w => w.workspace === desk);
+        if (desk && !ShellState.locked && notedBusy) {
+            next = Logic.noteSpan(next, now, desk, Logic.deskName(windows, desk));
+            const seen = Object.assign({}, lastSeen);
+            seen[desk] = now;
+            lastSeen = seen;
+        }
+        spans = next;
+    }
+    property FileView dayFile: FileView {
+        path: Quickshell.statePath("day-" + desktop.today + ".json")
+        printErrors: false
+        atomicWrites: true
+        onLoaded: {
+            if (desktop.spans.length > 0)
+                return;
+            try {
+                const value = JSON.parse(text());
+                if (Array.isArray(value)) {
+                    desktop.spans = value;
+                    // When each desk was last in use is in the record too.
+                    const seen = {};
+                    for (const span of value)
+                        seen[span.desk] = Math.max(seen[span.desk] || 0, span.to);
+                    desktop.lastSeen = Object.assign(seen, desktop.lastSeen);
+                }
+            } catch (_) {}
+        }
+    }
+    property Timer minute: Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: {
+            desktop.note();
+            if (desktop.spans.length > 0)
+                desktop.dayFile.setText(JSON.stringify(desktop.spans));
+        }
+    }
     property bool pending: false
     // The icon a window's application is known by, or "" to fall back to letters.
     function iconFor(app: string): string {
@@ -85,6 +142,9 @@ QtObject {
                     const tree = JSON.parse(text);
                     desktop.windows = Logic.windows(tree);
                     desktop.showing = Logic.showing(tree);
+                    const shown = desktop.showing[Object.keys(desktop.showing)[0]] ?? "";
+                    if (shown !== desktop.notedDesk || desktop.windows.some(w => w.workspace === shown) !== desktop.notedBusy)
+                        desktop.note();
                     // The request covers the screen; a picture taken then would be of itself.
                     if (!ShellState.asking && !ShellState.locked)
                         desktop.snap.restart();

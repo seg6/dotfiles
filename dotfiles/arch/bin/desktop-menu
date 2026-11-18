@@ -20,10 +20,15 @@ case $action in
             exit 0
         fi
         ;;
+    # Folio's empty desk has several views: `view next`, `view prev`, or one by name.
+    view)
+        [ "$layout" = folio ] || exit 0
+        exec qs ipc -c "$layout" call shell view "${2:-next}"
+        ;;
     # Run the shell itself; this is what desktop-shell.service starts.
     serve) exec qs -c "$layout" --no-duplicate ;;
     *)
-        printf '%s\n' 'usage: desktop-menu [launcher|clipboard|lock|unlock|close|serve]' >&2
+        printf '%s\n' 'usage: desktop-menu [launcher|clipboard|lock|unlock|close|view [next|prev|NAME]|serve]' >&2
         exit 2
         ;;
 esac
