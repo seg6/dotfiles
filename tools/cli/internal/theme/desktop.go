@@ -10,8 +10,13 @@ import (
 )
 
 func generateWS(config string, theme Theme) {
+	// The picker's Overprint style is square rules on a painted surface.
+	style := "overprint"
+	if salon(theme) {
+		style = "classic"
+	}
 	content := fmt.Sprintf(`[ui]
-style = "overprint"
+style = %q
 [ui.colors]
 foreground = %q
 background = %q
@@ -23,7 +28,7 @@ branch = %q
 warning = %q
 error = %q
 selected_foreground = %q
-`, c(theme, "fg"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
+`, style, c(theme, "fg"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
 	write(filepath.Join(config, "ws/theme.toml"), content)
 }
 
@@ -142,16 +147,16 @@ func generateSpotify(root, config string, theme Theme) {
 	}
 	write(filepath.Join(config, "spicetify/Themes/Overprint/color.ini"), content)
 	// The stylesheet names palette roles as {{role}}, so it follows any palette.
-	data, err := os.ReadFile(filepath.Join(root, "themes/overprint/spotify.css"))
+	data, err := os.ReadFile(filepath.Join(root, "themes", layoutName(theme), "spotify.css"))
 	if err != nil {
 		die(err.Error())
 	}
 	css := strings.NewReplacer(
 		"{{edge}}", role(theme, "edge", "surface_alt"), "{{ink}}", role(theme, "ink", "surface_alt"),
-		"{{bg_alt}}", c(theme, "bg_alt"), "{{bg}}", c(theme, "bg"), "{{surface_alt}}", c(theme, "surface_alt"), "{{accent}}", c(theme, "accent"),
+		"{{bg_alt}}", c(theme, "bg_alt"), "{{bg}}", c(theme, "bg"), "{{surface_alt}}", c(theme, "surface_alt"), "{{surface}}", c(theme, "surface"), "{{accent}}", c(theme, "accent"),
 	).Replace(string(data))
 	if strings.Contains(css, "{{") {
-		die("themes/overprint/spotify.css names an unknown palette role")
+		die("themes/" + layoutName(theme) + "/spotify.css names an unknown palette role")
 	}
 	write(filepath.Join(config, "spicetify/Themes/Overprint/user.css"), css)
 }

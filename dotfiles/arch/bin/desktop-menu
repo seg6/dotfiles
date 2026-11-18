@@ -1,7 +1,24 @@
 #!/usr/bin/env sh
 set -eu
 
-case ${1:-launcher} in
-    launcher | clipboard) exec qs ipc -c overprint call shell "${1:-launcher}" ;;
-    *) printf '%s\n' 'usage: desktop-menu [launcher|clipboard]' >&2; exit 2 ;;
+# Talk to the desktop shell of the layout in use. `theme` records the layout;
+# each layout is a Quickshell configuration of the same name.
+layout=overprint
+selection=${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/layout
+if [ -r "$selection" ]; then
+    IFS= read -r layout <"$selection" || true
+fi
+
+action=${1:-launcher}
+case $action in
+    launcher | clipboard | close) ;;
+    # The salon is Salon's overview; Overprint's nearest thing is its launcher.
+    salon) [ "$layout" = salon ] || action=launcher ;;
+    # Run the shell itself; this is what desktop-shell.service starts.
+    serve) exec qs -c "$layout" --no-duplicate ;;
+    *)
+        printf '%s\n' 'usage: desktop-menu [launcher|clipboard|salon|close|serve]' >&2
+        exit 2
+        ;;
 esac
+exec qs ipc -c "$layout" call shell "$action"

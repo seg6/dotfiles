@@ -1,0 +1,12 @@
+[Unit]
+Description=Desktop shell for the layout in use
+PartOf=sway-session.target graphical-session.target
+After=graphical-session.target
+StartLimitIntervalSec=30
+StartLimitBurst=5
+
+[Service]
+# `theme` records the layout; each layout is a Quickshell configuration of the same name.
+ExecStart=%h/.local/bin/desktop-menu serve
+Restart=on-failure
+RestartSec=2

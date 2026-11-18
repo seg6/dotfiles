@@ -14,12 +14,12 @@ builds the two Go tools, and generates the theme. Re-running it is safe.
 | --- | --- |
 | `dotfiles/config.yaml` | Dotdrop: which file goes where, grouped into profiles |
 | `dotfiles/common` | Both systems: fish, git, ssh, Helix, Kitty, tmux, `ws` |
-| `dotfiles/arch` | The Sway desktop: Sway, the Quickshell shell, Kitty's heading, systemd units |
+| `dotfiles/arch` | The Sway desktop: Sway, the Quickshell shells, Kitty's heading, systemd units |
 | `dotfiles/macos` | AeroSpace, Karabiner |
 | `dotfiles/workstation` | One machine: its outputs and autostarted applications |
 | `dotfiles/config-root.yaml`, `dotfiles/system` | Files installed as root (a second Dotdrop config) |
 | `packages/` | `arch`, `aur`, and `Brewfile`; `<hostname>.arch`, `<hostname>.aur`, and `Brewfile.<hostname>` add to them |
-| `themes/` | Overprint and its wallpaper palettes |
+| `themes/` | The two layouts' own palettes, and wallpaper palettes for either |
 | `tools/` | The `theme` and `ws` commands (`cli`), macOS preferences, Spotify helpers |
 | `tests/` | See below |
 
@@ -46,11 +46,75 @@ for Kitty, Helix, tmux, and `ws`. Kitty keeps its own window layout there: the
 larger type, padding, and heading strip belong to the Sway desktop. `theme use`
 also sets the desktop picture. `tools/macos-defaults` holds the system preferences.
 
+## Layouts
+
+The Sway desktop comes in two layouts. A layout is the whole desktop: its shell,
+window frames, spacing, and how Kitty, Helix, and tmux are dressed. Both need
+`quickshell` 0.3.2 or newer.
+
+```sh
+theme use salon           # Salon, with its own palette and painting
+theme use overprint       # Overprint
+theme layout salon        # keep the current palette, change the layout
+theme use coast --layout salon
+```
+
+`theme use <name>` without `--layout` takes the theme's own layout, so a plain
+palette returns to Overprint. Super+Space opens the launcher and Super+Shift+V
+the clipboard history in both.
+
+## Salon
+
+A gallery wall. There is no bar. Windows are the works hung on the wall: no
+title bars, a gilt frame, a deep shadow. The one in focus has a picture light
+over it and a bright frame; the rest are a shade dimmer. A wall with nothing on
+it shows the theme's painting, framed and lit, with a museum label beside it.
+
+The one thing always on screen is a brass plaque under the works, engraved with
+the wall's number, the work that is lit, and the hour. Scroll over it for the
+volume, right click to mute; the change is engraved for a moment in place of
+the title. A red jewel in the brass means another wall wants attention.
+
+Notifications arrive as cards slipped onto the wall in the lower corner. They
+leave on their own; the pointer over one keeps it, and a click dismisses it.
+
+Super+Tab, or a click on the plaque, opens the salon:
+
+- Every wall is a framed picture of itself as it last looked, hung around the
+  one you are on, each with a plaque saying what hangs there. Click one to walk
+  to it, or press its number.
+- Start typing and the catalogue answers with applications; Enter opens the
+  entry that is inked in. Tab turns the catalogue to the clipboard history.
+  Super+Space and Super+Shift+V open the salon on either.
+- On the shelf below the rail: the clock (click it for the month, with week
+  numbers) and tonight's moon; what is playing, with its controls; a brass push
+  for each tray application (left click activates, right click opens its menu);
+  the sound (click to mute, scroll to change, right click for the mixer); a push
+  that keeps notifications quiet, letting only critical ones through; and the
+  lights, which lock, sleep, log out, restart, or shut down. The last three ask
+  for a second press.
+
+The painting is the theme's wallpaper, and its label comes from the theme:
+
+```toml
+wallpaper = "wallpaper.jpg"
+
+[art]
+artist = "Vincent van Gogh"
+life = "1853 – 1890"
+title = "Wheatfield under Thunderclouds"
+date = "1890"
+medium = "oil on canvas"
+```
+
+`theme wallpaper picture.jpg --name harvest --layout salon` hangs any image and
+takes the palette from it. The wall is painted the palette's `wall` color.
+
 ## Overprint
 
-Overprint is the Sway desktop: a Quickshell rail, an app and clipboard launcher,
-notification popups, and matching Kitty, Helix, tmux, and GTK colors. It needs
-`quickshell` 0.3.2 or newer.
+Overprint is print: flat paper and ink, square corners, hard offset shadows. A
+Quickshell rail on the left, an app and clipboard launcher, notification popups,
+and matching Kitty, Helix, tmux, and GTK colors.
 
 Super+Space opens apps, Super+Shift+V opens clipboard history. The overlapping
 squares also open the launcher. The launcher opens terminal applications in
@@ -88,12 +152,12 @@ its window leaves the old process running.
 
 ## Palettes
 
-Overprint is the only layout. The other entries in `themes/` are wallpaper
-palettes for it:
+The other entries in `themes/` are wallpaper palettes. They work in either layout:
 
 ```sh
 theme list
 theme use coast
+theme use coast --layout salon
 theme use overprint   # the original
 ```
 
@@ -101,6 +165,7 @@ Make one from any image:
 
 ```sh
 theme wallpaper ~/Pictures/wallpaper.jpg --name forest
+theme wallpaper ~/Pictures/wallpaper.jpg --name forest --layout salon
 theme wallpaper ~/Pictures/wallpaper.jpg --name forest --preview   # HTML preview only
 ```
 

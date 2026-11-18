@@ -217,6 +217,8 @@ func paletteFromSamples(samples []colorful.Color) map[string]string {
 		"edge": tone(.50, .045, inkHue).Hex(), "active": tone(.43, .075, inkHue).Hex(),
 		"desk":   tone(.74, math.Min(.12, chroma*.7), hue).Hex(),
 		"header": tone(.44, .055, inkHue).Hex(), "shadow": tone(.36, .04, inkHue).Hex(),
+		// Salon paints its wall in the picture's own shadow color.
+		"wall": tone(.29, .06, inkHue).Hex(), "wall_light": tone(.37, .065, inkHue).Hex(), "wall_dark": tone(.19, .04, inkHue).Hex(),
 	}
 	fg, _ := colorful.Hex(result["fg"])
 	header, _ := colorful.Hex(result["header"])
@@ -285,7 +287,7 @@ func wallpaperSlug(path string) string {
 	return slug
 }
 
-func createWallpaperTheme(root, config, path, name string) (Theme, string, error) {
+func createWallpaperTheme(root, config, path, name, layout string) (Theme, string, error) {
 	if name != "" && !validThemeName(name) {
 		return Theme{}, "", fmt.Errorf("theme name must use lowercase letters, numbers, hyphens or underscores")
 	}
@@ -321,10 +323,24 @@ func createWallpaperTheme(root, config, path, name string) (Theme, string, error
 		return Theme{}, "", err
 	}
 	theme.ID, theme.Name = name, name
+	theme.Layout = layout
+	if layout != "" {
+		// Each layout has its own corners, shadows, and blur.
+		base, err := readTheme(root, layout)
+		if err != nil {
+			return Theme{}, "", err
+		}
+		theme.UI = base.UI
+	}
 	words := strings.ReplaceAll(strings.ReplaceAll(name, "-", " "), "_", " ")
 	runes := []rune(words)
 	runes[0] = unicode.ToUpper(runes[0])
 	theme.Display = string(runes)
+	// The label beside the picture says what it was named, not whose palette it began as.
+	theme.Art = nil
+	if layout == "salon" {
+		theme.Art = map[string]string{"title": theme.Display}
+	}
 	theme.Colors = paletteFromSamples(samples)
 	theme.ANSI = map[string]string{"black": theme.Colors["bg_alt"], "white": theme.Colors["fg"], "bright_black": theme.Colors["dim"], "bright_white": theme.Colors["fg"], "cursor": theme.Colors["accent"], "selection": theme.Colors["surface_alt"]}
 	bg, _ := colorful.Hex(theme.Colors["bg"])
@@ -367,7 +383,7 @@ func createWallpaperTheme(root, config, path, name string) (Theme, string, error
 }
 
 func wallpaperCommand(root, config string, args []string) error {
-	var path, name string
+	var path, name, layout string
 	preview, reload := false, true
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
@@ -377,6 +393,12 @@ func wallpaperCommand(root, config string, args []string) error {
 				return fmt.Errorf("--name needs a theme name")
 			}
 			name = args[i]
+		case "--layout":
+			i++
+			if i == len(args) || !validLayout(args[i]) {
+				return fmt.Errorf("--layout needs one of %s", strings.Join(layouts, ", "))
+			}
+			layout = args[i]
 		case "--preview":
 			preview = true
 		case "--no-reload":
@@ -391,7 +413,7 @@ func wallpaperCommand(root, config string, args []string) error {
 	if path == "" {
 		return fmt.Errorf("usage: theme wallpaper <image> [--name name] [--preview] [--no-reload]")
 	}
-	theme, report, err := createWallpaperTheme(root, config, path, name)
+	theme, report, err := createWallpaperTheme(root, config, path, name, layout)
 	if err != nil {
 		return err
 	}
@@ -399,7 +421,7 @@ func wallpaperCommand(root, config string, args []string) error {
 		fmt.Printf("Saved %s\nPreview: %s\nApply: theme use %s\n", theme.Display, report, theme.ID)
 		return nil
 	}
-	useTheme(root, config, theme.ID, reload)
+	useTheme(root, config, theme.ID, "", reload)
 	fmt.Printf("Saved palette: %s\nReturn to the original: theme use overprint\n", theme.ID)
 	return nil
 }

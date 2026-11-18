@@ -57,6 +57,10 @@ function kittyBorderUpdates(tree) {
         if (app === "kitty" && Number.isInteger(node.id) && node.border !== "normal") {
             commands.push("[con_id=" + node.id + "] border normal 2");
         }
+        // A tiled window that another layout gave a heading goes back to a plain frame.
+        if (app && app !== "kitty" && Number.isInteger(node.id) && node.border === "normal" && node.type === "con") {
+            commands.push("[con_id=" + node.id + "] border pixel 2");
+        }
         (node.nodes || []).concat(node.floating_nodes || []).forEach(visit);
     }
     visit(tree);

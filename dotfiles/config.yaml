@@ -109,12 +109,15 @@ dotfiles:
   f_systemd_sway_session_target:
     src: arch/systemd/user/sway-session.target
     dst: ~/.config/systemd/user/sway-session.target
-  f_systemd_overprint:
-    src: arch/systemd/user/overprint.service
-    dst: ~/.config/systemd/user/overprint.service
+  f_systemd_desktop_shell:
+    src: arch/systemd/user/desktop-shell.service
+    dst: ~/.config/systemd/user/desktop-shell.service
   d_overprint:
     src: arch/quickshell/overprint
     dst: ~/.config/quickshell/overprint
+  d_salon:
+    src: arch/quickshell/salon
+    dst: ~/.config/quickshell/salon
   f_bin_desktop_menu:
     src: arch/bin/desktop-menu
     dst: ~/.local/bin/desktop-menu
@@ -180,8 +183,9 @@ profiles:
       - f_kitty_header
       - f_teams_desktop
       - f_systemd_sway_session_target
-      - f_systemd_overprint
+      - f_systemd_desktop_shell
       - d_overprint
+      - d_salon
       - f_bin_desktop_menu
       - f_bin_record_window
       - f_bin_polkit_agent
