@@ -2,6 +2,7 @@ singleton Theme 1.0 Theme.qml
 singleton ShellState 1.0 ShellState.qml
 singleton Desktop 1.0 Desktop.qml
 singleton Notices 1.0 Notices.qml
+singleton Media 1.0 Media.qml
 Small 1.0 Small.qml
 Sheet 1.0 Sheet.qml
 TopLine 1.0 TopLine.qml

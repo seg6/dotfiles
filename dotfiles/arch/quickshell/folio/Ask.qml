@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.I3
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import "Search.js" as Search
 import "Logic.js" as Logic
@@ -74,7 +73,7 @@ PanelWindow {
             usedFile.setText(JSON.stringify(used));
         } else if (result.kind === "command") {
             const audio = Pipewire.defaultAudioSink?.audio;
-            const player = Mpris.players.values.find(p => p.isPlaying) || Mpris.players.values[0];
+            const player = Media.player;
             switch (result.command) {
             case "lock":
                 ShellState.menuItem = null;

@@ -5,7 +5,6 @@ import Quickshell.I3
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick.Effects
-import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
 import "RailLogic.js" as RailLogic
@@ -19,7 +18,7 @@ PanelWindow {
     readonly property string here: Desktop.showing[screen.name] ?? ""
     readonly property var desks: RailLogic.workspaceNames(I3.workspaces.values, screen.name, Desktop.occupied)
     readonly property var lit: Desktop.windows.find(w => w.focused && w.workspace === line.here) ?? null
-    readonly property var player: Mpris.players.values.find(p => p.isPlaying) || Mpris.players.values[0] || null
+    readonly property var player: Media.player
     readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
     // The desk whose picture is showing, and where along the line its word is.
     property string peek: ""

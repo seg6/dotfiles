@@ -3,7 +3,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Services.Mpris
 import "Logic.js" as Logic
 
 // The page behind everything. With nothing open on a desk it says the hour
@@ -20,7 +19,7 @@ PanelWindow {
                 since: Desktop.waitingSince[desk]
             }))
     // What the page has to say right now.
-    readonly property var player: Mpris.players.values.find(p => p.isPlaying && p.trackTitle) || null
+    readonly property var player: Media.playing?.trackTitle ? Media.playing : null
     readonly property string headline: Logic.headline(clock.date, Theme.who.city || "")
     readonly property var facts: Logic.facts(clock.date, Desktop.windows, here, waiting, {
         playing: player ? {
