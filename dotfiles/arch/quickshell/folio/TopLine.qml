@@ -285,9 +285,18 @@ PanelWindow {
                 else if (line.audio)
                     line.audio.muted = !line.audio.muted;
             }
+            // One notch of a wheel is two in a hundred. A touchpad sends many small
+            // movements for one gesture, so they are added up until they make a notch.
+            property real turned: 0
             onWheeled: event => {
-                if (line.audio)
-                    line.audio.volume = Math.max(0, Math.min(1.5, line.audio.volume + (event.angleDelta.y > 0 ? 0.05 : -0.05)));
+                if (!line.audio)
+                    return;
+                turned += event.angleDelta.y;
+                const notches = turned > 0 ? Math.floor(turned / 120) : Math.ceil(turned / 120);
+                if (notches === 0)
+                    return;
+                turned -= notches * 120;
+                line.audio.volume = Math.max(0, Math.min(1.5, Math.round(line.audio.volume * 100 + notches * 2) / 100));
             }
         }
     }
