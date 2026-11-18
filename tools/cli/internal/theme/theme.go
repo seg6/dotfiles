@@ -500,6 +500,7 @@ default_border pixel 2
 default_floating_border normal 2
 title_align left
 default_dim_inactive 0.0
+animation_duration_ms 0
 font pango:Fantasque Sans Mono 12
 titlebar_padding 14 16
 titlebar_border_thickness 2
