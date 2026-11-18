@@ -17,7 +17,9 @@ function match(text, token) {
     return 80 + first + last - first - token.length;
 }
 
-function rank(entries, query, history) {
+// Equal matches are ordered by recent use and then by name, unless the
+// entries already have a meaningful order (ordered), which is then kept.
+function rank(entries, query, history, ordered) {
     var tokens = String(query || "").trim().toLocaleLowerCase().split(/\s+/).filter(function(t) { return t.length > 0; });
     return entries.map(function(entry) {
         var metadata = [entry.genericName || "", entry.comment || "", (entry.keywords || []).join(" ")].join(" ");
@@ -26,7 +28,7 @@ function rank(entries, query, history) {
         }, 0);
         return { entry: entry, score: score, used: Number(history[entry.id]) || 0 };
     }).filter(function(row) { return isFinite(row.score); }).sort(function(a, b) {
-        return a.score - b.score || b.used - a.used || a.entry.name.localeCompare(b.entry.name);
+        return a.score - b.score || (ordered ? 0 : b.used - a.used || a.entry.name.localeCompare(b.entry.name));
     }).map(function(row) { return row.entry; });
 }
 

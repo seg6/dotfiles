@@ -13,7 +13,8 @@ PanelWindow {
     property var history: ({})
     property var clipboardEntries: []
     readonly property var entries: ShellState.clipboardMode ? clipboardEntries : DesktopEntries.applications.values
-    readonly property var results: Search.rank(entries, input.text, ShellState.clipboardMode ? {} : history)
+    // Clips arrive newest first, and stay that way.
+    readonly property var results: Search.rank(entries, input.text, ShellState.clipboardMode ? {} : history, ShellState.clipboardMode)
     anchors {
         left: true
         right: true
