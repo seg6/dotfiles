@@ -311,7 +311,9 @@ func generateTheme(root, config string, theme Theme) {
 		generateGTK(config, theme)
 		generateShell(config, theme)
 	}
-	generateKitty(root, config, theme)
+	generateKitty(root, config, theme, runtime.GOOS == "linux")
+	// Sway reads the wallpaper from its generated theme; macOS is told on reload.
+	write(filepath.Join(config, "dotfiles/wallpaper"), wallpaperPath(root, theme))
 	generateHelix(config, theme)
 	generateTmux(config, theme)
 	generateWS(config, theme)
@@ -428,11 +430,7 @@ layer_effects "overprint" shadows disable
 layer_effects "overprint" blur disable
 layer_effects "overprint" corner_radius 0
 `, c(theme, "bg"), c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg"), theme.ID, header, header, header, uiInt(theme, "radius", 0), shadow, shadow, ink, ink, enable(uiBool(theme, "blur", false)))
-	wallpaper := theme.Wallpaper
-	if wallpaper == "" {
-		wallpaper = filepath.Join(root, "themes", theme.ID, "wallpaper.png")
-	}
-	if exists(wallpaper) {
+	if wallpaper := wallpaperPath(root, theme); wallpaper != "" {
 		content += fmt.Sprintf("\noutput * bg %s fill\n", strconv.Quote(wallpaper))
 	}
 	content += "\n"
@@ -447,6 +445,18 @@ layer_effects "overprint" corner_radius 0
 	write(filepath.Join(config, "sway/theme"), content)
 	// Sway's config defaults affect new workspaces; reload must update existing ones too.
 	write(filepath.Join(config, "dotfiles/sway-gaps"), strings.Join(reapply, "; "))
+}
+
+// wallpaperPath is the theme's wallpaper, or "" when it has none on disk.
+func wallpaperPath(root string, theme Theme) string {
+	wallpaper := theme.Wallpaper
+	if wallpaper == "" {
+		wallpaper = filepath.Join(root, "themes", theme.ID, "wallpaper.png")
+	}
+	if !exists(wallpaper) {
+		return ""
+	}
+	return wallpaper
 }
 
 func lockCommand(theme Theme) string {
@@ -557,7 +567,10 @@ view, textview text, treeview.view { background-color: @view_bg_color; color: @v
 	write(filepath.Join(config, "gtk-4.0/gtk.css"), modern)
 }
 
-func generateKitty(root, config string, theme Theme) {
+// generateKitty writes the terminal palette. The larger type, padding, and
+// heading strip belong to the Sway desktop, whose title bars they are sized
+// against; elsewhere Kitty keeps its own layout and only takes the colors.
+func generateKitty(root, config string, theme Theme, desktop bool) {
 	override := filepath.Join(root, "themes", theme.ID, "kitty.conf")
 	target := filepath.Join(config, "kitty/current-theme.conf")
 	if exists(override) {
@@ -591,8 +604,9 @@ color13 %s
 color14 %s
 color15 %s
 `, c(theme, "bg"), c(theme, "fg"), ansi(theme, "cursor", c(theme, "accent")), ansi(theme, "selection", c(theme, "surface_alt")), c(theme, "fg"), ansi(theme, "black", c(theme, "bg_alt")), ansi(theme, "red", c(theme, "red")), ansi(theme, "green", c(theme, "green")), ansi(theme, "yellow", c(theme, "yellow")), ansi(theme, "blue", c(theme, "blue")), ansi(theme, "magenta", c(theme, "magenta")), ansi(theme, "cyan", c(theme, "cyan")), ansi(theme, "white", c(theme, "fg")), ansi(theme, "bright_black", c(theme, "dim")), ansi(theme, "bright_red", c(theme, "red")), ansi(theme, "bright_green", c(theme, "green")), ansi(theme, "bright_yellow", c(theme, "yellow")), ansi(theme, "bright_blue", c(theme, "blue")), ansi(theme, "bright_magenta", c(theme, "magenta")), ansi(theme, "bright_cyan", c(theme, "cyan")), ansi(theme, "bright_white", c(theme, "fg")))
-	header := role(theme, "header", "surface_alt")
-	content += fmt.Sprintf(`
+	if desktop {
+		header := role(theme, "header", "surface_alt")
+		content += fmt.Sprintf(`
 font_size 18.0
 window_padding_width 16 16 0 16
 window_title_bar_min_windows 0
@@ -611,7 +625,15 @@ inactive_tab_foreground %s
 inactive_tab_background %s
 active_tab_font_style normal
 inactive_tab_font_style normal
-`, header, header, role(theme, "header_fg", "fg"), header, role(theme, "header_dim", "dim"), header)
+	`, header, header, role(theme, "header_fg", "fg"), header, role(theme, "header_dim", "dim"), header)
+	} else {
+		content += fmt.Sprintf(`
+active_tab_foreground   %s
+active_tab_background   %s
+inactive_tab_foreground %s
+inactive_tab_background %s
+`, c(theme, "bg"), c(theme, "accent"), c(theme, "dim"), c(theme, "bg_alt"))
+	}
 	write(target, content)
 }
 
@@ -782,6 +804,11 @@ func reloadLive() {
 					commands = append(commands, []string{"gsettings", "set", "org.gnome.desktop.interface", key, value})
 				}
 			}
+		}
+	}
+	if runtime.GOOS == "darwin" {
+		if wallpaper := strings.TrimSpace(readString(filepath.Join(configHome(), "dotfiles/wallpaper"))); wallpaper != "" {
+			commands = append(commands, []string{"osascript", "-e", "tell application \"System Events\" to tell every desktop to set picture to " + strconv.Quote(wallpaper)})
 		}
 	}
 	commands = append(commands, []string{"tmux", "source-file", filepath.Join(configHome(), "tmux", "tmux.conf")})

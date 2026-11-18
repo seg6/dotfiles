@@ -59,10 +59,10 @@ dotfiles:
     src: common/helix/languages.toml
     dst: ~/.config/helix/languages.toml
   f_kitty_tab_bar:
-    src: common/kitty/tab_bar.py
+    src: arch/kitty/tab_bar.py
     dst: ~/.config/kitty/tab_bar.py
   f_kitty_header:
-    src: common/kitty/window_title_bar.py
+    src: arch/kitty/window_title_bar.py
     dst: ~/.config/kitty/window_title_bar.py
   f_kitty_fonts:
     src: common/kitty/fonts.conf
@@ -96,9 +96,6 @@ dotfiles:
     src: common/ssh/seg6.pub
     dst: ~/.ssh/seg6.pub
     chmod: '644'
-  f_wallpaper:
-    src: common/wallpaper.png
-    dst: ~/pictures/wallpaper.png
 
   f_sway_config:
     src: arch/sway/config
@@ -164,8 +161,6 @@ profiles:
       - f_git_personal
       - f_helix_config
       - f_helix_languages
-      - f_kitty_tab_bar
-      - f_kitty_header
       - f_kitty_fonts
       - f_kitty_config
       - f_tmux_config
@@ -175,13 +170,14 @@ profiles:
       - f_bin_op_ssh_sign
       - f_ssh_config
       - f_ssh_seg6_public_key
-      - f_wallpaper
   arch:
     include:
       - common
     dotfiles:
       - f_sway_config
       - f_sway_arch_fragment
+      - f_kitty_tab_bar
+      - f_kitty_header
       - f_teams_desktop
       - f_systemd_sway_session_target
       - f_systemd_overprint

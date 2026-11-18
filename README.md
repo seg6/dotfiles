@@ -4,79 +4,148 @@
 curl -fsSL https://raw.githubusercontent.com/seg6/dotfiles/main/install | bash
 ```
 
-Overprint is a native SwayFX preset with a Quickshell rail, app and clipboard
-launcher, notification popups, and matching Kitty, Helix, tmux, and GTK colors.
-It requires `quickshell` (0.3.2 or newer); the other dependencies are already in
-the Arch package list.
+Arch Linux (SwayFX) and macOS (AeroSpace). `install` fetches this repository and
+runs `bootstrap`, which installs packages, places the dotfiles with Dotdrop,
+builds the two Go tools, and generates the theme. Re-running it is safe.
 
-From this checkout, activate it with:
+## Layout
+
+| Path | What it is |
+| --- | --- |
+| `config.yaml` | Dotdrop: which file goes where, grouped into profiles |
+| `dotfiles/common` | Both systems: fish, git, ssh, Helix, Kitty, tmux, `ws` |
+| `dotfiles/arch` | The Sway desktop: Sway, the Quickshell shell, Kitty's heading, systemd units |
+| `dotfiles/macos` | AeroSpace, Karabiner |
+| `dotfiles/workstation` | One machine: its outputs and autostarted applications |
+| `config-root.yaml`, `system/` | Files installed as root (a second Dotdrop config) |
+| `packages.arch`, `packages.aur`, `Brewfile` | Packages; `packages.<hostname>.arch` and `Brewfile.<hostname>` add to them |
+| `themes/` | Overprint and its wallpaper palettes |
+| `tools/cli` | The `theme` and `ws` commands |
+
+Profiles build on each other: `common` → `arch` or `macos` → a machine. A machine
+gets its own profile by adding one to `config.yaml` named after its hostname;
+otherwise the system's profile is used. `dots` is Dotdrop with this checkout and
+the installed profile filled in:
 
 ```sh
-./tools/activate-overprint
+dots compare   # what differs from the repository
+dots install   # install the profile
 ```
 
-The installer builds the theme CLI, installs the relevant dotfiles with Dotdrop
-backups, and switches the running session. Existing Helix sessions reload
-automatically. Super+Space opens apps, Super+Shift+V opens clipboard history.
-The overlapping squares also open the launcher. Scroll over the volume number
-to adjust it, right click to mute, or click to open the mixer.
-Applications in the tray keep their own icons, in an outlined box; the network,
-Bluetooth, audio, and VPN applets are drawn in the rail's line style below it.
-Hover any of them for its name. Left click activates, middle click is the
-secondary action, and right click opens the item's menu, drawn by the shell.
-Hover the clock for the full date; click it for a month calendar with week
-numbers (scroll or use the arrows to change month, click the heading for today).
-`qs ipc -c overprint call shell calendar` opens it from a key binding.
-Workspace buttons appear for occupied workspaces and the
-current workspace, including windows that float or use XWayland.
-The launcher opens terminal applications in Kitty and finds user applications
-under `~/.local/bin` and `~/.cargo/bin`, preserving desktop-entry arguments and
-working directories.
+Files are copied, not linked, so an edit made under `~` is lost on the next
+install unless it is brought back with `dots import` or made in the repository.
+
+No colors are written in these files. Each program includes a file that `theme`
+generates under `~/.config`, so one command recolors everything.
+
+### macOS
+
+macOS takes the shared shell, editor, terminal, and tmux setup, and the palette
+for Kitty, Helix, tmux, and `ws`. Kitty keeps its own window layout there: the
+larger type, padding, and heading strip belong to the Sway desktop. `theme use`
+also sets the desktop picture. `macos/defaults` holds the system preferences.
+
+## Overprint
+
+Overprint is the Sway desktop: a Quickshell rail, an app and clipboard launcher,
+notification popups, and matching Kitty, Helix, tmux, and GTK colors. It needs
+`quickshell` 0.3.2 or newer.
+
+Super+Space opens apps, Super+Shift+V opens clipboard history. The overlapping
+squares also open the launcher. The launcher opens terminal applications in
+Kitty and finds user applications under `~/.local/bin` and `~/.cargo/bin`,
+preserving desktop-entry arguments and working directories.
+
+On the rail:
+
+- Workspace buttons appear for occupied workspaces and the current one,
+  including windows that float or use XWayland.
+- Applications in the tray keep their own icons, in an outlined box. The
+  network, Bluetooth, audio, and VPN applets are drawn in the rail's line style
+  below it. Hover any of them for its name. Left click activates, middle click
+  is the secondary action, and right click opens the item's menu.
+- Scroll over the volume to adjust it, right click to mute, click for the mixer.
+- Hover the clock for the full date. Click it for a month calendar with week
+  numbers: scroll or use the arrows to change month, click the heading for
+  today. `qs ipc -c overprint call shell calendar` opens it from a key binding.
+
+Helix has no buffer line. Kitty's own tab strip appears when it has multiple
+tabs. Both tiled and floating Kitty windows get a Sway title bar, and the shell
+keeps it when a window changes between the two. tmux uses italic indices and a
+cell-sized offset shadow. The `ws` picker reads the generated
+`~/.config/ws/theme.toml` without replacing the project roots or session
+commands in its own configuration.
+
+UI controls use Adwaita Sans 12pt, system monospace uses Fantasque Sans Mono
+12pt, and terminals use Fantasque Sans Mono 18pt.
 
 The Teams for Linux launcher uses native Wayland and PipeWire capture. The Sway
-session also passes `XDG_SESSION_TYPE` to the desktop services so apps opened from
-the launcher can detect Wayland and use the screen-sharing portal. After updating
-the session environment, restart the desktop shell and fully quit and reopen
-Teams; closing its window leaves the old process running.
+session passes `XDG_SESSION_TYPE` to the desktop services so apps opened from the
+launcher can detect Wayland and use the screen-sharing portal. After changing the
+session environment, restart the shell and fully quit and reopen Teams; closing
+its window leaves the old process running.
 
-Overprint is the default and the only layout. The other entries in `themes/` are
-wallpaper palettes for it: `theme list` shows them, `theme use <name>` switches.
+## Palettes
 
-Give Overprint a new wallpaper and color scheme while keeping its layout:
+Overprint is the only layout. The other entries in `themes/` are wallpaper
+palettes for it:
+
+```sh
+theme list
+theme use coast
+theme use overprint   # the original
+```
+
+Make one from any image:
 
 ```sh
 theme wallpaper ~/Pictures/wallpaper.jpg --name forest
+theme wallpaper ~/Pictures/wallpaper.jpg --name forest --preview   # HTML preview only
 ```
 
 ImageMagick samples the image; the tool derives coordinated dark surfaces, paper,
-ink, accents, and readable text colors. It updates SwayFX, the rail and launcher,
-Kitty, Helix, tmux, the `ws` picker, GTK, folder icons, Helium, and Spotify.
-Spacing, typography, title bars, and keybindings stay the same.
-Monochrome wallpapers keep neutral UI colors. Colored wallpapers supply the
-surface hues without an invented complementary hue; syntax and status colors
-remain distinguishable, with saturation reduced for muted wallpapers.
+ink, accents, and readable text colors. Spacing, typography, title bars, and
+keybindings stay the same. Monochrome wallpapers keep neutral UI colors. Colored
+wallpapers supply the surface hues without an invented complementary hue; syntax
+and status colors remain distinguishable, with saturation reduced for muted
+wallpapers.
 
-To review an HTML preview before activating:
+A new palette and a copy of its wallpaper are saved in
+`~/.config/dotfiles/themes/`. To keep one in this repository, move its directory
+into `themes/` (the preview file is not needed). Omitting `--name` generates one
+from the image's filename and contents.
+
+A palette reaches SwayFX, the rail and launcher, Kitty, Helix, tmux, the `ws`
+picker, GTK 3/4, an icon theme with folders in the accent color over Papirus,
+Helium, and Spotify. The desktop, Kitty, Helix, and tmux reload at once. Reopen
+GTK applications and Helium to load their new colors.
+
+### Helium
+
+Helium loads the generated theme on its next launch; existing driver flags and
+other extension paths are preserved. The theme lives in
+`~/.config/dotfiles/browser-theme` and can also be loaded through
+`chrome://extensions` → **Load unpacked**. It styles the browser chrome and new
+tab page; websites keep their own styles.
+
+### Spotify
+
+`./tools/install-overprint-extras` installs Spicetify under your user account,
+after checking the release checksum. Then, for Spotify installed by
+`spotify-launcher`:
 
 ```sh
-theme wallpaper ~/Pictures/wallpaper.jpg --name forest --preview
-theme use forest
-theme use overprint # restore the original
+./tools/activate-overprint-spotify
 ```
 
-The command prints the preview's path. Saved palettes and original wallpaper
-copies live in `~/.config/dotfiles/themes/`; `theme list` includes them. To keep a
-palette in this repository, move its directory into `themes/` (the preview file is
-not needed). Omitting `--name` generates one from the image filename and contents.
-ImageMagick is included in `packages.arch`.
+It creates a Spicetify backup, applies the theme, and restarts a running client,
+restoring its playback state. Later palette changes refresh the patched colors
+without restarting playback; reopen Spotify to load them. Run the script again
+after a Spotify update replaces the patched files. `spicetify restore` returns
+the original client. Last used with Spotify 1.3.8.620 and Spicetify 2.45.3, which
+is beyond Spicetify's published Linux compatibility range, so keep the backup.
 
-The desktop, Kitty, Helix, and tmux reload automatically. Reopen GTK applications
-and Helium to load their new colors. For Spotify already configured with
-Spicetify's Overprint theme, the command refreshes the patched colors without
-restarting playback; reopen Spotify to load them. After a Spotify update, use
-`tools/activate-overprint-spotify` again to patch the updated client.
-
-Verification:
+## Tests
 
 ```sh
 go -C tools/cli test ./...
@@ -84,34 +153,6 @@ node --test tests/*.test.cjs
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-The Python tests start their own headless SwayFX session with the actual shell,
-Kitty, and tmux, on separate D-Bus and Wayland connections.
-
-Overprint also generates GTK 3/4 colors, desktop font settings, an icon theme with
-original amber folders over Papirus, a Helium theme, Spotify colors and CSS, and
-the `ws` picker palette. UI controls use Adwaita Sans 12pt, system monospace uses
-Fantasque Sans Mono 12pt, and terminals use Fantasque Sans Mono 18pt.
-
-For the additional desktop assets, run `./tools/install-overprint-extras` before
-`./tools/activate-overprint`. The extras installer verifies Arch package signatures
-and the Spicetify release checksum, and installs everything under your user account.
-The normal Arch package list includes `adw-gtk-theme` and `papirus-icon-theme`.
-
-Helium loads the generated theme on its next launch; existing driver flags and
-other extension paths are preserved. Theme files live under
-`~/.config/dotfiles/browser-theme`. They can also be loaded through
-`chrome://extensions` → **Load unpacked**. This styles the browser chrome and new
-tab page; individual websites retain their own styles.
-
-For Spotify installed by `spotify-launcher`, run
-`./tools/activate-overprint-spotify`. It creates a Spicetify backup, applies the theme,
-and restores playback state when restarting an active player. Run this again after
-Spotify updates replace the patched files. Restore the original client with
-`spicetify restore`. The tested client is Spotify 1.3.4.258 with Spicetify 2.45.3;
-this exceeds Spicetify's published Linux compatibility range, so keep the backup.
-
-Helix has no buffer line. Kitty's own tab strip appears when it has multiple tabs. Both tiled and floating Kitty windows
-get a Sway title bar. The Overprint shell keeps the heading visible when windows
-change between tiled and floating. tmux uses italic indices and a cell-sized offset shadow. The workspace
-picker reads generated `~/.config/ws/theme.toml` without replacing project roots or
-session commands from its user configuration.
+The Python tests install the profiles into an empty home and start their own
+headless SwayFX session with the actual shell, Kitty, tmux, and a tray
+application, on separate D-Bus and Wayland connections.
