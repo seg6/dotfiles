@@ -1,0 +1,53 @@
+name = "neon"
+display = "Neon"
+mode = "dark"
+wallpaper = "wallpaper.jpg"
+
+[colors]
+  accent = "#fba1a6"
+  active = "#464b78"
+  bg = "#1f212e"
+  bg_alt = "#161723"
+  blue = "#90b8fb"
+  cyan = "#75ccc8"
+  desk = "#e58f94"
+  dim = "#999db5"
+  edge = "#5d617d"
+  fg = "#f2dbdb"
+  green = "#91cd8b"
+  header = "#4b5071"
+  header_dim = "#c3c6d8"
+  header_fg = "#f2dbdb"
+  ink = "#3b3e55"
+  magenta = "#dd9ee0"
+  paper = "#f6c6c8"
+  red = "#f98e8b"
+  shadow = "#383b52"
+  surface = "#2f3145"
+  surface_alt = "#424560"
+  yellow = "#e8be62"
+
+[ansi]
+  black = "#161723"
+  blue = "#789fe0"
+  bright_black = "#999db5"
+  bright_blue = "#b4cffc"
+  bright_cyan = "#8ce3df"
+  bright_green = "#a7e4a1"
+  bright_magenta = "#f4b4f7"
+  bright_red = "#ffb0ac"
+  bright_white = "#f2dbdb"
+  bright_yellow = "#fdd683"
+  cursor = "#fba1a6"
+  cyan = "#5bb2af"
+  green = "#78b373"
+  magenta = "#c385c6"
+  red = "#dd7573"
+  selection = "#424560"
+  white = "#f2dbdb"
+  yellow = "#cea547"
+
+[ui]
+  blur = false
+  radius = 0
+  shadow = true

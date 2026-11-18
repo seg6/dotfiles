@@ -1,0 +1,53 @@
+name = "coast"
+display = "Coast"
+mode = "dark"
+wallpaper = "wallpaper.jpg"
+
+[colors]
+  accent = "#8dc6e8"
+  active = "#733f37"
+  bg = "#2d1d1b"
+  bg_alt = "#221412"
+  blue = "#90b8fb"
+  cyan = "#75ccc8"
+  desk = "#84b2cd"
+  dim = "#b39792"
+  edge = "#7b5a54"
+  fg = "#d2e4f0"
+  green = "#91cd8b"
+  header = "#6e4740"
+  header_dim = "#d7c2be"
+  header_fg = "#d2e4f0"
+  ink = "#533833"
+  magenta = "#dd9ee0"
+  paper = "#b2dbf4"
+  red = "#f98e8b"
+  shadow = "#503531"
+  surface = "#432c28"
+  surface_alt = "#5e3f39"
+  yellow = "#e8be62"
+
+[ansi]
+  black = "#221412"
+  blue = "#789fe0"
+  bright_black = "#b39792"
+  bright_blue = "#b4cffc"
+  bright_cyan = "#8ce3df"
+  bright_green = "#a7e4a1"
+  bright_magenta = "#f4b4f7"
+  bright_red = "#ffb0ac"
+  bright_white = "#d2e4f0"
+  bright_yellow = "#fdd683"
+  cursor = "#8dc6e8"
+  cyan = "#5bb2af"
+  green = "#78b373"
+  magenta = "#c385c6"
+  red = "#dd7573"
+  selection = "#5e3f39"
+  white = "#d2e4f0"
+  yellow = "#cea547"
+
+[ui]
+  blur = false
+  radius = 0
+  shadow = true

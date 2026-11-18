@@ -1,21 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-backend=classic
-selection=${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/shell
-if [ -r "$selection" ]; then
-    IFS= read -r backend <"$selection" || true
-fi
-
 case ${1:-launcher} in
-    launcher | clipboard) action=${1:-launcher} ;;
+    launcher | clipboard) exec qs ipc -c overprint call shell "${1:-launcher}" ;;
     *) printf '%s\n' 'usage: desktop-menu [launcher|clipboard]' >&2; exit 2 ;;
 esac
-if [ "$backend" = overprint ] && qs ipc -c overprint call shell "$action" >/dev/null 2>&1; then
-    exit 0
-fi
-if [ "$action" = clipboard ]; then
-    cliphist list | fuzzel --dmenu --prompt='clipboard: ' | cliphist decode | wl-copy
-else
-    exec fuzzel
-fi

@@ -106,34 +106,18 @@ dotfiles:
   f_sway_arch_fragment:
     src: arch/sway/conf.d/50-arch.conf
     dst: ~/.config/sway/conf.d/50-arch.conf
-  f_waybar_config:
-    src: arch/waybar/config
-    dst: ~/.config/waybar/config
-  f_waybar_style:
-    src: arch/waybar/style.css
-    dst: ~/.config/waybar/style.css
-  f_fuzzel_config:
-    src: arch/fuzzel/fuzzel.ini
-    dst: ~/.config/fuzzel/fuzzel.ini
   f_teams_desktop:
     src: arch/applications/teams-for-linux.desktop
     dst: ~/.local/share/applications/teams-for-linux.desktop
   f_systemd_sway_session_target:
     src: arch/systemd/user/sway-session.target
     dst: ~/.config/systemd/user/sway-session.target
-  f_systemd_dotfiles_shell:
-    src: arch/systemd/user/dotfiles-shell.service
-    dst: ~/.config/systemd/user/dotfiles-shell.service
   f_systemd_overprint:
     src: arch/systemd/user/overprint.service
     dst: ~/.config/systemd/user/overprint.service
   d_overprint:
     src: arch/quickshell/overprint
     dst: ~/.config/quickshell/overprint
-  f_bin_desktop_shell:
-    src: arch/bin/desktop-shell
-    dst: ~/.local/bin/desktop-shell
-    chmod: '755'
   f_bin_desktop_menu:
     src: arch/bin/desktop-menu
     dst: ~/.local/bin/desktop-menu
@@ -198,15 +182,10 @@ profiles:
     dotfiles:
       - f_sway_config
       - f_sway_arch_fragment
-      - f_waybar_config
-      - f_waybar_style
-      - f_fuzzel_config
       - f_teams_desktop
       - f_systemd_sway_session_target
-      - f_systemd_dotfiles_shell
       - f_systemd_overprint
       - d_overprint
-      - f_bin_desktop_shell
       - f_bin_desktop_menu
       - f_bin_record_window
       - f_bin_polkit_agent

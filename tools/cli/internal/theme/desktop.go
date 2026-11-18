@@ -10,12 +10,8 @@ import (
 )
 
 func generateWS(config string, theme Theme) {
-	style := "classic"
-	if overprint(theme) {
-		style = "overprint"
-	}
 	content := fmt.Sprintf(`[ui]
-style = %q
+style = "overprint"
 [ui.colors]
 foreground = %q
 background = %q
@@ -27,7 +23,7 @@ branch = %q
 warning = %q
 error = %q
 selected_foreground = %q
-`, style, c(theme, "fg"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
+`, c(theme, "fg"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
 	write(filepath.Join(config, "ws/theme.toml"), content)
 }
 
@@ -145,16 +141,17 @@ func generateSpotify(root, config string, theme Theme) {
 		content += key + " = " + strings.TrimPrefix(value, "#") + "\n"
 	}
 	write(filepath.Join(config, "spicetify/Themes/Overprint/color.ini"), content)
-	css := ""
-	if overprint(theme) {
-		data, err := os.ReadFile(filepath.Join(root, "themes/overprint/spotify.css"))
-		if err != nil {
-			die(err.Error())
-		}
-		css = strings.NewReplacer(
-			"#755b72", role(theme, "edge", "surface_alt"), "#64495c", role(theme, "ink", "surface_alt"),
-			"#29222e", c(theme, "bg_alt"), "#302735", c(theme, "bg"), "#57425a", c(theme, "surface_alt"), "#e7b76f", c(theme, "accent"),
-		).Replace(string(data))
+	// The stylesheet names palette roles as {{role}}, so it follows any palette.
+	data, err := os.ReadFile(filepath.Join(root, "themes/overprint/spotify.css"))
+	if err != nil {
+		die(err.Error())
+	}
+	css := strings.NewReplacer(
+		"{{edge}}", role(theme, "edge", "surface_alt"), "{{ink}}", role(theme, "ink", "surface_alt"),
+		"{{bg_alt}}", c(theme, "bg_alt"), "{{bg}}", c(theme, "bg"), "{{surface_alt}}", c(theme, "surface_alt"), "{{accent}}", c(theme, "accent"),
+	).Replace(string(data))
+	if strings.Contains(css, "{{") {
+		die("themes/overprint/spotify.css names an unknown palette role")
 	}
 	write(filepath.Join(config, "spicetify/Themes/Overprint/user.css"), css)
 }

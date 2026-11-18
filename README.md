@@ -34,8 +34,8 @@ the launcher can detect Wayland and use the screen-sharing portal. After updatin
 the session environment, restart the desktop shell and fully quit and reopen
 Teams; closing its window leaves the old process running.
 
-Overprint is the default. The old preset catalog has been removed; wallpaper
-palettes are saved separately and appear alongside Overprint in `theme list`.
+Overprint is the default and the only layout. The other entries in `themes/` are
+wallpaper palettes for it: `theme list` shows them, `theme use <name>` switches.
 
 Give Overprint a new wallpaper and color scheme while keeping its layout:
 
@@ -60,9 +60,10 @@ theme use overprint # restore the original
 ```
 
 The command prints the preview's path. Saved palettes and original wallpaper
-copies live in `~/.config/dotfiles/themes/`; `theme list` includes them. Omitting
-`--name` generates one from the image filename and contents. ImageMagick is
-included in `packages.arch`.
+copies live in `~/.config/dotfiles/themes/`; `theme list` includes them. To keep a
+palette in this repository, move its directory into `themes/` (the preview file is
+not needed). Omitting `--name` generates one from the image filename and contents.
+ImageMagick is included in `packages.arch`.
 
 The desktop, Kitty, Helix, and tmux reload automatically. Reopen GTK applications
 and Helium to load their new colors. For Spotify already configured with
@@ -78,10 +79,8 @@ node --test tests/*.test.cjs
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-The native previews in `design-preview/native/` were captured from an isolated
-headless SwayFX session running the actual shell, Kitty, Helix, and tmux.
-Notification timeouts and clipboard restoration were also exercised on that
-session's separate D-Bus and Wayland connections.
+The Python tests start their own headless SwayFX session with the actual shell,
+Kitty, and tmux, on separate D-Bus and Wayland connections.
 
 Overprint also generates GTK 3/4 colors, desktop font settings, an icon theme with
 original amber folders over Papirus, a Helium theme, Spotify colors and CSS, and

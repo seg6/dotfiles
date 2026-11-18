@@ -181,7 +181,6 @@ chmod 700 "$TARGET_HOME/.ssh"
 
 if [[ $(uname -s) == Linux ]]; then
     systemctl --user daemon-reload
-    systemctl --user disable waybar.service mako.service >/dev/null 2>&1 || true
     if [[ -n ${SWAYSOCK:-} ]]; then
         systemctl --user start sway-session.target
     fi

@@ -12,16 +12,16 @@ body, button, input { font-family: "Adwaita Sans", sans-serif !important; }
 .main-view-container__scroll-node-child, .main-nowPlayingBar-container {
   border-radius: 0 !important;
 }
-.Root__main-view, .Root__nav-bar, .Root__right-sidebar { border: 1px solid #755b72; }
-.main-nowPlayingBar-container { border-top: 1px solid #755b72; background: #29222e; }
-.main-trackList-trackListHeader { border-bottom: 1px solid #755b72; }
+.Root__main-view, .Root__nav-bar, .Root__right-sidebar { border: 1px solid {{edge}}; }
+.main-nowPlayingBar-container { border-top: 1px solid {{edge}}; background: {{bg_alt}}; }
+.main-trackList-trackListHeader { border-bottom: 1px solid {{edge}}; }
 .main-trackList-trackListRow { border-radius: 0; }
 .main-trackList-trackListRow:hover, .main-trackList-trackListRow.main-trackList-selected {
-  background: #57425a !important;
+  background: {{surface_alt}} !important;
 }
 .main-playButton-PlayButton, [data-testid="play-button"] {
-  background: #e7b76f !important; color: #302735 !important;
-  border-radius: 2px !important; box-shadow: 4px 4px 0 #64495c;
+  background: {{accent}} !important; color: {{bg}} !important;
+  border-radius: 2px !important; box-shadow: 4px 4px 0 {{ink}};
 }
 .main-playButton-PlayButton:hover { transform: translate(-1px,-1px); }
 .main-coverSlotCollapsed-container { border-radius: 0; }
@@ -29,6 +29,6 @@ body, button, input { font-family: "Adwaita Sans", sans-serif !important; }
   font-family: "Fantasque Sans Mono", monospace;
 }
 .main-trackList-rowSectionIndex { font-style: italic; }
-.progress-bar__fg { background-color: #e7b76f !important; }
-.main-topBar-background { background-color: #302735 !important; }
-::selection { background: #e7b76f; color: #302735; }
+.progress-bar__fg { background-color: {{accent}} !important; }
+.main-topBar-background { background-color: {{bg}} !important; }
+::selection { background: {{accent}}; color: {{bg}}; }

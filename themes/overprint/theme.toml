@@ -47,10 +47,6 @@ cursor = "#e7b76f"
 selection = "#57425a"
 
 [ui]
-style = "overprint"
 radius = 0
 shadow = true
 blur = false
-
-[apps.mako]
-timeout = 6000

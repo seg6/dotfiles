@@ -22,7 +22,6 @@ fish
 flameshot
 fx
 fzf
-fuzzel
 github-cli
 git
 git-delta
@@ -38,7 +37,6 @@ jq
 kitty
 lazygit
 less
-mako
 marksman
 mpv
 ncdu
@@ -86,7 +84,6 @@ ttf-jetbrains-mono-nerd
 ttf-liberation
 ttf-meslo-nerd
 unzip
-waybar
 wf-recorder
 wget
 wireplumber

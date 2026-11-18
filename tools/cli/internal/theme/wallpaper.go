@@ -353,7 +353,9 @@ func createWallpaperTheme(root, config, path, name string) (Theme, string, error
 		return Theme{}, "", err
 	}
 	var encoded bytes.Buffer
-	if err = toml.NewEncoder(&encoded).Encode(theme); err != nil {
+	saved := theme
+	saved.Wallpaper = filepath.Base(theme.Wallpaper)
+	if err = toml.NewEncoder(&encoded).Encode(saved); err != nil {
 		return Theme{}, "", err
 	}
 	write(filepath.Join(directory, "theme.toml"), encoded.String())
