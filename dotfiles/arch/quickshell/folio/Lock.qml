@@ -85,8 +85,18 @@ Scope {
                 }
             }
             Column {
+                id: words
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: parent.height * 0.15
+                y: parent.height * (0.15 + (1 - opacity) * 0.012)
+                // The page is locked at once; the words follow.
+                opacity: 0
+                Component.onCompleted: opacity = 1
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 320
+                        easing.type: Easing.OutCubic
+                    }
+                }
                 width: Math.min(1140 * surface.u, parent.width * 0.7)
                 Text {
                     width: parent.width
@@ -106,7 +116,26 @@ Scope {
                 }
                 // One mark for each character typed; nothing else about it is shown.
                 Row {
+                    id: marks
                     anchors.horizontalCenter: parent.horizontalCenter
+                    // A wrong password shakes its head.
+                    transform: Translate {
+                        id: shake
+                    }
+                    SequentialAnimation {
+                        id: refuse
+                        NumberAnimation { target: shake; property: "x"; to: -14 * surface.u; duration: 50 }
+                        NumberAnimation { target: shake; property: "x"; to: 14 * surface.u; duration: 80 }
+                        NumberAnimation { target: shake; property: "x"; to: -8 * surface.u; duration: 70 }
+                        NumberAnimation { target: shake; property: "x"; to: 0; duration: 70 }
+                    }
+                    Connections {
+                        target: lock
+                        function onVerdictChanged() {
+                            if (lock.verdict.length > 0)
+                                refuse.restart();
+                        }
+                    }
                     height: 20 * surface.u
                     spacing: 12 * surface.u
                     Repeater {

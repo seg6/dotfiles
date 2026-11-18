@@ -121,7 +121,14 @@ PanelWindow {
         width: 420 * window.u
         height: entries.implicitHeight + 16 * window.u
         x: Math.round(Math.max(36 * window.u, Math.min(ShellState.menuX - width, window.width - width - 36 * window.u)))
-        y: Math.round(54 * window.u)
+        y: Math.round((54 - (1 - opacity) * 10) * window.u)
+        opacity: window.visible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 150
+                easing.type: Easing.OutCubic
+            }
+        }
         focus: true
         Keys.onEscapePressed: window.close()
         Rectangle {

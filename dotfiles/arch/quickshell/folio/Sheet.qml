@@ -23,5 +23,11 @@ PopupWindow {
         id: inside
         x: sheet.pad
         y: sheet.pad
+        opacity: sheet.visible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 160
+            }
+        }
     }
 }

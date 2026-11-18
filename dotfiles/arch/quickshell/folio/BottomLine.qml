@@ -16,6 +16,10 @@ PanelWindow {
     readonly property var note: notes.length > 0 ? notes[notes.length - 1] : null
     property real upSeconds: 0
     property bool calendar: false
+    onNoteChanged: {
+        if (note)
+            arrive.restart();
+    }
     property date month: new Date()
     anchors {
         left: true
@@ -102,6 +106,28 @@ PanelWindow {
     Row {
         id: arrived
         visible: line.note !== null
+        // What arrives is written in from the right.
+        transform: Translate {
+            id: writing
+        }
+        ParallelAnimation {
+            id: arrive
+            NumberAnimation {
+                target: arrived
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 260
+            }
+            NumberAnimation {
+                target: writing
+                property: "x"
+                from: 40 * line.u
+                to: 0
+                duration: 260
+                easing.type: Easing.OutCubic
+            }
+        }
         anchors {
             right: parent.right
             rightMargin: 36 * line.u
@@ -147,6 +173,12 @@ PanelWindow {
     Row {
         id: standing
         visible: line.note === null
+        opacity: visible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 260
+            }
+        }
         anchors {
             right: parent.right
             rightMargin: 36 * line.u

@@ -86,9 +86,17 @@ PanelWindow {
         onClicked: ShellState.ask("anything")
     }
     Column {
-        visible: page.bare
+        // The sentence comes up as the desk empties.
+        visible: opacity > 0
+        opacity: page.bare ? 1 : 0
         anchors.horizontalCenter: parent.horizontalCenter
-        y: page.height * 0.15
+        y: page.height * (0.15 + (1 - opacity) * 0.012)
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 320
+                easing.type: Easing.OutCubic
+            }
+        }
         width: Math.min(1140 * page.u, page.width * 0.7)
         spacing: 0
         Text {

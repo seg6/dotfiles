@@ -58,11 +58,13 @@ PanelWindow {
 
     // The desks sit in the middle of the line, and give way when the right side is long.
     Row {
+        id: deskRow
         readonly property real gap: 48 * line.u
         x: Math.round(Math.max(who.x + who.width + gap, Math.min((line.width - width) / 2, status.x - gap - width)))
         anchors.verticalCenter: parent.verticalCenter
         spacing: 38 * line.u
         Repeater {
+            id: deskItems
             model: line.desks
             Item {
                 id: desk
@@ -95,15 +97,22 @@ PanelWindow {
                         height: width
                         radius: width / 2
                         color: Theme.signal
+                        // It breathes, so it is noticed without being looked for.
+                        SequentialAnimation on opacity {
+                            running: !!desk.entry?.urgent
+                            loops: Animation.Infinite
+                            NumberAnimation {
+                                to: 0.25
+                                duration: 900
+                                easing.type: Easing.InOutSine
+                            }
+                            NumberAnimation {
+                                to: 1
+                                duration: 900
+                                easing.type: Easing.InOutSine
+                            }
+                        }
                     }
-                }
-                Rectangle {
-                    visible: desk.current
-                    anchors.top: label.bottom
-                    anchors.topMargin: 3 * line.u
-                    width: label.width
-                    height: 1
-                    color: Theme.fg
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -122,6 +131,32 @@ PanelWindow {
                             line.peek = "";
                     }
                 }
+            }
+        }
+    }
+
+    // One rule under the desk you are on. It slides to the next one.
+    Rectangle {
+        readonly property Item under: {
+            line.desks;
+            return deskItems.count > 0 ? deskItems.itemAt(line.desks.indexOf(line.here)) : null;
+        }
+        visible: under !== null
+        x: deskRow.x + (under ? under.x : 0)
+        y: deskRow.y + deskRow.height + 3 * line.u
+        width: under ? under.width : 0
+        height: 1
+        color: Theme.fg
+        Behavior on x {
+            NumberAnimation {
+                duration: 220
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on width {
+            NumberAnimation {
+                duration: 220
+                easing.type: Easing.OutCubic
             }
         }
     }
@@ -280,6 +315,12 @@ PanelWindow {
                 anchors.fill: parent
                 anchors.margins: 1
                 source: Desktop.pictures[line.peek] ?? ""
+                opacity: line.peek.length > 0 ? 1 : 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 160
+                    }
+                }
                 fillMode: Image.PreserveAspectCrop
                 smooth: false
                 cache: false
