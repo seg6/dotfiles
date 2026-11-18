@@ -6,7 +6,8 @@ import Quickshell.Wayland
 import "Logic.js" as Logic
 
 // The page behind everything. With nothing open on a desk it says the hour
-// and the place, then lists what is going on, over a picture of a valley at that hour.
+// and the place, then lists what is going on. The picture along its foot is the theme's
+// wallpaper in the page's two colors.
 PanelWindow {
     id: page
     readonly property real u: Theme.unit(screen)
@@ -56,11 +57,8 @@ PanelWindow {
         printErrors: false
         onFileChanged: page.stamp++
     }
-    // The picture is drawn live by Picture.frag: a valley at the hour it is.
-    // Each of its dots is a square several screen pixels wide, so the dither shows.
-    readonly property date pictured: Quickshell.env("FOLIO_NOW") ? new Date(Quickshell.env("FOLIO_NOW")) : clock.date
-    readonly property var sky: Logic.sky(pictured, Theme.who.latitude)
-    // Without a GPU there is no shader; the theme's still picture stands in.
+    // Each pixel of the picture is a square several screen pixels wide, so the
+    // dither shows. Wind passes through it: Picture.frag moves the dots about.
     Image {
         id: picture
         anchors.bottom: parent.bottom
@@ -72,7 +70,8 @@ PanelWindow {
         fillMode: Image.Stretch
         // The picture belongs to the empty page; behind work it would only show as noise in the margins.
         opacity: page.bare ? 1 : 0
-        visible: !valley.visible
+        // Without a GPU there is no shader, and the picture stands still.
+        visible: !wind.visible
         Behavior on opacity {
             NumberAnimation {
                 duration: 320
@@ -81,24 +80,20 @@ PanelWindow {
         }
     }
     ShaderEffect {
-        id: valley
+        id: wind
+        property Image source: picture
         property real time: 0
-        property real progress: page.sky.progress
-        property real light: page.sky.light
-        property real phase: page.sky.phase
         property size size: Qt.size(640, 360)
-        property color ink: Qt.darker(Theme.fg, 1.18)
-        property color paper: Theme.bg
         anchors.fill: picture
         opacity: picture.opacity
-        visible: GraphicsInfo.api !== GraphicsInfo.Software
+        visible: GraphicsInfo.api !== GraphicsInfo.Software && picture.status === Image.Ready
         fragmentShader: Qt.resolvedUrl("Picture.frag.qsb")
         // A dozen steps a second is as fast as dots this size can be seen to move.
         Timer {
             interval: 80
-            running: valley.visible && valley.opacity > 0
+            running: wind.visible && wind.opacity > 0
             repeat: true
-            onTriggered: valley.time += 0.08
+            onTriggered: wind.time += 0.08
         }
     }
     MouseArea {

@@ -92,11 +92,8 @@ line, such as "It is twenty to one on a Wednesday in Berlin." Under it is a
 short list, one fact to a line: what is ELSEWHERE, what is WAITING and for how
 long, what is PLAYING, and how many notifications were MISSED. The names are
 links: to the desk, to pause, to the list of what went by.
-Along the foot of the page is a valley drawn in dots of the two colors, at
-the hour it is: the sun crosses by day and the moon, in its phase, by night;
-the slopes facing them are lit, stars come out, the lake glints, and a window
-is lit after dark. It follows the latitude in `~/.config/dotfiles/place`, or
-50° north without one.
+Along the foot of the page is the theme's wallpaper, dithered to the two
+colors, with wind passing through it: the sky drifts, the field sways.
 
 Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
 the page finishes the sentence:
@@ -118,9 +115,8 @@ coordinates in the bottom margin, write them yourself; nothing is looked up:
 echo "52.52 13.40" > ~/.config/dotfiles/place
 ```
 
-`theme wallpaper picture.jpg --name harvest --layout folio` takes the palette
-from any image. The image itself, dithered, is the page's picture only where
-there is no GPU to draw the valley.
+`theme wallpaper picture.jpg --name harvest --layout folio` puts any image at
+the foot of the page and takes the palette from it.
 
 ## Overprint
 
