@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Apply the generated Spotify theme, retaining Spicetify's original-file backup."""
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+
+home = Path.home()
+config = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
+spotify = Path(os.environ.get('XDG_DATA_HOME', home / '.local/share')) / 'spotify-launcher/install/usr/share/spotify'
+spice = shutil.which('spicetify')
+if not spice or not (spotify / 'Apps').is_dir():
+    sys.exit('Install Spicetify with tools/install-overprint-extras and launch Spotify once first.')
+if not (config / 'spicetify/Themes/Overprint/user.css').is_file():
+    sys.exit('Run theme use overprint first.')
+
+def player(*args):
+    result = subprocess.run(['playerctl', '-p', 'spotify', *args], capture_output=True, text=True)
+    return result.stdout.strip() if result.returncode == 0 else ''
+
+# MPRIS may be unavailable while the app starts; still retain a running client.
+running = False
+for proc in Path('/proc').iterdir():
+    if not proc.name.isdecimal(): continue
+    try:
+        args = proc.joinpath('cmdline').read_bytes().split(b'\0')
+        if proc.joinpath('exe').resolve() == spotify / 'spotify' and not any(
+                arg.startswith((b'--type=', b'--monitor-self')) for arg in args):
+            running = True
+            break
+    except (OSError, RuntimeError):
+        pass
+status = player('status') if shutil.which('playerctl') else ''
+position = player('position') if status else ''
+subprocess.run([spice, 'config', 'spotify_path', str(spotify), 'prefs_path', str(config / 'spotify/prefs'),
+                'current_theme', 'Overprint', 'color_scheme', 'Overprint', 'inject_css', '1', 'replace_colors', '1'], check=True)
+subprocess.run([spice, 'backup', 'apply', '--no-restart'], check=True)
+if running or status:
+    subprocess.run([spice, 'restart'], check=True)
+    if status:
+        for _ in range(100):
+            time.sleep(0.1)
+            if player('status'):
+                break
+    if position:
+        player('position', position)
+    if status == 'Playing': player('play')
+    elif status == 'Paused': player('pause')
+print('Overprint applied. Restore the original client with: spicetify restore')

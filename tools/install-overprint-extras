@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""Install Overprint's optional desktop assets into the user's own data directory."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tarfile
+import tempfile
+import urllib.request
+
+home = Path.home()
+cache = Path(os.environ.get('XDG_CACHE_HOME', home / '.cache')) / 'dotfiles/overprint'
+share = Path(os.environ.get('XDG_DATA_HOME', home / '.local/share'))
+cache.mkdir(parents=True, exist_ok=True)
+
+
+def download(url, target):
+    if not target.exists():
+        temporary = target.with_suffix(target.suffix + '.part')
+        urllib.request.urlretrieve(url, temporary)
+        temporary.replace(target)
+
+
+for package, directory in [('adw-gtk-theme', 'themes'), ('papirus-icon-theme', 'icons')]:
+    url = subprocess.check_output(['pacman', '-Sp', '--print-format', '%l', package], text=True).strip()
+    archive = cache / url.rsplit('/', 1)[-1]
+    download(url, archive)
+    download(url + '.sig', Path(str(archive) + '.sig'))
+    subprocess.run(['gpg', '--homedir', '/etc/pacman.d/gnupg', '--no-auto-check-trustdb',
+                    '--verify', str(archive) + '.sig', str(archive)], check=True)
+    with tempfile.TemporaryDirectory(prefix='overprint-assets-') as stage:
+        subprocess.run(['bsdtar', '-xf', str(archive), '-C', stage, 'usr/share/' + directory], check=True)
+        for item in (Path(stage) / 'usr/share' / directory).iterdir():
+            shutil.copytree(item, share / directory / item.name, symlinks=True, dirs_exist_ok=True)
+    print('Installed', package, 'in', share / directory, flush=True)
+
+version = '2.45.3'
+metadata = json.load(urllib.request.urlopen('https://api.github.com/repos/spicetify/cli/releases/tags/v' + version))
+asset = next(a for a in metadata['assets'] if a['name'] == f'spicetify-{version}-linux-amd64.tar.gz')
+archive = cache / asset['name']
+download(asset['browser_download_url'], archive)
+digest = 'sha256:' + hashlib.sha256(archive.read_bytes()).hexdigest()
+if digest != asset['digest']:
+    raise SystemExit('Spicetify release checksum mismatch')
+vendor = share / 'dotfiles/spicetify'
+vendor.mkdir(parents=True, exist_ok=True)
+with tarfile.open(archive) as package:
+    package.extractall(vendor, filter='data')
+bin_dir = home / '.local/bin'
+bin_dir.mkdir(parents=True, exist_ok=True)
+link = bin_dir / 'spicetify'
+if link.is_symlink(): link.unlink()
+if not link.exists(): link.symlink_to(vendor / 'spicetify')
+print('Installed Spicetify', version, '(theme activation is separate)')

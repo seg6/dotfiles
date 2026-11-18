@@ -3,6 +3,8 @@ theme = "generated"
 [editor]
 mouse = false
 line-number = "relative"
+bufferline = "never"
+color-modes = true
 auto-format = false
 idle-timeout = 250
 gutters = ["diff", "diagnostics", "line-numbers", "spacer"]

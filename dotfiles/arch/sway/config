@@ -1,11 +1,9 @@
-include ~/.config/sway/theme
-
 set $mod Mod4
 set $term kitty
-set $menu fuzzel
+set $menu desktop-menu
 set $browser helium-browser
 
-exec sh -lc 'dbus-update-activation-environment --systemd WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP && systemctl --user start sway-session.target'
+exec sh -lc 'dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK I3SOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE && systemctl --user start sway-session.target'
 exec wl-paste --watch cliphist store
 exec nm-applet
 exec blueman-applet
@@ -23,6 +21,8 @@ gaps inner 8
 gaps outer 4
 default_border pixel 2
 default_floating_border pixel 2
+
+include ~/.config/sway/theme
 
 focus_follows_mouse no
 floating_modifier $mod normal
@@ -131,7 +131,7 @@ bindsym $mod+Return exec $term
 bindsym $mod+Space exec $menu
 bindsym $mod+Shift+f exec $browser
 bindsym Ctrl+Shift+space exec 1password --quick-access
-bindsym $mod+Shift+v exec cliphist list | fuzzel --dmenu --prompt='clipboard: ' | cliphist decode | wl-copy
+bindsym $mod+Shift+v exec desktop-menu clipboard
 
 bindsym $mod+s exec sh -lc 'directory="$HOME/pictures/screenshots"; mkdir -p "$directory"; grim -g "$(slurp)" "$directory/$(date +%Y%m%d_%H%M%S).png"'
 bindsym $mod+Shift+s exec flameshot gui
@@ -153,8 +153,6 @@ bindsym XF86AudioStop exec playerctl stop
 bindsym XF86MonBrightnessUp exec brightnessctl set 5%+
 bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
 
-for_window [class=".*"] border pixel 2
-for_window [app_id=".*"] border pixel 2
 
 for_window [app_id="pavucontrol"] floating enable
 for_window [app_id="blueman-manager"] floating enable

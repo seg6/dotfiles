@@ -1,0 +1,8 @@
+singleton Theme 1.0 Theme.qml
+singleton ShellState 1.0 ShellState.qml
+singleton SwayState 1.0 SwayState.qml
+TrayGlyph 1.0 TrayGlyph.qml
+Rail 1.0 Rail.qml
+Launcher 1.0 Launcher.qml
+Notifications 1.0 Notifications.qml
+NotificationCard 1.0 NotificationCard.qml

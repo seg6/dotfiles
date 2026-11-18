@@ -1,0 +1,56 @@
+name = "overprint"
+display = "Overprint"
+mode = "dark"
+
+[colors]
+bg = "#302735"
+bg_alt = "#29222e"
+surface = "#413346"
+surface_alt = "#57425a"
+fg = "#efdbc4"
+dim = "#baa0b6"
+accent = "#e7b76f"
+red = "#dc9693"
+green = "#b7c89e"
+yellow = "#e7b76f"
+blue = "#b6b9db"
+magenta = "#c9a0d6"
+cyan = "#a4c7bf"
+desk = "#dfa181"
+paper = "#efc298"
+ink = "#64495c"
+edge = "#755b72"
+active = "#6a486f"
+header = "#735571"
+header_fg = "#f2d8de"
+header_dim = "#dfbddb"
+shadow = "#664a64"
+
+[ansi]
+black = "#29222e"
+red = "#ce8585"
+green = "#a3b58e"
+yellow = "#d5a55f"
+blue = "#a4a7ca"
+magenta = "#b48bc1"
+cyan = "#91b5ad"
+white = "#d9c3b2"
+bright_black = "#937b97"
+bright_red = "#e9a6a1"
+bright_green = "#c6d5ae"
+bright_yellow = "#f1c98b"
+bright_blue = "#c5c7e5"
+bright_magenta = "#d9b3e2"
+bright_cyan = "#b6d7cd"
+bright_white = "#efdbc4"
+cursor = "#e7b76f"
+selection = "#57425a"
+
+[ui]
+style = "overprint"
+radius = 0
+shadow = true
+blur = false
+
+[apps.mako]
+timeout = 6000

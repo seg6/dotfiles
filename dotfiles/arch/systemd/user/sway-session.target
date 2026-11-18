@@ -2,5 +2,5 @@
 Description=Sway graphical session
 Documentation=man:systemd.special(7)
 Requires=graphical-session.target
-Wants=waybar.service mako.service
+Wants=dotfiles-shell.service
 After=graphical-session-pre.target

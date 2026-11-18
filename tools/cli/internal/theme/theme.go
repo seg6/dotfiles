@@ -1,6 +1,7 @@
 package theme
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -16,14 +17,15 @@ import (
 )
 
 type Theme struct {
-	ID      string                    `toml:"-"`
-	Name    string                    `toml:"name"`
-	Display string                    `toml:"display"`
-	Mode    string                    `toml:"mode"`
-	Colors  map[string]string         `toml:"colors"`
-	ANSI    map[string]string         `toml:"ansi"`
-	UI      map[string]any            `toml:"ui"`
-	Apps    map[string]map[string]any `toml:"apps"`
+	ID        string                    `toml:"-"`
+	Name      string                    `toml:"name"`
+	Display   string                    `toml:"display"`
+	Mode      string                    `toml:"mode"`
+	Wallpaper string                    `toml:"wallpaper,omitempty"`
+	Colors    map[string]string         `toml:"colors"`
+	ANSI      map[string]string         `toml:"ansi"`
+	UI        map[string]any            `toml:"ui"`
+	Apps      map[string]map[string]any `toml:"apps"`
 }
 
 func Run(args []string) {
@@ -34,6 +36,10 @@ func Run(args []string) {
 	config := configHome()
 
 	switch args[0] {
+	case "wallpaper":
+		if err := wallpaperCommand(root, config, args[1:]); err != nil {
+			die(err.Error())
+		}
 	case "list":
 		listThemes(root, config)
 	case "current":
@@ -66,7 +72,7 @@ func Run(args []string) {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: theme list|current|apply [name]|use <name>|random|reload")
+	fmt.Fprintln(os.Stderr, "usage: theme list|current|apply [name]|use <name>|wallpaper <image> [--name name] [--preview]|random|reload")
 	os.Exit(2)
 }
 
@@ -115,18 +121,24 @@ func hasArg(args []string, arg string) bool {
 }
 
 func themeNames(root string) []string {
-	entries, err := os.ReadDir(filepath.Join(root, "themes"))
-	if err != nil {
-		return nil
-	}
-	var names []string
-	for _, entry := range entries {
-		if entry.IsDir() && exists(filepath.Join(root, "themes", entry.Name(), "theme.toml")) {
-			names = append(names, entry.Name())
+	names := map[string]bool{}
+	for _, directory := range []string{filepath.Join(root, "themes"), userThemeDir(configHome())} {
+		entries, err := os.ReadDir(directory)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.IsDir() && exists(filepath.Join(directory, entry.Name(), "theme.toml")) {
+				names[entry.Name()] = true
+			}
 		}
 	}
-	sort.Strings(names)
-	return names
+	result := make([]string, 0, len(names))
+	for name := range names {
+		result = append(result, name)
+	}
+	sort.Strings(result)
+	return result
 }
 
 func listThemes(root, config string) {
@@ -155,7 +167,8 @@ func currentTheme(root, config string) {
 
 func selectedTheme(root, config string) string {
 	current := strings.TrimSpace(readString(themeSelectionPath(config)))
-	if current != "" {
+	if validThemeName(current) && (exists(filepath.Join(root, "themes", current, "theme.toml")) ||
+		exists(filepath.Join(userThemeDir(config), current, "theme.toml"))) {
 		return current
 	}
 	return strings.TrimSpace(readString(filepath.Join(root, "themes", "default")))
@@ -174,7 +187,13 @@ func loadTheme(root, name string) Theme {
 }
 
 func readTheme(root, name string) (Theme, error) {
+	if !validThemeName(name) {
+		return Theme{}, fmt.Errorf("invalid theme name: %s", name)
+	}
 	path := filepath.Join(root, "themes", name, "theme.toml")
+	if !exists(path) {
+		path = filepath.Join(userThemeDir(configHome()), name, "theme.toml")
+	}
 	var theme Theme
 	metadata, err := toml.DecodeFile(path, &theme)
 	if err != nil {
@@ -210,6 +229,9 @@ func readTheme(root, name string) (Theme, error) {
 }
 
 func validateTheme(theme Theme) error {
+	if theme.Wallpaper != "" && !filepath.IsAbs(theme.Wallpaper) {
+		return fmt.Errorf("theme %s wallpaper must be an absolute path", theme.ID)
+	}
 	if strings.TrimSpace(theme.Name) == "" {
 		return fmt.Errorf("theme %s is missing name", theme.ID)
 	}
@@ -236,6 +258,10 @@ func validateTheme(theme Theme) error {
 
 	for key, value := range theme.UI {
 		switch key {
+		case "style":
+			if value != "classic" && value != "overprint" {
+				return fmt.Errorf("theme %s ui.style must be classic or overprint", theme.ID)
+			}
 		case "radius":
 			radius, ok := integerValue(value)
 			if !ok || radius < 0 || radius > 32 {
@@ -304,15 +330,20 @@ func applyTheme(root, config, name string, shouldReload bool) {
 
 func generateTheme(root, config string, theme Theme) {
 	if runtime.GOOS == "linux" {
-		generateSway(config, theme)
+		generateSway(root, config, theme)
 		generateWaybar(config, theme)
 		generateFuzzel(config, theme)
 		generateMako(config, theme)
 		generateGTK(config, theme)
+		generateShell(config, theme)
 	}
 	generateKitty(root, config, theme)
 	generateHelix(config, theme)
 	generateTmux(config, theme)
+	generateWS(config, theme)
+	if runtime.GOOS == "linux" {
+		generateDesktop(root, config, theme)
+	}
 }
 
 func finishTheme(name string, shouldReload bool) {
@@ -328,6 +359,16 @@ func c(theme Theme, key string) string {
 		die(theme.ID + " missing colors." + key)
 	}
 	return value
+}
+
+func role(theme Theme, key, fallback string) string {
+	if value := theme.Colors[key]; value != "" {
+		return value
+	}
+	if fallback == "ink" {
+		return role(theme, "ink", "surface_alt")
+	}
+	return c(theme, fallback)
 }
 
 func ansi(theme Theme, key, fallback string) string {
@@ -374,10 +415,29 @@ func app(theme Theme, appName, key, fallback string) string {
 	return fallback
 }
 
-func generateSway(config string, theme Theme) {
+func overprint(theme Theme) bool { return theme.UI["style"] == "overprint" }
+
+func generateShell(config string, theme Theme) {
+	backend := "classic"
+	if overprint(theme) {
+		backend = "overprint"
+	}
+	palette, err := json.MarshalIndent(theme.Colors, "", "  ")
+	if err != nil {
+		die(err.Error())
+	}
+	write(filepath.Join(config, "quickshell/overprint/colors.json"), string(palette))
+	write(filepath.Join(config, "dotfiles/shell"), backend)
+}
+
+func generateSway(root, config string, theme Theme) {
 	radius := uiInt(theme, "radius", 8)
 	shadow := enable(uiBool(theme, "shadow", true))
 	blur := enable(uiBool(theme, "blur", true))
+	gaps := []struct {
+		side   string
+		amount int
+	}{{"inner", 8}, {"outer", 4}}
 	content := fmt.Sprintf(`output * bg %s solid_color
 
 set $bg %s
@@ -420,7 +480,47 @@ layer_effects "fuzzel" shadows %s
 layer_effects "fuzzel" corner_radius %d
 layer_effects "fuzzel" blur %s
 `, c(theme, "bg"), c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg"), theme.ID, radius, shadow, shadow, blur, radius, shadow, radius, blur)
+	if overprint(theme) {
+		gaps = []struct {
+			side   string
+			amount int
+		}{
+			{"inner", 48}, {"outer", 0}, {"left", -14}, {"right", 0}, {"top", 16}, {"bottom", 24},
+		}
+		wallpaper := theme.Wallpaper
+		if wallpaper == "" {
+			wallpaper = filepath.Join(root, "themes", theme.ID, "wallpaper.png")
+		}
+		if exists(wallpaper) {
+			content += fmt.Sprintf("\noutput * bg %s fill\n", strconv.Quote(wallpaper))
+		}
+		content += fmt.Sprintf(`
+# Sway supplies the window headings; the shell keeps Kitty headings visible in both layouts.
+default_floating_border normal 2
+font pango:Fantasque Sans Mono 12
+titlebar_padding 14 16
+titlebar_border_thickness 2
+titlebar_separator disable
+client.focused          $accent %s $fg $accent $accent
+client.focused_inactive $dim    %s $dim $dim   $dim
+client.unfocused        $bg     %s $dim $bg    $bg
+shadow_blur_radius 1
+shadow_color %s75
+shadow_inactive_color %s44
+shadow_offset 8 8
+layer_effects "overprint" shadows disable
+layer_effects "overprint" blur disable
+layer_effects "overprint" corner_radius 0
+`, role(theme, "header", "surface_alt"), role(theme, "header", "surface_alt"), role(theme, "header", "surface_alt"), role(theme, "shadow", "ink"), role(theme, "shadow", "ink"))
+	}
+	var reapply []string
+	for _, gap := range gaps {
+		content += fmt.Sprintf("gaps %s %d\n", gap.side, gap.amount)
+		reapply = append(reapply, fmt.Sprintf("gaps %s all set %d", gap.side, gap.amount))
+	}
 	write(filepath.Join(config, "sway/theme"), content)
+	// Sway's config defaults affect new workspaces; reload must update existing ones too.
+	write(filepath.Join(config, "dotfiles/sway-gaps"), strings.Join(reapply, "; "))
 }
 
 func lockCommand(theme Theme) string {
@@ -561,8 +661,53 @@ func generateGTK(config string, theme Theme) {
 @define-color sidebar_backdrop_color %s;
 @define-color sidebar_shade_color rgba(0, 0, 0, 0.20);
 `, c(theme, "bg"), c(theme, "fg"), c(theme, "bg_alt"), c(theme, "fg"), c(theme, "accent"), c(theme, "accent"), c(theme, "bg"), c(theme, "surface"), c(theme, "fg"), rgb(c(theme, "surface_alt")), c(theme, "surface"), c(theme, "fg"), c(theme, "surface"), c(theme, "fg"), c(theme, "surface"), c(theme, "fg"), c(theme, "red"), c(theme, "red"), c(theme, "bg"), c(theme, "green"), c(theme, "green"), c(theme, "bg"), c(theme, "yellow"), c(theme, "yellow"), c(theme, "bg"), c(theme, "red"), ansi(theme, "bright_red", c(theme, "red")), c(theme, "bg"), rgb(c(theme, "surface_alt")), c(theme, "bg_alt"), c(theme, "fg"), c(theme, "bg_alt"))
+	// GTK 3's legacy names and libadwaita's GTK 4 variables need both palettes.
+	content += fmt.Sprintf(`
+@define-color theme_bg_color %s;
+@define-color theme_fg_color %s;
+@define-color theme_base_color %s;
+@define-color theme_text_color %s;
+@define-color theme_selected_bg_color %s;
+@define-color theme_selected_fg_color %s;
+@define-color borders %s;
+@define-color unfocused_borders %s;
+`, c(theme, "bg"), c(theme, "fg"), c(theme, "bg_alt"), c(theme, "fg"), c(theme, "accent"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "surface"))
+	if overprint(theme) {
+		content += fmt.Sprintf(`
+window, dialog { background-color: @window_bg_color; color: @window_fg_color; }
+headerbar, .titlebar { background: %s; color: %s; border-radius: 0; box-shadow: none; }
+button, entry, spinbutton, dropdown, combobox, popover, menu, .card { border-radius: 2px; }
+button:checked, button.suggested-action, selection, row:selected { background: @accent_bg_color; color: @accent_fg_color; }
+entry:focus, button:focus { outline-color: @accent_color; }
+.sidebar, sidebar { background-color: @sidebar_bg_color; }
+view, textview text, treeview.view { background-color: @view_bg_color; color: @view_fg_color; }
+`, role(theme, "header", "surface_alt"), c(theme, "fg"))
+	}
 	write(filepath.Join(config, "gtk-3.0/gtk.css"), content)
-	write(filepath.Join(config, "gtk-4.0/gtk.css"), content)
+	modern := content + "\n/* libadwaita 1.6+ uses CSS custom properties. */\n:root {\n"
+	header := c(theme, "surface")
+	if overprint(theme) {
+		header = role(theme, "header", "surface_alt")
+	}
+	values := map[string]string{
+		"accent-bg-color": c(theme, "accent"), "accent-fg-color": c(theme, "bg"), "accent-color": c(theme, "accent"),
+		"window-bg-color": c(theme, "bg"), "window-fg-color": c(theme, "fg"), "view-bg-color": c(theme, "bg_alt"), "view-fg-color": c(theme, "fg"),
+		"headerbar-bg-color": header, "headerbar-fg-color": c(theme, "fg"), "headerbar-backdrop-color": header, "headerbar-border-color": c(theme, "surface_alt"),
+		"sidebar-bg-color": c(theme, "bg_alt"), "sidebar-fg-color": c(theme, "fg"), "sidebar-backdrop-color": c(theme, "bg_alt"),
+		"card-bg-color": c(theme, "surface"), "card-fg-color": c(theme, "fg"), "dialog-bg-color": c(theme, "surface"), "dialog-fg-color": c(theme, "fg"),
+		"popover-bg-color": c(theme, "surface"), "popover-fg-color": c(theme, "fg"), "destructive-bg-color": c(theme, "red"), "destructive-fg-color": c(theme, "bg"),
+		"success-bg-color": c(theme, "green"), "success-fg-color": c(theme, "bg"), "warning-bg-color": c(theme, "yellow"), "warning-fg-color": c(theme, "bg"), "error-bg-color": c(theme, "red"), "error-fg-color": c(theme, "bg"),
+	}
+	names := make([]string, 0, len(values))
+	for name := range values {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		modern += "  --" + name + ": " + values[name] + ";\n"
+	}
+	modern += "}\n"
+	write(filepath.Join(config, "gtk-4.0/gtk.css"), modern)
 }
 
 func generateKitty(root, config string, theme Theme) {
@@ -604,10 +749,36 @@ active_tab_background   %s
 inactive_tab_foreground %s
 inactive_tab_background %s
 `, c(theme, "bg"), c(theme, "fg"), ansi(theme, "cursor", c(theme, "accent")), ansi(theme, "selection", c(theme, "surface_alt")), c(theme, "fg"), ansi(theme, "black", c(theme, "bg_alt")), ansi(theme, "red", c(theme, "red")), ansi(theme, "green", c(theme, "green")), ansi(theme, "yellow", c(theme, "yellow")), ansi(theme, "blue", c(theme, "blue")), ansi(theme, "magenta", c(theme, "magenta")), ansi(theme, "cyan", c(theme, "cyan")), ansi(theme, "white", c(theme, "fg")), ansi(theme, "bright_black", c(theme, "dim")), ansi(theme, "bright_red", c(theme, "red")), ansi(theme, "bright_green", c(theme, "green")), ansi(theme, "bright_yellow", c(theme, "yellow")), ansi(theme, "bright_blue", c(theme, "blue")), ansi(theme, "bright_magenta", c(theme, "magenta")), ansi(theme, "bright_cyan", c(theme, "cyan")), ansi(theme, "bright_white", c(theme, "fg")), c(theme, "bg"), c(theme, "accent"), c(theme, "dim"), c(theme, "bg_alt"))
+	if overprint(theme) {
+		content += fmt.Sprintf(`
+font_size 18.0
+window_padding_width 16 16 0 16
+window_title_bar_min_windows 0
+tab_bar_style custom
+tab_bar_min_tabs 2
+hide_window_decorations no
+tab_bar_edge top
+tab_bar_align left
+tab_bar_margin_width 0
+tab_bar_margin_height 12 12
+tab_bar_margin_color %s
+tab_bar_background %s
+active_tab_foreground %s
+active_tab_background %s
+inactive_tab_foreground %s
+inactive_tab_background %s
+active_tab_font_style normal
+inactive_tab_font_style normal
+`, role(theme, "header", "surface_alt"), role(theme, "header", "surface_alt"), role(theme, "header_fg", "fg"), role(theme, "header", "surface_alt"), role(theme, "header_dim", "dim"), role(theme, "header", "surface_alt"))
+	}
 	write(target, content)
 }
 
 func generateHelix(config string, theme Theme) {
+	if overprint(theme) {
+		generateOverprintHelix(config, theme)
+		return
+	}
 	hx := app(theme, "helix", "theme", "")
 	if hx == "" {
 		return
@@ -635,8 +806,12 @@ generated_mode_select = %q
 func generateTmux(config string, theme Theme) {
 	content := fmt.Sprintf(`# Generated by theme use %s.
 set -g @theme-popup-border "%s"
+set -g popup-border-style "fg=#{@theme-popup-border}"
+set -g popup-style default
+set -g popup-border-lines rounded
 
 set -g status 2
+set -gu status-format[2]
 set -g status-position bottom
 set -g status-justify absolute-centre
 set -g status-interval 5
@@ -681,22 +856,152 @@ set -g clock-mode-colour "%s"
 		c(theme, "fg"), c(theme, "surface_alt"),
 		c(theme, "accent"),
 	)
+	if overprint(theme) {
+		content += fmt.Sprintf(`
+# A cell-aligned offset shadow, with italic workspace indices.
+set -g status 3
+set -g set-titles-string '#{?@ws-title,#{@ws-title},#S}:#I:#W'
+set -g @theme-popup-lines single
+set -g popup-border-lines single
+set -g @theme-popup-bg "%s"
+set -g @theme-popup-fg "%s"
+set -g popup-style "bg=#{@theme-popup-bg},fg=#{@theme-popup-fg}"
+set -g window-status-format "#[fg=%s,bg=default,nobold] #[italics]#I#[noitalics] #W  "
+set -g window-status-current-format "#[fg=%s,bg=%s,bold] #[italics]#I#[noitalics,nobold] #W #[fg=%s,bg=default]▄#[default]"
+set -g @theme-shadow-window '#{R: ,#{e|+|:4,#{e|+|:#{n:window_index},#{w:window_name}}}}'
+set -g @theme-shadow-current '#[fg=%s,bg=default] #{R:▀,#{e|+|:3,#{e|+|:#{n:window_index},#{w:window_name}}}}#[default]'
+set -g status-format[2] '#[list=on,align=absolute-centre]#[list=left-marker]<#[list=right-marker]>#[list=on]#{W:#[range=window|#{window_index}]#{T:@theme-shadow-window}#[norange],#[range=window|#{window_index},list=focus]#{T:@theme-shadow-current}#[norange,list=on]}#[nolist]'
+set -g status-left '#[fg=%s,bg=default,bold] #{?@ws-title,#{@ws-title},#S} '
+`, c(theme, "bg"), c(theme, "fg"), c(theme, "dim"), c(theme, "bg"), c(theme, "accent"), role(theme, "ink", "surface_alt"), role(theme, "ink", "surface_alt"), c(theme, "accent"))
+	}
 	write(filepath.Join(config, "tmux/theme.conf"), content)
+}
+
+func generateOverprintHelix(config string, theme Theme) {
+	content := `"ui.background" = { bg = "bg" }
+"ui.text" = "fg"
+"ui.text.focus" = { fg = "accent", modifiers = ["bold"] }
+"ui.text.inactive" = "dim"
+"ui.gutter" = { bg = "bg" }
+"ui.linenr" = "dim"
+"ui.linenr.selected" = "accent"
+"ui.cursor" = { fg = "bg", bg = "accent" }
+"ui.cursor.match" = { bg = "surface_alt" }
+"ui.cursorline.primary" = { bg = "surface" }
+"ui.selection" = { bg = "surface_alt" }
+"ui.statusline" = { fg = "fg", bg = "bg" }
+"ui.statusline.inactive" = { fg = "dim", bg = "bg" }
+"ui.statusline.normal" = { fg = "bg", bg = "accent", modifiers = ["bold"] }
+"ui.statusline.insert" = { fg = "bg", bg = "green", modifiers = ["bold"] }
+"ui.statusline.select" = { fg = "bg", bg = "magenta", modifiers = ["bold"] }
+"ui.popup" = { fg = "fg", bg = "surface" }
+"ui.popup.info" = { fg = "fg", bg = "surface" }
+"ui.window" = "surface_alt"
+"ui.help" = { fg = "fg", bg = "surface" }
+"ui.menu" = { fg = "fg", bg = "surface" }
+"ui.menu.selected" = { fg = "bg", bg = "accent", modifiers = ["bold"] }
+"ui.menu.scroll" = { fg = "dim", bg = "surface" }
+"ui.virtual" = "dim"
+"ui.virtual.inlay-hint" = "dim"
+"ui.virtual.jump-label" = { fg = "bg", bg = "magenta", modifiers = ["bold"] }
+"comment" = { fg = "dim", modifiers = ["italic"] }
+"keyword" = "magenta"
+"keyword.control" = "magenta"
+"operator" = "magenta"
+"punctuation" = "fg"
+"string" = "green"
+"constant" = "accent"
+"constant.builtin" = "accent"
+"constant.numeric" = "red"
+"type" = "cyan"
+"type.builtin" = "cyan"
+"function" = "accent"
+"function.macro" = "magenta"
+"variable" = "fg"
+"variable.parameter" = "red"
+"variable.builtin" = "cyan"
+"constructor" = "accent"
+"attribute" = "cyan"
+"namespace" = "cyan"
+"label" = "accent"
+"special" = "magenta"
+"markup.heading" = { fg = "accent", modifiers = ["bold"] }
+"markup.bold" = { modifiers = ["bold"] }
+"markup.italic" = { modifiers = ["italic"] }
+"markup.link.url" = { fg = "cyan", modifiers = ["underlined"] }
+"markup.link.text" = "magenta"
+"markup.raw" = "green"
+"markup.list" = "accent"
+"diff.plus" = "green"
+"diff.minus" = "red"
+"diff.delta" = "accent"
+"error" = "red"
+"warning" = "yellow"
+"info" = "cyan"
+"hint" = "dim"
+"diagnostic.error" = { underline = { color = "red", style = "curl" } }
+"diagnostic.warning" = { underline = { color = "yellow", style = "curl" } }
+"diagnostic.info" = { underline = { color = "cyan", style = "curl" } }
+"diagnostic.hint" = { underline = { color = "dim", style = "curl" } }
+
+[palette]
+`
+	keys := make([]string, 0, len(theme.Colors))
+	for key := range theme.Colors {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		content += fmt.Sprintf("%s = %q\n", key, theme.Colors[key])
+	}
+	write(filepath.Join(config, "helix/themes/generated.toml"), content)
 }
 
 func reloadLive() {
 	var commands [][]string
 	if runtime.GOOS == "linux" {
-		commands = append(commands,
-			[]string{"swaymsg", "reload"},
-			[]string{"systemctl", "--user", "reload-or-restart", "waybar.service", "mako.service"},
-		)
+		commands = append(commands, []string{"swaymsg", "reload"})
+		if gaps := strings.TrimSpace(readString(filepath.Join(configHome(), "dotfiles/sway-gaps"))); gaps != "" {
+			commands = append(commands, []string{"swaymsg", gaps})
+		}
+		if _, err := exec.LookPath("desktop-shell"); err == nil {
+			commands = append(commands, []string{"systemctl", "--user", "reload-or-restart", "dotfiles-shell.service"})
+		} else {
+			commands = append(commands, []string{"systemctl", "--user", "reload-or-restart", "waybar.service", "mako.service"})
+		}
+	}
+	if runtime.GOOS == "linux" {
+		if _, err := exec.LookPath("gsettings"); err == nil {
+			var settings map[string]string
+			if json.Unmarshal([]byte(readString(filepath.Join(configHome(), "dotfiles/desktop-settings.json"))), &settings) == nil {
+				for key, value := range settings {
+					if key != "cursor-size" {
+						value = strconv.Quote(value)
+					}
+					commands = append(commands, []string{"gsettings", "set", "org.gnome.desktop.interface", key, value})
+				}
+			}
+		}
 	}
 	commands = append(commands, []string{"tmux", "source-file", filepath.Join(configHome(), "tmux", "tmux.conf")})
+	commands = append(commands, []string{"pkill", "-USR1", "-u", strconv.Itoa(os.Getuid()), "-x", "kitty"})
+	commands = append(commands, []string{"pkill", "-USR1", "-u", strconv.Itoa(os.Getuid()), "-x", "hx"})
+	if _, err := exec.LookPath("spicetify"); err == nil && spotifyUsesOverprint(configHome()) {
+		commands = append(commands, []string{"spicetify", "refresh", "--no-restart"})
+	}
 	for _, command := range commands {
 		output, err := exec.Command(command[0], command[1:]...).CombinedOutput()
 		if err == nil {
+			if command[0] == "spicetify" {
+				fmt.Println("Spotify colors refreshed; reopen Spotify to load them.")
+			}
 			continue
+		}
+		if command[0] == "pkill" {
+			var status *exec.ExitError
+			if errors.As(err, &status) && status.ExitCode() == 1 {
+				continue
+			}
 		}
 
 		detail := strings.TrimSpace(string(output))
@@ -708,6 +1013,22 @@ func reloadLive() {
 		}
 		fmt.Fprintf(os.Stderr, "theme: reload failed (%s): %s\n", strings.Join(command, " "), detail)
 	}
+}
+
+func spotifyUsesOverprint(config string) bool {
+	section := ""
+	for _, line := range strings.Split(readString(filepath.Join(config, "spicetify/config-xpui.ini")), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			section = strings.TrimSpace(line[1 : len(line)-1])
+			continue
+		}
+		key, value, ok := strings.Cut(line, "=")
+		if ok && section == "Setting" && strings.TrimSpace(key) == "current_theme" {
+			return strings.TrimSpace(value) == "Overprint"
+		}
+	}
+	return false
 }
 
 func enable(value bool) string {

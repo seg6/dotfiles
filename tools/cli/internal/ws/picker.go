@@ -117,7 +117,7 @@ func newPickerModel(ctx context.Context, request PickRequest, loader func(contex
 	styles := textinput.DefaultDarkStyles()
 	styles.Focused.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color(ui.Colors.Accent)).Bold(true)
 	styles.Focused.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color(ui.Colors.Muted))
-	styles.Focused.Text = lipgloss.NewStyle()
+	styles.Focused.Text = lipgloss.NewStyle().Foreground(lipgloss.Color(ui.Colors.Foreground))
 	styles.Cursor.Color = lipgloss.Color(ui.Colors.Accent)
 	input.SetStyles(styles)
 
@@ -205,7 +205,7 @@ func (model *pickerModel) View() tea.View {
 	contentWidth := model.contentWidth()
 	var lines []string
 	lines = append(lines, model.renderHeader(contentWidth))
-	lines = append(lines, "")
+	lines = append(lines, model.rule(contentWidth))
 	lines = append(lines, model.renderTableHeader(contentWidth))
 
 	end := min(model.offset+model.visibleRows(), len(model.filtered))
@@ -218,7 +218,7 @@ func (model *pickerModel) View() tea.View {
 		lines = append(lines, "")
 	}
 
-	lines = append(lines, "")
+	lines = append(lines, model.rule(contentWidth))
 	lines = append(lines, model.renderPath(contentWidth))
 	lines = append(lines, model.renderDetails(contentWidth))
 	lines = append(lines, "")
@@ -231,7 +231,18 @@ func (model *pickerModel) View() tea.View {
 	view := tea.NewView(strings.Join(lines, "\n"))
 	view.AltScreen = true
 	view.WindowTitle = "workspace"
+	if model.ui.Style == "overprint" {
+		view.ForegroundColor = lipgloss.Color(model.ui.Colors.Foreground)
+		view.BackgroundColor = lipgloss.Color(model.ui.Colors.Background)
+	}
 	return view
+}
+
+func (model *pickerModel) rule(width int) string {
+	if model.ui.Style != "overprint" {
+		return ""
+	}
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(model.ui.Colors.Border)).Render(strings.Repeat("─", width))
 }
 
 func (model *pickerModel) applyFilter() {

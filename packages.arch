@@ -1,4 +1,5 @@
 7zip
+adw-gtk-theme
 bat
 blueman
 bluez
@@ -30,6 +31,7 @@ go-yq
 gopls
 grim
 hyperfine
+imagemagick
 imv
 jdk-openjdk
 jq
@@ -53,6 +55,7 @@ openssh
 openvpn
 otf-font-awesome
 otf-monaspace
+papirus-icon-theme
 pasystray
 pavucontrol
 pipewire-alsa
@@ -60,6 +63,7 @@ pipewire-jack
 pipewire-pulse
 playerctl
 polkit-gnome
+quickshell
 ripgrep
 rsync
 rustup

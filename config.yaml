@@ -58,6 +58,12 @@ dotfiles:
   f_helix_languages:
     src: common/helix/languages.toml
     dst: ~/.config/helix/languages.toml
+  f_kitty_tab_bar:
+    src: common/kitty/tab_bar.py
+    dst: ~/.config/kitty/tab_bar.py
+  f_kitty_header:
+    src: common/kitty/window_title_bar.py
+    dst: ~/.config/kitty/window_title_bar.py
   f_kitty_fonts:
     src: common/kitty/fonts.conf
     dst: ~/.config/kitty/fonts.conf
@@ -109,9 +115,29 @@ dotfiles:
   f_fuzzel_config:
     src: arch/fuzzel/fuzzel.ini
     dst: ~/.config/fuzzel/fuzzel.ini
+  f_teams_desktop:
+    src: arch/applications/teams-for-linux.desktop
+    dst: ~/.local/share/applications/teams-for-linux.desktop
   f_systemd_sway_session_target:
     src: arch/systemd/user/sway-session.target
     dst: ~/.config/systemd/user/sway-session.target
+  f_systemd_dotfiles_shell:
+    src: arch/systemd/user/dotfiles-shell.service
+    dst: ~/.config/systemd/user/dotfiles-shell.service
+  f_systemd_overprint:
+    src: arch/systemd/user/overprint.service
+    dst: ~/.config/systemd/user/overprint.service
+  d_overprint:
+    src: arch/quickshell/overprint
+    dst: ~/.config/quickshell/overprint
+  f_bin_desktop_shell:
+    src: arch/bin/desktop-shell
+    dst: ~/.local/bin/desktop-shell
+    chmod: '755'
+  f_bin_desktop_menu:
+    src: arch/bin/desktop-menu
+    dst: ~/.local/bin/desktop-menu
+    chmod: '755'
   f_bin_record_window:
     src: arch/bin/record-window
     dst: ~/.local/bin/record-window
@@ -154,6 +180,8 @@ profiles:
       - f_git_personal
       - f_helix_config
       - f_helix_languages
+      - f_kitty_tab_bar
+      - f_kitty_header
       - f_kitty_fonts
       - f_kitty_config
       - f_tmux_config
@@ -173,7 +201,13 @@ profiles:
       - f_waybar_config
       - f_waybar_style
       - f_fuzzel_config
+      - f_teams_desktop
       - f_systemd_sway_session_target
+      - f_systemd_dotfiles_shell
+      - f_systemd_overprint
+      - d_overprint
+      - f_bin_desktop_shell
+      - f_bin_desktop_menu
       - f_bin_record_window
       - f_bin_polkit_agent
   macos:

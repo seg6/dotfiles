@@ -1,0 +1,34 @@
+/* Overprint: the music stays large; controls use the desktop's quieter type scale. */
+:root {
+  --font-family: "Adwaita Sans", sans-serif;
+  --encore-body-font-stack: "Adwaita Sans", sans-serif;
+  --encore-title-font-stack: "Adwaita Sans", sans-serif;
+  --encore-corner-radius-base: 0px;
+  --encore-corner-radius-larger: 2px;
+  --encore-corner-radius-small: 0px;
+}
+body, button, input { font-family: "Adwaita Sans", sans-serif !important; }
+.Root__globalNav, .Root__nav-bar, .Root__main-view, .Root__right-sidebar,
+.main-view-container__scroll-node-child, .main-nowPlayingBar-container {
+  border-radius: 0 !important;
+}
+.Root__main-view, .Root__nav-bar, .Root__right-sidebar { border: 1px solid #755b72; }
+.main-nowPlayingBar-container { border-top: 1px solid #755b72; background: #29222e; }
+.main-trackList-trackListHeader { border-bottom: 1px solid #755b72; }
+.main-trackList-trackListRow { border-radius: 0; }
+.main-trackList-trackListRow:hover, .main-trackList-trackListRow.main-trackList-selected {
+  background: #57425a !important;
+}
+.main-playButton-PlayButton, [data-testid="play-button"] {
+  background: #e7b76f !important; color: #302735 !important;
+  border-radius: 2px !important; box-shadow: 4px 4px 0 #64495c;
+}
+.main-playButton-PlayButton:hover { transform: translate(-1px,-1px); }
+.main-coverSlotCollapsed-container { border-radius: 0; }
+.main-nowPlayingWidget-trackInfo, .main-trackList-rowSectionIndex {
+  font-family: "Fantasque Sans Mono", monospace;
+}
+.main-trackList-rowSectionIndex { font-style: italic; }
+.progress-bar__fg { background-color: #e7b76f !important; }
+.main-topBar-background { background-color: #302735 !important; }
+::selection { background: #e7b76f; color: #302735; }
