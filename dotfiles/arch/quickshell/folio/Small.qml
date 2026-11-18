@@ -18,7 +18,10 @@ Text {
     font {
         family: Theme.mono
         pixelSize: Theme.small(screen)
+        weight: Font.Medium
         capitalization: Font.AllUppercase
+        // Capitals this small want air between them.
+        letterSpacing: Theme.small(screen) * 0.07
     }
     // The rule under a link is drawn from its left as the pointer arrives.
     Rectangle {

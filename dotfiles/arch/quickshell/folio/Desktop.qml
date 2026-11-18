@@ -10,21 +10,6 @@ QtObject {
     property var windows: []
     // Which workspace each output shows: {"DP-1": "2"}.
     property var showing: ({})
-    // Each desk as it last looked, in the page's two colors: {"2": "file:///…/2.png?stamp"}.
-    property var pictures: ({})
-    readonly property string pictureDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/folio"
-    // Take the current desk's picture now.
-    function capture(): void {
-        if (shutter.running)
-            return;
-        const output = Object.keys(showing)[0];
-        if (!output || !showing[output])
-            return;
-        shutter.desk = showing[output];
-        // A quarter-size picture, dithered to the page's two colors.
-        shutter.command = ["sh", "-c", 'mkdir -p "$1" && grim -o "$2" -s 0.25 -t png - | magick png:- -colorspace Gray -monochrome +level-colors "$4","$5" "png:$1/$3.png"', "folio-shutter", pictureDir, output, shutter.desk, String(Theme.bg), String(Theme.fg)];
-        shutter.running = true;
-    }
     readonly property var occupied: Array.from(new Set(windows.map(w => w.workspace)))
     // When each project was last opened, as the `ws` tool records it.
     property var recent: ({})
@@ -145,9 +130,6 @@ QtObject {
                     const shown = desktop.showing[Object.keys(desktop.showing)[0]] ?? "";
                     if (shown !== desktop.notedDesk || desktop.windows.some(w => w.workspace === shown) !== desktop.notedBusy)
                         desktop.note();
-                    // The request covers the screen; a picture taken then would be of itself.
-                    if (!ShellState.asking && !ShellState.locked)
-                        desktop.snap.restart();
                     // Windows opened under another layout still wear its frame.
                     const frames = Logic.frameUpdates(tree);
                     if (frames.length > 0 && !framer.running) {
@@ -163,28 +145,6 @@ QtObject {
             if (desktop.pending)
                 desktop.debounce.restart();
         }
-    }
-    property Process shutter: Process {
-        property string desk: ""
-        stdout: StdioCollector {}
-        onExited: code => {
-            if (code === 0) {
-                const next = Object.assign({}, desktop.pictures);
-                next[desk] = "file://" + desktop.pictureDir + "/" + desk + ".png?" + Date.now();
-                desktop.pictures = next;
-            }
-        }
-    }
-    // A desk changes without telling Sway (a terminal scrolls), so look again now and then.
-    property Timer snap: Timer {
-        interval: 700
-        onTriggered: desktop.capture()
-    }
-    property Timer glance: Timer {
-        interval: 12000
-        running: !ShellState.asking && !ShellState.locked
-        repeat: true
-        onTriggered: desktop.capture()
     }
     property Process framer: Process {
         stdout: StdioCollector {}

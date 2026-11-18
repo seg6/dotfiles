@@ -245,15 +245,78 @@ var commands = [
     { id: "next", verb: "Skip", name: "to the next track", words: "next skip track" },
     { id: "logout", verb: "Log", name: "out", words: "logout log out exit", confirm: true },
     { id: "restart", verb: "Restart", name: "the machine", words: "restart reboot", confirm: true },
-    { id: "shutdown", verb: "Shut", name: "the machine down", words: "shutdown shut down power off", confirm: true }
+    { id: "shutdown", verb: "Shut", name: "the machine down", words: "shutdown shut down power off", confirm: true },
+    { id: "view-orbit", verb: "Show", name: "the orbit", words: "view orbit desks bodies" },
+    { id: "view-dial", verb: "Show", name: "the dial", words: "view dial day hours" },
+    { id: "view-numeral", verb: "Show", name: "the numeral", words: "view numeral number" },
+    { id: "view-plate", verb: "Show", name: "the plate", words: "view plate rings" },
+    { id: "view-words", verb: "Show", name: "the words", words: "view words lyrics sentence" }
 ];
+
+// Arithmetic typed as a request: "12 * 7", "= (3 + 4) / 2", "2^10", "15% of" is not.
+// Gives {text, value} or null. Nothing is evaluated as code: it is parsed.
+function sum(query) {
+    var text = String(query || "").trim().replace(/^=\s*/, "").replace(/×/g, "*").replace(/÷/g, "/").replace(/,/g, ".");
+    if (!/^[\d\s.+\-*\/()%^]+$/.test(text) || !/\d\s*[+\-*\/%^]\s*[\d(.\-]/.test(text)) return null;
+    var at = 0, ok = true;
+    function skip() { while (text[at] === " ") at++; }
+    function atom() {
+        skip();
+        if (text[at] === "(") { at++; var inner = sums(); skip(); if (text[at] !== ")") ok = false; at++; return inner; }
+        var found = /^\d*\.?\d+/.exec(text.slice(at));
+        if (!found) { ok = false; return 0; }
+        at += found[0].length;
+        return Number(found[0]);
+    }
+    function signed() { skip(); if (text[at] === "-") { at++; return -signed(); } return atom(); }
+    function powers() { var base = signed(); skip(); if (text[at] === "^") { at++; return Math.pow(base, powers()); } return base; }
+    function products() {
+        var value = powers();
+        for (skip(); "*/%".indexOf(text[at]) !== -1 && at < text.length; skip()) {
+            var op = text[at++], right = powers();
+            value = op === "*" ? value * right : (op === "/" ? value / right : value % right);
+        }
+        return value;
+    }
+    function sums() {
+        var value = products();
+        for (skip(); "+-".indexOf(text[at]) !== -1 && at < text.length; skip()) {
+            var op = text[at++], right = products();
+            value = op === "+" ? value + right : value - right;
+        }
+        return value;
+    }
+    var value = sums();
+    skip();
+    if (!ok || at < text.length || !isFinite(value)) return null;
+    return { text: text.replace(/\s+/g, " "), value: String(parseFloat(value.toPrecision(12))) };
+}
+
+// With nothing typed yet, what is most likely wanted: the windows used
+// last, the projects opened last, the applications opened last.
+function suggest(sources, now) {
+    var rows = [];
+    (sources.windows || []).slice(0, 3).forEach(function(w) {
+        rows.push({ kind: "window", verb: "Go to", name: proper(w.app), detail: (w.title ? w.title + ", " : "") + "on desk " + w.workspace, window: w });
+    });
+    lately(sources.recent, now, 3).forEach(function(p) {
+        rows.push({ kind: "project", verb: "Resume", name: p.name, detail: "last opened " + p.when, project: p.id });
+    });
+    var used = sources.used || {};
+    Object.keys(used).sort(function(a, b) { return used[b] - used[a]; }).map(function(id) {
+        return (sources.apps || []).filter(function(a) { return a.id === id; })[0];
+    }).filter(function(a) { return !!a; }).slice(0, 3).forEach(function(a) {
+        rows.push({ kind: "app", verb: "Open", name: a.name, detail: String(a.genericName || a.comment || "").toLowerCase(), app: a });
+    });
+    return rows;
+}
 
 // Everything that answers what was typed, best first, each as the parts of a
 // sentence: a verb, a name, and a few words more.
 //   {kind: "window" | "project" | "app" | "command", verb, name, detail, ...}
 function ask(query, sources, now, limit) {
     var tokens = String(query || "").trim().toLowerCase().split(/\s+/).filter(function(t) { return t.length > 0; });
-    if (tokens.length === 0) return [];
+    if (tokens.length === 0) return suggest(sources, now);
     // The first field is the name; a match in a later one counts for less,
     // by `second` (a window's title is as good as its name, a description is not).
     function score(fields, second) {
@@ -278,8 +341,11 @@ function ask(query, sources, now, limit) {
     commands.forEach(function(c) {
         rows.push({ kind: "command", verb: c.verb, name: c.name, detail: "", command: c.id, confirm: !!c.confirm, score: score([c.words]) + 8 });
     });
-    return rows.filter(function(r) { return isFinite(r.score); })
+    var found = rows.filter(function(r) { return isFinite(r.score); })
         .sort(function(a, b) { return a.score - b.score; }).slice(0, limit || 7);
+    var worked = sum(query);
+    if (worked) found.unshift({ kind: "sum", verb: "Copy", name: worked.value, detail: "is " + worked.text, value: worked.value });
+    return found.slice(0, limit || 7);
 }
 
 // The rest of a name once what was typed is taken off its front, so the

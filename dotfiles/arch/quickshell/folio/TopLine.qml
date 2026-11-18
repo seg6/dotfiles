@@ -21,8 +21,6 @@ PanelWindow {
     readonly property var player: Media.player
     readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
     // The desk whose picture is showing, and where along the line its word is.
-    property string peek: ""
-    property real peekX: 0
     // The name of the tray item under the pointer.
     property string tip: ""
     property real tipX: 0
@@ -125,16 +123,6 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: I3.dispatch("workspace " + JSON.stringify(desk.modelData))
-                    onEntered: {
-                        if (!desk.current && Desktop.pictures[desk.modelData]) {
-                            line.peekX = desk.mapToItem(null, desk.width / 2, 0).x;
-                            line.peek = desk.modelData;
-                        }
-                    }
-                    onExited: {
-                        if (line.peek === desk.modelData)
-                            line.peek = "";
-                    }
                 }
             }
         }
@@ -300,39 +288,6 @@ PanelWindow {
             onWheeled: event => {
                 if (line.audio)
                     line.audio.volume = Math.max(0, Math.min(1.5, line.audio.volume + (event.angleDelta.y > 0 ? 0.05 : -0.05)));
-            }
-        }
-    }
-
-    // A desk as it last looked, under its word.
-    PopupWindow {
-        anchor.window: line
-        anchor.rect.x: Math.round(Math.max(8, Math.min(line.width - implicitWidth - 8, line.peekX - implicitWidth / 2)))
-        anchor.rect.y: line.height
-        implicitWidth: Math.round(480 * line.u) + 2
-        implicitHeight: Math.round(270 * line.u) + 2
-        visible: line.peek.length > 0
-        color: Theme.bg
-        Rectangle {
-            anchors.fill: parent
-            color: Theme.bg
-            border {
-                width: 1
-                color: Theme.fg
-            }
-            Image {
-                anchors.fill: parent
-                anchors.margins: 1
-                source: Desktop.pictures[line.peek] ?? ""
-                opacity: line.peek.length > 0 ? 1 : 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 160
-                    }
-                }
-                fillMode: Image.PreserveAspectCrop
-                smooth: false
-                cache: false
             }
         }
     }

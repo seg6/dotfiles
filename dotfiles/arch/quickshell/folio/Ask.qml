@@ -71,6 +71,10 @@ PanelWindow {
             next[result.app.id] = Date.now();
             used = next;
             usedFile.setText(JSON.stringify(used));
+        } else if (result.kind === "sum") {
+            Quickshell.execDetached(["wl-copy", "--", result.value]);
+        } else if (result.kind === "command" && result.command.startsWith("view-")) {
+            ShellState.show(result.command.slice(5));
         } else if (result.kind === "command") {
             const audio = Pipewire.defaultAudioSink?.audio;
             const player = Media.player;
@@ -189,14 +193,31 @@ PanelWindow {
             onStreamFinished: ask.clips = Search.clipboard(text)
         }
     }
-    Image {
+    // The weather of the page goes on under the request, fainter.
+    ShaderEffect {
+        id: weather
+        property real time: 0
+        property real clock: 0
+        property real light: 1
+        property real gale: 0
+        property real reach: 0
+        property real stir: 0
+        property point pointer: Qt.point(-1000, -1000)
+        property size size: Qt.size(640, 360)
+        property color ink: Theme.fg
+        property color paper: Theme.bg
         anchors.bottom: parent.bottom
         width: parent.width
         height: Math.round(width * 360 / 640)
-        source: "file://" + Theme.configHome + "/quickshell/folio/page.png"
-        smooth: false
-        cache: false
-        opacity: 0.45 * ask.shown
+        visible: GraphicsInfo.api !== GraphicsInfo.Software && ask.shown > 0
+        opacity: 0.4 * ask.shown
+        fragmentShader: Qt.resolvedUrl("Picture.frag.qsb")
+        Timer {
+            interval: 80
+            running: weather.visible
+            repeat: true
+            onTriggered: weather.time += 0.08
+        }
     }
     MouseArea {
         anchors.fill: parent
@@ -224,7 +245,7 @@ PanelWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 0
             Text {
-                text: (ask.armed.length > 0 ? "Really " + (ask.first?.verb ?? "").toLowerCase() : (ask.first?.verb ?? (ask.clipboard ? "Copy" : "Find"))) + " "
+                text: (ask.armed.length > 0 ? "Really " + (ask.first?.verb ?? "").toLowerCase() : (input.text.length === 0 && !ask.clipboard ? "Find" : (ask.first?.verb ?? (ask.clipboard ? "Copy" : "Find")))) + " "
                 color: ask.armed.length > 0 ? Theme.signal : Theme.dim
                 font: input.font
             }
@@ -280,7 +301,7 @@ PanelWindow {
                 }
             }
             Text {
-                readonly property string rest: ask.first && ask.first.kind !== "clip" ? Logic.rest(input.text, ask.first.name) : ""
+                readonly property string rest: ask.first && ask.first.kind !== "clip" && ask.first.kind !== "sum" ? Logic.rest(input.text, ask.first.name) : ""
                 text: {
                     if (input.text.length === 0)
                         return ask.clipboard ? "something you copied." : "a window, a project, an application, or say what to do.";
@@ -304,32 +325,80 @@ PanelWindow {
         }
         Item {
             width: 1
-            height: 64 * ask.u
+            height: 52 * ask.u
         }
-        Repeater {
-            model: ask.results
-            Item {
-                id: answer
-                required property var modelData
-                required property int index
-                readonly property bool chosen: ask.chosen === index
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: line.width
-                height: line.height + 12 * ask.u
-                Row {
-                    id: line
-                    spacing: 14 * ask.u
+        // The answers, as a list with a margin: what kind of thing each is, the
+        // thing, and a few words about it.
+        Small {
+            visible: input.text.length === 0 && !ask.clipboard && ask.results.length > 0
+            x: answers.x + answers.gutter
+            screen: ask.screen
+            lit: false
+            text: "or one of these, used last"
+            bottomPadding: 14 * ask.u
+        }
+        Column {
+            id: answers
+            readonly property real gutter: 190 * ask.u
+            readonly property var kinds: ({
+                    window: "open now",
+                    project: "project",
+                    app: "app",
+                    command: "do",
+                    sum: "sum",
+                    clip: "copied"
+                })
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.min(1240 * ask.u, parent.width)
+            Repeater {
+                model: ask.results
+                Item {
+                    id: answer
+                    required property var modelData
+                    required property int index
+                    readonly property bool chosen: ask.chosen === index
+                    // The kind is said once, at the head of its run.
+                    readonly property bool heads: index === 0 || ask.results[index - 1].kind !== modelData.kind
+                    width: answers.width
+                    height: 56 * ask.u
+                    Rectangle {
+                        anchors.fill: parent
+                        color: answer.chosen ? Qt.alpha(Theme.fg, 0.07) : "transparent"
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 110
+                            }
+                        }
+                    }
+                    Rectangle {
+                        visible: answer.heads && answer.index > 0
+                        width: parent.width
+                        height: 1
+                        color: Theme.faint
+                    }
                     Small {
                         anchors.verticalCenter: parent.verticalCenter
+                        x: 18 * ask.u
+                        screen: ask.screen
+                        lit: false
+                        visible: answer.heads
+                        text: answers.kinds[answer.modelData.kind] ?? ""
+                    }
+                    Small {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: answers.gutter - 34 * ask.u
                         screen: ask.screen
                         color: Theme.signal
                         opacity: answer.chosen ? 1 : 0
                         text: "→"
                     }
                     Text {
+                        id: named
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: answers.gutter
                         text: answer.modelData.verb + " " + answer.modelData.name.replace(/\s+/g, " ")
                         textFormat: Text.PlainText
-                        width: Math.min(implicitWidth, ask.width * 0.5)
+                        width: Math.min(implicitWidth, answers.width * 0.5)
                         elide: Text.ElideRight
                         color: answer.chosen ? Theme.fg : Qt.alpha(Theme.fg, 0.82)
                         font {
@@ -338,24 +407,38 @@ PanelWindow {
                         }
                     }
                     Text {
-                        visible: text.length > 0
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: named.right
+                        anchors.leftMargin: 16 * ask.u
+                        anchors.right: enter.left
+                        anchors.rightMargin: 16 * ask.u
                         text: answer.modelData.detail
                         textFormat: Text.PlainText
-                        width: Math.min(implicitWidth, ask.width * 0.32)
                         elide: Text.ElideRight
                         color: Theme.dim
                         font {
                             family: Theme.serif
                             pixelSize: 34 * ask.u
+                            italic: true
                         }
                     }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onPositionChanged: ask.chosen = answer.index
-                    onClicked: ask.run(answer.modelData)
+                    Small {
+                        id: enter
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 18 * ask.u
+                        screen: ask.screen
+                        lit: false
+                        opacity: answer.chosen ? 1 : 0
+                        text: "↵"
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onPositionChanged: ask.chosen = answer.index
+                        onClicked: ask.run(answer.modelData)
+                    }
                 }
             }
         }

@@ -66,15 +66,14 @@ the clipboard history in both.
 ## Folio
 
 A page. Two colors, bone on near-black, and one red that only ever means
-something wants you. Two typefaces, both installed with the dotfiles: Departure
+something wants you. Two typefaces, both installed with the dotfiles: IBM Plex
 Mono for the small capitals in the margins, Newsreader for sentences. Windows
 are a hairline: no title bars, no shadows, the one in focus has the brighter line.
 
 The top margin is one line of small type:
 
 - the program in focus and what it is showing;
-- the desks, each named for what is on it. Click one to go there; hover for a
-  picture of it as it last looked. A red dot means it wants attention;
+- the desks, each named for what is on it. Click one to go there. A red dot means it wants attention;
 - what is playing (click to pause, right click for the next track, middle for
   the last), the tray applications as words (left click activates, right click
   opens the application's own menu as a list), and the volume (scroll to
@@ -127,12 +126,16 @@ Dial and Orbit read a record the shell keeps of which desk was on screen, a
 file a day under `~/.local/state/quickshell/`. Nothing else reads it and it
 does not leave the machine. Without a GPU the empty desk is always Words.
 
-Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
-the page finishes the sentence:
+Super+Space, Super+Tab, or a click on the empty page starts a request. Before
+anything is typed it offers the windows, projects and applications used last.
+Type and the page finishes the sentence; the answers are listed under it, each
+run headed by what kind of thing it is:
 
 - "Go to" a window that is open, "Resume" a `ws` project, "Open" an application;
 - or say what to do: lock, sleep, quiet, loud, mute, pause, next, log out,
-  restart, shut down. The last three ask for Enter a second time;
+  restart, shut down (the last three ask for Enter a second time), or which
+  view the empty desk should show;
+- arithmetic after an equals sign, `=12*7`, is worked out, and Enter copies it;
 - a bare number goes to that desk;
 - Tab, or Super+Shift+V, turns the request to what you have copied.
 

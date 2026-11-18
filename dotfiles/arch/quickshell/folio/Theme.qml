@@ -13,8 +13,7 @@ QtObject {
     readonly property color dim: colors.dim || "#8b877d"
     readonly property color faint: colors.surface_alt || "#343330"
     readonly property color signal: colors.red || "#ff4a2b"
-    // Departure Mono is drawn on an 11-unit grid and is only sharp at multiples of it.
-    readonly property string mono: "Departure Mono"
+    readonly property string mono: "IBM Plex Mono"
     readonly property string serif: "Newsreader"
     readonly property string configHome: Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
     readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")
@@ -23,7 +22,7 @@ QtObject {
         return screen ? Math.min(1, screen.height / 1440) : 1;
     }
     function small(screen): int {
-        return !screen || screen.height >= 1300 ? 22 : 11;
+        return Math.max(11, Math.round(20 * unit(screen)));
     }
     property FileView palette: FileView {
         path: root.configHome + "/quickshell/folio/colors.json"
