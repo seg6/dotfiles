@@ -3,6 +3,8 @@ import QtQuick
 import Quickshell
 import Quickshell.I3
 import Quickshell.Wayland
+import Quickshell.Widgets
+import QtQuick.Effects
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
@@ -22,9 +24,9 @@ PanelWindow {
     // The desk whose picture is showing, and where along the line its word is.
     property string peek: ""
     property real peekX: 0
-    // The tray item whose menu is open.
-    property var menuItem: null
-    property real menuX: 0
+    // The name of the tray item under the pointer.
+    property string tip: ""
+    property real tipX: 0
     anchors {
         left: true
         right: true
@@ -172,30 +174,72 @@ PanelWindow {
                 }
             }
         }
-        Row {
-            spacing: 16 * line.u
-            Repeater {
-                model: SystemTray.items
-                Small {
-                    id: word
-                    required property var modelData
-                    screen: line.screen
-                    link: true
-                    lit: line.menuItem === modelData
-                    // The first word of its name says enough.
-                    text: RailLogic.trayName(modelData).split(/\s+/)[0].slice(0, 10)
-                    onPressed: event => {
-                        if (event.button === Qt.MiddleButton) {
-                            modelData.secondaryActivate();
-                        } else if (event.button === Qt.LeftButton && !modelData.onlyMenu) {
-                            modelData.activate();
-                        } else if (modelData.hasMenu) {
-                            line.menuX = word.mapToItem(null, word.width, 0).x;
-                            menu.trail = [];
-                            line.menuItem = modelData;
+        // The tray: each application's own icon, in a hairline box. They are
+        // drawn without their color until the pointer is on them.
+        Rectangle {
+            visible: SystemTray.items.values.length > 0
+            anchors.verticalCenter: parent.verticalCenter
+            width: icons.width + 20 * line.u
+            height: 38 * line.u
+            color: "transparent"
+            border {
+                width: 1
+                color: Theme.faint
+            }
+            Row {
+                id: icons
+                anchors.centerIn: parent
+                spacing: 6 * line.u
+                Repeater {
+                    model: SystemTray.items
+                    Item {
+                        id: tray
+                        required property var modelData
+                        readonly property bool open: ShellState.menuItem === modelData
+                        width: 30 * line.u
+                        height: 30 * line.u
+                        IconImage {
+                            id: picture
+                            anchors.centerIn: parent
+                            implicitSize: 22 * line.u
+                            source: tray.modelData.icon
+                            visible: false
+                        }
+                        MultiEffect {
+                            anchors.fill: picture
+                            source: picture
+                            saturation: over.containsMouse || tray.open ? 0 : -1
+                            opacity: over.containsMouse || tray.open ? 1 : 0.8
+                        }
+                        Rectangle {
+                            visible: tray.open
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: -1
+                            width: parent.width
+                            height: 1
+                            color: Theme.fg
+                        }
+                        MouseArea {
+                            id: over
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: line.tip = RailLogic.trayTip(tray.modelData), line.tipX = tray.mapToItem(null, tray.width / 2, 0).x
+                            onExited: line.tip = ""
+                            onClicked: event => {
+                                line.tip = "";
+                                if (event.button === Qt.MiddleButton) {
+                                    tray.modelData.secondaryActivate();
+                                } else if (event.button === Qt.LeftButton && !tray.modelData.onlyMenu) {
+                                    tray.modelData.activate();
+                                } else if (tray.modelData.hasMenu) {
+                                    ShellState.openMenu(tray.modelData, line.screen, tray.mapToItem(null, tray.width, 0).x);
+                                }
+                            }
+                            onWheel: event => tray.modelData.scroll(event.angleDelta.y, false)
                         }
                     }
-                    onWheeled: event => modelData.scroll(event.angleDelta.y, false)
                 }
             }
         }
@@ -245,99 +289,27 @@ PanelWindow {
         }
     }
 
-    // A tray application's own menu, as a list of words. A submenu replaces the list.
-    Sheet {
-        id: menu
-        property var trail: []
-        readonly property var openers: [rootMenu, firstSubmenu, secondSubmenu, thirdSubmenu]
-        readonly property var listing: openers[trail.length].children
-        readonly property bool gone: line.menuItem !== null && !SystemTray.items.values.includes(line.menuItem)
+    PopupWindow {
         anchor.window: line
-        anchor.rect.x: Math.round(Math.max(8, line.menuX - implicitWidth))
+        anchor.rect.x: Math.round(Math.max(8, Math.min(line.width - implicitWidth - 8, line.tipX - implicitWidth / 2)))
         anchor.rect.y: line.height
-        visible: line.menuItem !== null
-        pad: 14 * line.u
-        onVisibleChanged: {
-            if (!visible)
-                line.menuItem = null;
-        }
-        onGoneChanged: {
-            if (gone)
-                line.menuItem = null;
-        }
-        // A submenu only exists while its parent stays open, so each level keeps its own opener.
-        QsMenuOpener {
-            id: rootMenu
-            menu: line.menuItem ? line.menuItem.menu : null
-        }
-        QsMenuOpener {
-            id: firstSubmenu
-            menu: menu.trail[0] ?? null
-        }
-        QsMenuOpener {
-            id: secondSubmenu
-            menu: menu.trail[1] ?? null
-        }
-        QsMenuOpener {
-            id: thirdSubmenu
-            menu: menu.trail[2] ?? null
-        }
-        Column {
-            width: 380 * line.u
-            spacing: 8 * line.u
-            Small {
-                screen: line.screen
-                visible: menu.trail.length > 0
-                link: true
-                lit: false
-                text: "← back"
-                onPressed: menu.trail = menu.trail.slice(0, -1)
+        implicitWidth: Math.ceil(name.implicitWidth + 28 * line.u)
+        implicitHeight: Math.ceil(name.implicitHeight + 18 * line.u)
+        visible: line.tip.length > 0 && ShellState.menuItem === null
+        color: Theme.bg
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.bg
+            border {
+                width: 1
+                color: Theme.faint
             }
-            Repeater {
-                model: menu.listing
-                Item {
-                    id: entry
-                    required property var modelData
-                    required property int index
-                    readonly property bool more: modelData.hasChildren && menu.trail.length < 3
-                    // Applications often end a menu with a rule.
-                    visible: !(modelData.isSeparator && index === menu.listing.values.length - 1)
-                    width: parent.width
-                    height: modelData.isSeparator ? 1 : words.height
-                    Rectangle {
-                        visible: entry.modelData.isSeparator
-                        width: parent.width
-                        height: 1
-                        color: Theme.faint
-                    }
-                    Small {
-                        id: words
-                        screen: line.screen
-                        visible: !entry.modelData.isSeparator
-                        width: parent.width
-                        elide: Text.ElideRight
-                        link: entry.modelData.enabled
-                        lit: entry.modelData.enabled
-                        opacity: entry.modelData.enabled ? 1 : 0.55
-                        // Menus mark keyboard mnemonics with a single underscore.
-                        text: (entry.modelData.buttonType !== QsMenuButtonType.None && entry.modelData.checkState !== Qt.Unchecked ? "× " : "") + entry.modelData.text.replace(/_(?!_)/g, "").replace(/__/g, "_") + (entry.more ? " →" : "")
-                        onPressed: {
-                            if (entry.more) {
-                                menu.trail = menu.trail.concat([entry.modelData]);
-                            } else {
-                                entry.modelData.triggered();
-                                line.menuItem = null;
-                            }
-                        }
-                    }
-                }
-            }
-            Small {
-                screen: line.screen
-                visible: menu.listing.values.length === 0
-                lit: false
-                text: "nothing to choose"
-            }
+        }
+        Small {
+            id: name
+            anchors.centerIn: parent
+            screen: line.screen
+            text: line.tip
         }
     }
 }

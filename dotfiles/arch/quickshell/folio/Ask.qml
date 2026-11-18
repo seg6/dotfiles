@@ -77,6 +77,7 @@ PanelWindow {
             const player = Mpris.players.values.find(p => p.isPlaying) || Mpris.players.values[0];
             switch (result.command) {
             case "lock":
+                ShellState.menuItem = null;
                 ShellState.locked = true;
                 break;
             case "sleep":

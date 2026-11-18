@@ -82,7 +82,9 @@ set -g popup-style default
 # underlined, and nothing else.
 set -g status 2
 set -gu status-format
-set -g status-format[1] '#{T:status-format[0]}'
+# -F copies the usual status line as it stands now; a reference would follow
+# the next line and draw the rule twice.
+set -gF status-format[1] '#{status-format[0]}'
 set -g status-format[0] '#[fg=%s,bg=default]#{R:─,#{client_width}}'
 set -g status-position bottom
 set -g status-justify left

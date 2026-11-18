@@ -8,4 +8,5 @@ TopLine 1.0 TopLine.qml
 BottomLine 1.0 BottomLine.qml
 Page 1.0 Page.qml
 Ask 1.0 Ask.qml
+TrayMenu 1.0 TrayMenu.qml
 Lock 1.0 Lock.qml

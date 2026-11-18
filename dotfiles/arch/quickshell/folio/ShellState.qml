@@ -12,6 +12,16 @@ QtObject {
     property string about: "anything"
     property var screen: null
     property bool locked: false
+    // The tray item whose menu is open, and where its icon ends on that screen.
+    property var menuItem: null
+    property var menuScreen: null
+    property real menuX: 0
+    function openMenu(item, onScreen, x: real): void {
+        asking = false;
+        menuScreen = onScreen;
+        menuX = x;
+        menuItem = item;
+    }
     readonly property var focusedScreen: Quickshell.screens.find(s => s.name === I3.focusedMonitor?.name) || Quickshell.screens[0]
     function ask(what: string): void {
         if (asking && about === what) {
@@ -19,6 +29,7 @@ QtObject {
             return;
         }
         about = what;
+        menuItem = null;
         if (asking)
             return;
         screen = focusedScreen;
@@ -53,6 +64,7 @@ QtObject {
         }
         function lock(): void {
             root.asking = false;
+            root.menuItem = null;
             root.locked = true;
         }
         // The way back in from another terminal if the lock screen misbehaves.
