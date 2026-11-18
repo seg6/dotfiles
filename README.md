@@ -92,8 +92,13 @@ line, such as "It is twenty to one on a Wednesday in Berlin." Under it is a
 short list, one fact to a line: what is ELSEWHERE, what is WAITING and for how
 long, what is PLAYING, and how many notifications were MISSED. The names are
 links: to the desk, to pause, to the list of what went by.
-Along the foot of the page is the theme's wallpaper, dithered to the two
-colors, with wind passing through it: the sky drifts, the field sways.
+Along the foot of the page is a picture of nothing: a slow weather of dots
+in the two colors, thick at the foot and gone before it reaches the words. It
+flows faster while music plays, parts round the pointer and ripples when the
+pointer moves. By night it thins, stars come out over it, and now and then one
+falls; night is reckoned from the date and the latitude in
+`~/.config/dotfiles/place`, or 50° north without one. Where there is no GPU
+the theme's wallpaper stands in, dithered and still.
 
 Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
 the page finishes the sentence:

@@ -79,26 +79,80 @@ PanelWindow {
             }
         }
     }
+    // What the picture answers to: the hour, the pointer, and whether music is playing.
+    readonly property date pictured: Quickshell.env("FOLIO_NOW") ? new Date(Quickshell.env("FOLIO_NOW")) : clock.date
     ShaderEffect {
         id: wind
-        property Image source: picture
         property real time: 0
+        property real clock: 0
+        property real light: Logic.sky(page.pictured, Theme.who.latitude).light
+        property real gale: Media.playing ? 1 : 0
+        property real reach: pointer.containsMouse ? 1 : 0
+        property real stir: 0
+        // The pointer in dots. It is followed a little late, so it leaves a wake.
+        property real pointerX: pointer.mouseX / Math.max(1, picture.width) * size.width
+        property real pointerY: (pointer.mouseY - picture.y) / Math.max(1, picture.height) * size.height
+        property point pointer: Qt.point(pointerX, pointerY)
         property size size: Qt.size(640, 360)
+        property color ink: Theme.fg
+        property color paper: Theme.bg
         anchors.fill: picture
         opacity: picture.opacity
-        visible: GraphicsInfo.api !== GraphicsInfo.Software && picture.status === Image.Ready
+        visible: GraphicsInfo.api !== GraphicsInfo.Software
         fragmentShader: Qt.resolvedUrl("Picture.frag.qsb")
+        Behavior on light {
+            NumberAnimation {
+                duration: 4000
+            }
+        }
+        Behavior on gale {
+            NumberAnimation {
+                duration: 2500
+                easing.type: Easing.InOutSine
+            }
+        }
+        Behavior on reach {
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on pointerX {
+            SmoothedAnimation {
+                velocity: 520
+            }
+        }
+        Behavior on pointerY {
+            SmoothedAnimation {
+                velocity: 520
+            }
+        }
+        NumberAnimation {
+            id: settle
+            target: wind
+            property: "stir"
+            from: 1
+            to: 0
+            duration: 1600
+            easing.type: Easing.OutQuad
+        }
         // A dozen steps a second is as fast as dots this size can be seen to move.
         Timer {
             interval: 80
             running: wind.visible && wind.opacity > 0
             repeat: true
-            onTriggered: wind.time += 0.08
+            onTriggered: {
+                wind.time += 0.08 * (1 + 1.4 * wind.gale);
+                wind.clock += 0.08;
+            }
         }
     }
     MouseArea {
+        id: pointer
         anchors.fill: parent
         enabled: page.bare
+        hoverEnabled: true
+        onPositionChanged: settle.restart()
         onClicked: ShellState.ask("anything")
     }
     Column {
