@@ -130,17 +130,6 @@ PanelWindow {
                 pixelSize: 52 * page.u
             }
         }
-        Text {
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            text: Desktop.windows.length === 0 ? "Nothing is open." : "Nothing is open on this desk."
-            color: Theme.dim
-            font {
-                family: Theme.serif
-                pixelSize: 34 * page.u
-                italic: true
-            }
-        }
         Item {
             width: 1
             height: 44 * page.u
