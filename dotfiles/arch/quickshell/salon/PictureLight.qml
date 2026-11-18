@@ -9,18 +9,19 @@ Item {
     // How wide the work below is; the lamp and its pool scale to it.
     property real span: 600
     readonly property real bar: Math.max(90 * u, Math.min(260 * u, span * 0.3))
-    // The pool fades to nothing well inside its own bounds, so no edge shows.
+    // The pool fades to nothing well inside its own bounds, so no edge shows,
+    // and a little of it spills above the lamp as light does.
     readonly property real reach: Math.max(300 * u, span * 0.6)
     Shape {
         x: -light.reach
-        y: 6 * light.u
+        y: 6 * light.u - light.reach * 0.35
         width: light.reach * 2
-        height: light.reach
+        height: light.reach * 1.35
         ShapePath {
             strokeWidth: -1
             fillGradient: RadialGradient {
                 centerX: light.reach
-                centerY: 0
+                centerY: light.reach * 0.35
                 focalX: centerX
                 focalY: centerY
                 centerRadius: light.reach
@@ -35,7 +36,7 @@ Item {
             }
             PathRectangle {
                 width: light.reach * 2
-                height: light.reach
+                height: light.reach * 1.35
             }
         }
     }
