@@ -9,9 +9,12 @@ QtObject {
     property bool quiet: false
     // Newest first: {app, summary, body, icon, time, critical}.
     property var history: []
+    // How many went by without being seen: held back while quiet, or left on their own.
+    property int missed: 0
     readonly property var live: server.trackedNotifications
     function clear(): void {
         history = [];
+        missed = 0;
     }
     function forget(index: int): void {
         history = history.filter((_, i) => i !== index);
@@ -35,6 +38,8 @@ QtObject {
             }
             // While quiet, only what is critical appears; the rest waits in the history.
             notification.tracked = critical || !notices.quiet;
+            if (!notification.tracked && !notification.transient)
+                notices.missed++;
         }
     }
 }

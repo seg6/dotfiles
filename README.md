@@ -72,7 +72,7 @@ are a hairline: no title bars, no shadows, the one in focus has the brighter lin
 
 The top margin is one line of small type:
 
-- the window in focus;
+- the program in focus and what it is showing;
 - the desks, each named for what is on it. Click one to go there; hover for a
   picture of it as it last looked. A red dot means it wants attention;
 - what is playing (click to pause, right click for the next track, middle for
@@ -80,18 +80,19 @@ The top margin is one line of small type:
   opens the application's own menu as a list), and the volume (scroll to
   change, click to mute, right click for the mixer).
 
-The bottom margin has the city the clock is set to and the time; click the time
-for the month, with week numbers. On the right are how long the
-machine has been up and a switch that keeps notifications quiet, letting only
-critical ones through. A notification is written into that margin in place of
-them, with its actions and LATER beside it. It leaves on its own; the pointer
-over it keeps it.
+The bottom margin has the city the clock is set to, the date and the time;
+click either for the month, with week numbers. On the right is a switch that
+keeps notifications quiet, letting only critical ones through. A notification
+is written into that margin, with its actions and LATER beside it. It leaves on
+its own; the pointer over it keeps it. Ones that left unseen, or were held back
+while quiet, are counted there ("3 MISSED"); click the count to read them.
 
 A desk with nothing open says what is going on in a sentence, such as "It is
 twenty to one on a Wednesday in Berlin. Nothing is open on this desk. Helium is
 elsewhere, and Discord has been waiting eleven minutes." The names are links.
+It also says what is playing and how many notifications went by.
 Along the foot of the page is the theme's wallpaper, dithered to the two
-colors, with wind passing through it.
+colors, with wind passing through it: the sky drifts, the field sways.
 
 Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
 the page finishes the sentence:

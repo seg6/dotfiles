@@ -5,17 +5,24 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import "RailLogic.js" as RailLogic
-import "Logic.js" as Logic
 
 // The bottom margin: where and when on the left; on the right, whatever just
-// arrived, or else how long the machine has been up, and quiet.
+// arrived, or else what went by earlier, and quiet.
 PanelWindow {
     id: line
     readonly property real u: Theme.unit(screen)
     readonly property var notes: Notices.live.values
     readonly property var note: notes.length > 0 ? notes[notes.length - 1] : null
-    property real upSeconds: 0
+    // Whether the list of what arrived earlier is open.
+    property bool earlier: false
     property bool calendar: false
+    Connections {
+        target: ShellState
+        function onMissedWanted(onScreen) {
+            if (onScreen === line.screen)
+                line.earlier = true;
+        }
+    }
     onNoteChanged: {
         if (note)
             arrive.restart();
@@ -34,25 +41,19 @@ PanelWindow {
         id: clock
         precision: SystemClock.Seconds
     }
-    FileView {
-        id: up
-        path: "/proc/uptime"
-        printErrors: false
-        onLoaded: line.upSeconds = parseFloat(text()) || 0
-    }
-    Timer {
-        interval: 60000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: up.reload()
-    }
     // What arrived leaves the margin on its own; the pointer over it keeps it.
     Timer {
         readonly property int wait: !line.note || line.note.urgency === NotificationUrgency.Critical ? 0 : (line.note.expireTimeout < 0 ? 8000 : line.note.expireTimeout)
         interval: Math.max(1, wait)
         running: wait > 0 && !noteHover.hovered
-        onTriggered: line.note.expire()
+        onTriggered: {
+            // Every screen has this line; one of them does the counting and the expiring.
+            if (line.screen !== Quickshell.screens[0])
+                return;
+            if (!line.note.transient)
+                Notices.missed++;
+            line.note.expire();
+        }
     }
 
     // The picture at the foot of the page must not run under the words.
@@ -90,6 +91,14 @@ PanelWindow {
             lit: false
             visible: text.length > 0
             text: Theme.who.place || ""
+        }
+        Small {
+            screen: line.screen
+            lit: false
+            link: true
+            // Dates are written in English, whatever the locale.
+            text: Qt.locale("C").toString(clock.date, "ddd d MMM")
+            onPressed: time.pressed(null)
         }
         Small {
             id: time
@@ -187,8 +196,11 @@ PanelWindow {
         spacing: 38 * line.u
         Small {
             screen: line.screen
-            lit: false
-            text: "up " + Logic.uptime(line.upSeconds)
+            visible: Notices.history.length > 0
+            link: true
+            lit: Notices.missed > 0
+            text: Notices.missed > 0 ? Notices.missed + " missed" : "earlier"
+            onPressed: line.earlier = !line.earlier
         }
         Row {
             spacing: 12 * line.u
@@ -332,6 +344,64 @@ PanelWindow {
                 screen: line.screen
                 lit: false
                 text: Qt.formatDateTime(clock.date, "dddd d MMMM") + " · week " + RailLogic.isoWeek(clock.date)
+            }
+        }
+    }
+
+    // What arrived earlier, newest first.
+    Sheet {
+        anchor.window: line
+        anchor.rect.x: Math.round(line.width - implicitWidth - 36 * line.u)
+        anchor.rect.y: Math.round(-implicitHeight - 6 * line.u)
+        visible: line.earlier
+        pad: 22 * line.u
+        onVisibleChanged: {
+            if (visible)
+                Notices.missed = 0;
+            else
+                line.earlier = false;
+        }
+        Column {
+            width: 820 * line.u
+            spacing: 12 * line.u
+            Repeater {
+                model: Notices.history.slice(0, 10)
+                Row {
+                    id: past
+                    required property var modelData
+                    required property int index
+                    spacing: 18 * line.u
+                    Small {
+                        screen: line.screen
+                        lit: false
+                        width: 110 * line.u
+                        text: Qt.formatDateTime(new Date(past.modelData.time), "HH:mm")
+                    }
+                    Small {
+                        screen: line.screen
+                        color: past.modelData.critical ? Theme.signal : Theme.fg
+                        width: 640 * line.u
+                        elide: Text.ElideRight
+                        text: past.modelData.app + ": " + past.modelData.summary + (past.modelData.body ? " — " + past.modelData.body.replace(/\s+/g, " ") : "")
+                    }
+                    Small {
+                        screen: line.screen
+                        link: true
+                        lit: false
+                        text: "×"
+                        onPressed: Notices.forget(past.index)
+                    }
+                }
+            }
+            Small {
+                screen: line.screen
+                link: true
+                lit: false
+                text: "forget all"
+                onPressed: {
+                    Notices.clear();
+                    line.earlier = false;
+                }
             }
         }
     }

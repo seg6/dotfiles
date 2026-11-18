@@ -46,13 +46,19 @@ PanelWindow {
         x: 36 * line.u
         anchors.verticalCenter: parent.verticalCenter
         spacing: 14 * line.u
+        readonly property var words: line.lit ? Logic.inFocus(line.lit.app, line.lit.title) : ["", ""]
+        Small {
+            screen: line.screen
+            visible: text.length > 0
+            text: who.words[0]
+        }
         Small {
             screen: line.screen
             lit: false
-            visible: line.lit !== null
-            width: Math.min(implicitWidth, line.width * 0.16)
+            visible: text.length > 0
+            width: Math.min(implicitWidth, line.width * 0.14)
             elide: Text.ElideRight
-            text: line.lit ? "→ " + Logic.proper(line.lit.app) + ", " + line.lit.title : ""
+            text: who.words[1]
         }
     }
 
@@ -212,7 +218,7 @@ PanelWindow {
             visible: SystemTray.items.values.length > 0
             anchors.verticalCenter: parent.verticalCenter
             width: icons.width + 20 * line.u
-            height: 38 * line.u
+            height: 42 * line.u
             color: "transparent"
             border {
                 width: 1
@@ -228,12 +234,12 @@ PanelWindow {
                         id: tray
                         required property var modelData
                         readonly property bool open: ShellState.menuItem === modelData
-                        width: 30 * line.u
-                        height: 30 * line.u
+                        width: 32 * line.u
+                        height: 32 * line.u
                         IconImage {
                             id: picture
                             anchors.centerIn: parent
-                            implicitSize: 22 * line.u
+                            implicitSize: 26 * line.u
                             source: tray.modelData.icon
                             visible: false
                         }
@@ -241,7 +247,7 @@ PanelWindow {
                             anchors.fill: picture
                             source: picture
                             saturation: over.containsMouse || tray.open ? 0 : -1
-                            opacity: over.containsMouse || tray.open ? 1 : 0.8
+                            brightness: over.containsMouse || tray.open ? 0 : 0.12
                         }
                         Rectangle {
                             visible: tray.open

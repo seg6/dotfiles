@@ -11,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 // Folio is a page. Windows have a hairline and nothing else; everything the
@@ -18,6 +20,14 @@ import (
 // desk. There are two colors, and one more for whatever needs you.
 
 func folioSway(theme Theme) string {
+	// The line round the window in focus is the page's ink, a step back from
+	// full strength: it marks the window without outshining what is in it.
+	line := c(theme, "fg")
+	if ink, err := colorful.Hex(c(theme, "fg")); err == nil {
+		if paper, err := colorful.Hex(c(theme, "bg")); err == nil {
+			line = ink.BlendLab(paper, 0.32).Clamped().Hex()
+		}
+	}
 	return fmt.Sprintf(`default_border pixel 1
 default_floating_border pixel 1
 title_align left
@@ -34,12 +44,12 @@ shadows_on_csd disable
 blur disable
 default_dim_inactive 0.22
 # Windows open and close quickly, not at once.
-animation_duration_ms 180
+animation_duration_ms 120
 
 layer_effects "folio" shadows disable
 layer_effects "folio" blur disable
 layer_effects "folio" corner_radius 0
-`, c(theme, "fg"), c(theme, "fg"), c(theme, "fg"), c(theme, "fg"),
+`, line, line, line, line,
 		c(theme, "surface_alt"), c(theme, "surface_alt"), c(theme, "surface_alt"), c(theme, "surface_alt"),
 		c(theme, "surface_alt"), c(theme, "surface_alt"), c(theme, "surface_alt"), c(theme, "surface_alt"))
 }

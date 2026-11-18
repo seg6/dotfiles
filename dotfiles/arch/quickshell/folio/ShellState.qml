@@ -38,6 +38,11 @@ QtObject {
     function close(): void {
         asking = false;
     }
+    // The page asks the bottom line of a screen to show what went by.
+    signal missedWanted(var onScreen)
+    function showMissed(onScreen): void {
+        missedWanted(onScreen);
+    }
     property IpcHandler ipc: IpcHandler {
         target: "shell"
         function launcher(): void {

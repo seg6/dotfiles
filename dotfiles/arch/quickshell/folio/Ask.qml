@@ -127,7 +127,12 @@ PanelWindow {
         }
     }
     color: "transparent"
-    visible: ShellState.asking || shown > 0
+    // The surface is always there, and takes no clicks until asked: mapping
+    // a new one costs the first frames of coming up.
+    mask: ShellState.asking ? null : nothing
+    Region {
+        id: nothing
+    }
     WlrLayershell.namespace: "folio"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: ShellState.asking ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None

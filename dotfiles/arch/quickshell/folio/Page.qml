@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Services.Mpris
 import "Logic.js" as Logic
 
 // The page behind everything. With nothing open on a desk it says, in a
@@ -19,7 +20,14 @@ PanelWindow {
                 since: Desktop.waitingSince[desk]
             }))
     // What the page has to say right now.
-    readonly property string says: Logic.sentence(clock.date, Theme.who.city || "", Desktop.windows, here, waiting)
+    readonly property var player: Mpris.players.values.find(p => p.isPlaying && p.trackTitle) || null
+    readonly property string says: Logic.sentence(clock.date, Theme.who.city || "", Desktop.windows, here, waiting, {
+        playing: player ? {
+            title: player.trackTitle,
+            artist: player.trackArtist
+        } : null,
+        missed: Notices.missed
+    })
     property int stamp: 0
     anchors {
         left: true
@@ -115,6 +123,10 @@ PanelWindow {
             onLinkActivated: link => {
                 if (link.startsWith("desk:"))
                     Quickshell.execDetached(["swaymsg", "workspace", link.slice(5)]);
+                else if (link === "pause")
+                    page.player?.togglePlaying();
+                else if (link === "missed")
+                    ShellState.showMissed(page.screen);
             }
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor

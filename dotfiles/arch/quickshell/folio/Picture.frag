@@ -25,10 +25,17 @@ float noise(vec2 p) {
 
 void main() {
     vec2 dot_ = floor(qt_TexCoord0 * size);
-    vec2 at = dot_ / 46.0;
-    float gust = noise(at + vec2(-time * 0.11, time * 0.03));
-    float eddy = noise(at * 1.9 + vec2(-time * 0.17, 7.3));
-    vec2 moved = vec2((gust - 0.5) * 10.0 + (eddy - 0.5) * 4.0, (eddy - 0.5) * 3.0);
+    // The sky is the upper part of the picture: wide, slow, and it drifts.
+    vec2 high = dot_ / 70.0;
+    float cloud = noise(high + vec2(-time * 0.05, time * 0.012));
+    float billow = noise(high * 2.3 + vec2(-time * 0.08, 3.1));
+    vec2 sky = vec2((cloud - 0.5) * 14.0, (billow - 0.5) * 5.0);
+    // The field below is close: quick gusts run through it, mostly sideways.
+    vec2 low = dot_ / vec2(34.0, 16.0);
+    float gust = noise(low + vec2(-time * 0.42, time * 0.05));
+    float ripple = noise(low * 2.7 + vec2(-time * 0.9, 9.7));
+    vec2 field = vec2((gust - 0.5) * 9.0 + (ripple - 0.5) * 3.0, (ripple - 0.5) * 1.5);
+    vec2 moved = mix(sky, field, smoothstep(0.76, 0.88, qt_TexCoord0.y));
     vec2 from = dot_ + floor(moved + 0.5);
     // Off one side comes back on the other, so the edges are not smeared.
     from = vec2(mod(from.x, size.x), clamp(from.y, 0.0, size.y - 1.0));

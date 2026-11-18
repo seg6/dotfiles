@@ -147,10 +147,21 @@ function elsewhere(all, here) {
     return groups.map(function(g) { return { text: several(g.app, g.n), desk: g.desk, n: g.n }; });
 }
 
+// The window in focus, as the program and what it is showing. A window whose
+// title only repeats the program's name is said once: ["Claude", ""].
+function inFocus(app, title) {
+    var name = proper(app);
+    var showing = String(title || "").trim();
+    var bare = showing.toLowerCase().replace(/[^a-z0-9]+/g, "");
+    if (bare === name.toLowerCase().replace(/[^a-z0-9]+/g, "") || bare === String(app || "").toLowerCase().replace(/[^a-z0-9]+/g, "")) showing = "";
+    return [name, showing];
+}
+
 // What the desktop has to say, as rich text. Words that name something
 // elsewhere are links ("desk:7"). `waiting` lists what wants attention:
-// [{name: "Discord", desk: "8", since: Date}].
-function sentence(now, place, all, here, waiting) {
+// [{name: "Discord", desk: "8", since: Date}]. `more` adds what else is true:
+// {playing: {title, artist}, missed: 3}; its links are "pause" and "missed".
+function sentence(now, place, all, here, waiting, more) {
     var out = "It is " + spokenTime(now) + " on a " + weekdays[now.getDay()] + (place ? " in " + escape(place) : "") + ". ";
     var mine = all.filter(function(w) { return w.workspace === here; });
     var others = elsewhere(all, here);
@@ -183,6 +194,14 @@ function sentence(now, place, all, here, waiting) {
         if (quiet.length === 0) name = name.replace(/>([a-z])/, function(_, letter) { return ">" + letter.toUpperCase(); });
         out += name + " <i>" + (minutes >= 2 ? "has been waiting " + count(minutes) + " minutes" : "wants you")
             + (waits.length > 1 ? ", and so " + (waits.length === 2 ? "does one other" : "do " + count(waits.length - 1) + " others") : "") + ".</i>";
+    }
+    more = more || {};
+    if (more.playing && more.playing.title) {
+        out += " <i>" + escape(more.playing.title) + "</i>" + (more.playing.artist ? " by " + escape(more.playing.artist) : "") + ' is <a href="pause">playing</a>.';
+    }
+    if (more.missed > 0) {
+        var n = count(more.missed);
+        out += " " + n.charAt(0).toUpperCase() + n.slice(1) + ' <a href="missed">' + (more.missed === 1 ? "notification" : "notifications") + "</a> went by.";
     }
     return out;
 }
@@ -281,17 +300,4 @@ function ask(query, sources, now, limit) {
 function rest(query, name) {
     var typed = String(query || "");
     return name.toLowerCase().indexOf(typed.toLowerCase()) === 0 ? name.slice(typed.length) : "";
-}
-
-// "3D 04H" from seconds.
-function uptime(seconds) {
-    var days = Math.floor(seconds / 86400), hours = Math.floor(seconds % 86400 / 3600), minutes = Math.floor(seconds % 3600 / 60);
-    function two(n) { return (n < 10 ? "0" : "") + n; }
-    return days > 0 ? days + "D " + two(hours) + "H" : hours + "H " + two(minutes) + "M";
-}
-
-function duration(seconds) {
-    seconds = Math.max(0, Math.floor(seconds || 0));
-    var minutes = Math.floor(seconds / 60), left = seconds % 60;
-    return minutes + ":" + (left < 10 ? "0" : "") + left;
 }
