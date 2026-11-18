@@ -62,7 +62,7 @@ function count(n) { return numbers[n] || String(n); }
 
 // What a person calls the program: "Helium", not "helium-browser" or
 // "com.anthropic.Claude".
-var names = { "helium": "Helium", "kitty": "Kitty", "com.anthropic.claude": "Claude", "org.gnome.nautilus": "Files", "thunar": "Thunar" };
+var names = { "helium": "Helium", "kitty": "Kitty", "com.anthropic.claude": "Claude", "org.gnome.nautilus": "Files", "thunar": "Thunar", "teams-for-linux": "Teams" };
 
 function proper(app) {
     var key = String(app || "").toLowerCase();
@@ -287,4 +287,32 @@ function ask(query, sources, now, limit) {
 function rest(query, name) {
     var typed = String(query || "");
     return name.toLowerCase().indexOf(typed.toLowerCase()) === 0 ? name.slice(typed.length) : "";
+}
+
+// Where the light is, for the picture: {progress, light, phase}.
+// `progress` is how far the sun is across the sky, 0 at rising to 1 at setting;
+// after dark it is the moon's, from sunset to sunrise. `light` is 1 by day and
+// 0 by night, with three quarters of an hour of dawn and dusk between.
+// `phase` is the moon's: 0 new, 0.5 full. Without a latitude, 50 north is assumed.
+function sky(now, latitude) {
+    var lat = (typeof latitude === "number" ? latitude : 50) * Math.PI / 180;
+    var start = new Date(now.getFullYear(), 0, 0);
+    var day = Math.floor((now - start) / 86400000);
+    var tilt = -23.44 * Math.cos(2 * Math.PI * (day + 10) / 365) * Math.PI / 180;
+    var half = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(tilt)))) / Math.PI * 12;
+    // Clocks on summer time run an hour ahead of the sun.
+    var winter = Math.max(new Date(now.getFullYear(), 0, 1).getTimezoneOffset(), new Date(now.getFullYear(), 6, 1).getTimezoneOffset());
+    var noon = 12 + (winter - now.getTimezoneOffset()) / 60;
+    var rise = noon - half, set = noon + half;
+    var hour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    var up = hour >= rise && hour <= set;
+    var night = 24 - (set - rise);
+    var progress = up ? (hour - rise) / Math.max(set - rise, 0.01) : ((hour - set + 24) % 24) / Math.max(night, 0.01);
+    var edge = Math.min(Math.abs(hour - rise), Math.abs(hour - set), 24 - Math.abs(hour - rise), 24 - Math.abs(hour - set));
+    var light = Math.max(0, Math.min(1, 0.5 + (up ? 1 : -1) * edge / 1.5));
+    // Where the sun does not set, or does not rise, there is no dawn to pass through.
+    if (half >= 12) { up = true; light = 1; progress = hour / 24; }
+    if (half <= 0) { up = false; light = 0; progress = hour / 24; }
+    var months = (now.getTime() - Date.UTC(2000, 0, 6, 18, 14)) / 86400000 / 29.530588853;
+    return { progress: Math.max(0, Math.min(1, progress)), light: light, phase: months - Math.floor(months) };
 }

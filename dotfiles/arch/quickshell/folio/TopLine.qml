@@ -179,6 +179,8 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10 * line.u
             Small {
+                id: playWord
+                anchors.verticalCenter: parent.verticalCenter
                 screen: line.screen
                 lit: false
                 text: line.player?.isPlaying ? "playing" : "paused"
@@ -195,6 +197,8 @@ PanelWindow {
                 }
             }
             Small {
+                // A title in another script is set in a taller typeface; it still sits on the same line.
+                anchors.baseline: playWord.baseline
                 screen: line.screen
                 link: true
                 width: Math.min(implicitWidth, 300 * line.u)
