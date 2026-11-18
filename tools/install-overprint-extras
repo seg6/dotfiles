@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Install Overprint's optional desktop assets into the user's own data directory."""
+"""Install Spicetify, for the Spotify theme, into the user's own data directory."""
 import hashlib
 import json
 import os
 from pathlib import Path
-import shutil
-import subprocess
 import tarfile
-import tempfile
 import urllib.request
 
 home = Path.home()
@@ -22,19 +19,6 @@ def download(url, target):
         urllib.request.urlretrieve(url, temporary)
         temporary.replace(target)
 
-
-for package, directory in [('adw-gtk-theme', 'themes'), ('papirus-icon-theme', 'icons')]:
-    url = subprocess.check_output(['pacman', '-Sp', '--print-format', '%l', package], text=True).strip()
-    archive = cache / url.rsplit('/', 1)[-1]
-    download(url, archive)
-    download(url + '.sig', Path(str(archive) + '.sig'))
-    subprocess.run(['gpg', '--homedir', '/etc/pacman.d/gnupg', '--no-auto-check-trustdb',
-                    '--verify', str(archive) + '.sig', str(archive)], check=True)
-    with tempfile.TemporaryDirectory(prefix='overprint-assets-') as stage:
-        subprocess.run(['bsdtar', '-xf', str(archive), '-C', stage, 'usr/share/' + directory], check=True)
-        for item in (Path(stage) / 'usr/share' / directory).iterdir():
-            shutil.copytree(item, share / directory / item.name, symlinks=True, dirs_exist_ok=True)
-    print('Installed', package, 'in', share / directory, flush=True)
 
 version = '2.45.3'
 metadata = json.load(urllib.request.urlopen('https://api.github.com/repos/spicetify/cli/releases/tags/v' + version))
