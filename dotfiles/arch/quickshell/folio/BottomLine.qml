@@ -8,13 +8,12 @@ import "RailLogic.js" as RailLogic
 import "Logic.js" as Logic
 
 // The bottom margin: where and when on the left; on the right, whatever just
-// arrived, or else the moon, how long the machine has been up, and quiet.
+// arrived, or else how long the machine has been up, and quiet.
 PanelWindow {
     id: line
     readonly property real u: Theme.unit(screen)
     readonly property var notes: Notices.live.values
     readonly property var note: notes.length > 0 ? notes[notes.length - 1] : null
-    readonly property real phase: Logic.moon(clock.date)
     property real upSeconds: 0
     property bool calendar: false
     property date month: new Date()
@@ -154,11 +153,6 @@ PanelWindow {
             verticalCenter: parent.verticalCenter
         }
         spacing: 38 * line.u
-        Small {
-            screen: line.screen
-            lit: false
-            text: Logic.moonName(line.phase) + " " + Logic.lit(line.phase) + "%"
-        }
         Small {
             screen: line.screen
             lit: false

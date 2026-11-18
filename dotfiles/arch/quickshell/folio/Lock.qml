@@ -60,12 +60,6 @@ Scope {
                 cache: false
             }
             Small {
-                x: 36 * surface.u
-                y: 19 * surface.u
-                screen: surface.screen
-                text: (Theme.who.name || "you") + "."
-            }
-            Small {
                 anchors {
                     right: parent.right
                     rightMargin: 36 * surface.u

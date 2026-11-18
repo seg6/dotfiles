@@ -3,18 +3,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Services.Mpris
 import "Logic.js" as Logic
 
 // The page behind everything. With nothing open on a desk it says, in a
-// sentence, what is going on, and lists what you were last working on. The
-// picture along its foot is the theme's wallpaper in the page's two colors.
+// sentence, what is going on. The picture along its foot is the theme's
+// wallpaper in the page's two colors.
 PanelWindow {
     id: page
     readonly property real u: Theme.unit(screen)
     readonly property string here: Desktop.showing[screen.name] ?? ""
     readonly property bool bare: !Desktop.windows.some(w => w.workspace === page.here)
-    readonly property var player: Mpris.players.values.find(p => p.isPlaying) || null
     readonly property var waiting: Object.keys(Desktop.waitingSince).map(desk => ({
                 name: Logic.deskName(Desktop.windows, desk).replace(/ \+\d+$/, ""),
                 desk: desk,
@@ -43,8 +41,10 @@ PanelWindow {
         printErrors: false
         onFileChanged: page.stamp++
     }
-    // Each pixel of the picture is a square several screen pixels wide, so the dither shows.
+    // Each pixel of the picture is a square several screen pixels wide, so the
+    // dither shows. Wind passes through it: Picture.frag moves the dots about.
     Image {
+        id: picture
         anchors.bottom: parent.bottom
         width: parent.width
         height: Math.round(width * 360 / 640)
@@ -54,11 +54,30 @@ PanelWindow {
         fillMode: Image.Stretch
         // The picture belongs to the empty page; behind work it would only show as noise in the margins.
         opacity: page.bare ? 1 : 0
+        // Without a GPU there is no shader, and the picture stands still.
+        visible: !wind.visible
         Behavior on opacity {
             NumberAnimation {
                 duration: 320
                 easing.type: Easing.OutCubic
             }
+        }
+    }
+    ShaderEffect {
+        id: wind
+        property Image source: picture
+        property real time: 0
+        property size size: Qt.size(640, 360)
+        anchors.fill: picture
+        opacity: picture.opacity
+        visible: GraphicsInfo.api !== GraphicsInfo.Software && picture.status === Image.Ready
+        fragmentShader: Qt.resolvedUrl("Picture.frag.qsb")
+        // A dozen steps a second is as fast as dots this size can be seen to move.
+        Timer {
+            interval: 80
+            running: wind.visible && wind.opacity > 0
+            repeat: true
+            onTriggered: wind.time += 0.08
         }
     }
     MouseArea {
@@ -91,85 +110,6 @@ PanelWindow {
             }
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-            }
-        }
-        Item {
-            width: 1
-            height: 30 * page.u
-        }
-        // What is playing, said the same way.
-        Text {
-            visible: page.player !== null
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-            textFormat: Text.StyledText
-            text: page.player ? "<i>" + Logic.escape(page.player.trackTitle || page.player.identity || "Something") + "</i>" + (page.player.trackArtist ? " by " + Logic.escape(page.player.trackArtist) : "") + ' is playing. <a href="pause">Pause it</a>, or <a href="next">skip it</a>.' : ""
-            color: Theme.dim
-            linkColor: Theme.fg
-            font {
-                family: Theme.serif
-                pixelSize: 30 * page.u
-            }
-            onLinkActivated: link => link === "pause" ? page.player.togglePlaying() : page.player.next()
-            HoverHandler {
-                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-            }
-        }
-        Item {
-            width: 1
-            height: 54 * page.u
-        }
-        Small {
-            anchors.horizontalCenter: parent.horizontalCenter
-            screen: page.screen
-            lit: false
-            visible: projects.count > 0
-            text: "lately"
-        }
-        Item {
-            width: 1
-            height: 14 * page.u
-        }
-        Repeater {
-            id: projects
-            model: Logic.lately(Desktop.recent, clock.date, 4)
-            Row {
-                id: project
-                required property var modelData
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 14 * page.u
-                Text {
-                    text: project.modelData.name
-                    textFormat: Text.PlainText
-                    color: Theme.fg
-                    lineHeight: 1.3
-                    font {
-                        family: Theme.serif
-                        pixelSize: 30 * page.u
-                        underline: resume.containsMouse
-                    }
-                    MouseArea {
-                        id: resume
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        // The project opens in a terminal, as `ws` would open it.
-                        onClicked: Quickshell.execDetached({
-                            command: ["/usr/bin/env", "PATH=" + Quickshell.env("HOME") + "/.local/bin:" + (Quickshell.env("PATH") || "/usr/bin"), "kitty", "ws", "open", project.modelData.id]
-                        })
-                    }
-                }
-                Text {
-                    text: project.modelData.when
-                    textFormat: Text.PlainText
-                    color: Theme.dim
-                    lineHeight: 1.3
-                    font {
-                        family: Theme.serif
-                        pixelSize: 30 * page.u
-                    }
-                }
             }
         }
     }

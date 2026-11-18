@@ -9,7 +9,6 @@ import (
 	"image/png"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -47,7 +46,9 @@ func folioKitty(theme Theme) string {
 	return fmt.Sprintf(`
 font_size 16.0
 background_opacity 1.0
-window_padding_width 20
+# Rows that do not fill the window leave their remainder above, not below.
+window_padding_width 18 20 10 20
+placement_strategy bottom
 window_title_bar_min_windows 0
 hide_window_decorations yes
 tab_bar_style separator
@@ -241,14 +242,11 @@ func writePage(wallpaper, target, paper, ink string) error {
 	return os.Rename(temporary.Name(), target)
 }
 
-// whoAndWhere is what the page says about its owner: a name, the city the
-// clock is set to, and coordinates if the owner chose to write them down in
+// whoAndWhere is what the page says about where it is: the city the clock is
+// set to, and coordinates if the owner chose to write them down in
 // ~/.config/dotfiles/place ("52.52 13.40"). Nothing is looked up.
 func whoAndWhere(config string) string {
-	who := map[string]string{"name": os.Getenv("USER")}
-	if out, err := exec.Command("git", "config", "--global", "--get", "user.name").Output(); err == nil && strings.TrimSpace(string(out)) != "" {
-		who["name"] = strings.TrimSpace(string(out))
-	}
+	who := map[string]string{}
 	if zone, err := os.Readlink("/etc/localtime"); err == nil {
 		if _, city, found := strings.Cut(zone, "zoneinfo/"); found {
 			who["city"] = strings.ReplaceAll(filepath.Base(city), "_", " ")

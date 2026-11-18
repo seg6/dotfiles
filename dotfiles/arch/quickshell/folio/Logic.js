@@ -283,27 +283,6 @@ function rest(query, name) {
     return name.toLowerCase().indexOf(typed.toLowerCase()) === 0 ? name.slice(typed.length) : "";
 }
 
-// The moon tonight: 0 is new, 0.5 is full. Good to a few hours.
-function moon(date) {
-    var days = (date.getTime() / 86400000) - 10962.76; // since the new moon of 6 January 2000, 18:14 UTC
-    var phase = (days / 29.530588853) % 1;
-    return phase < 0 ? phase + 1 : phase;
-}
-
-// The quarters are moments; either side of them the moon is a crescent or gibbous.
-function moonName(phase) {
-    if (phase < 0.03 || phase > 0.97) return "New moon";
-    if (phase < 0.22) return "Waxing crescent";
-    if (phase < 0.28) return "First quarter";
-    if (phase < 0.47) return "Waxing gibbous";
-    if (phase < 0.53) return "Full moon";
-    if (phase < 0.72) return "Waning gibbous";
-    if (phase < 0.78) return "Last quarter";
-    return "Waning crescent";
-}
-
-function lit(phase) { return Math.round((1 - Math.cos(phase * 2 * Math.PI)) * 50); }
-
 // "3D 04H" from seconds.
 function uptime(seconds) {
     var days = Math.floor(seconds / 86400), hours = Math.floor(seconds % 86400 / 3600), minutes = Math.floor(seconds % 3600 / 60);

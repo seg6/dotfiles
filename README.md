@@ -72,7 +72,7 @@ are a hairline: no title bars, no shadows, the one in focus has the brighter lin
 
 The top margin is one line of small type:
 
-- your name, then the window in focus;
+- the window in focus;
 - the desks, each named for what is on it. Click one to go there; hover for a
   picture of it as it last looked. A red dot means it wants attention;
 - what is playing (click to pause, right click for the next track, middle for
@@ -81,8 +81,8 @@ The top margin is one line of small type:
   change, click to mute, right click for the mixer).
 
 The bottom margin has the city the clock is set to and the time; click the time
-for the month, with week numbers. On the right are the moon, how long the
-machine has been up, and a switch that keeps notifications quiet, letting only
+for the month, with week numbers. On the right are how long the
+machine has been up and a switch that keeps notifications quiet, letting only
 critical ones through. A notification is written into that margin in place of
 them, with its actions and LATER beside it. It leaves on its own; the pointer
 over it keeps it.
@@ -90,8 +90,8 @@ over it keeps it.
 A desk with nothing open says what is going on in a sentence, such as "It is
 twenty to one on a Wednesday in Berlin. Nothing is open on this desk. Helium is
 elsewhere, and Discord has been waiting eleven minutes." The names are links.
-Under it are the projects `ws` opened last; click one to resume it. Along the
-foot of the page is the theme's wallpaper, dithered to the two colors.
+Along the foot of the page is the theme's wallpaper, dithered to the two
+colors, with wind passing through it.
 
 Super+Space, Super+Tab, or a click on the empty page starts a request. Type and
 the page finishes the sentence:
@@ -106,7 +106,7 @@ Super+Escape locks the screen with the same page. It checks the password
 against the `swaylock` PAM service. If the lock screen ever misbehaves,
 `desktop-menu unlock` from a virtual terminal lets you back in.
 
-`theme` writes your name (from Git) and the clock's city into the page. For
+`theme` writes the clock's city into the page. For
 coordinates in the bottom margin, write them yourself; nothing is looked up:
 
 ```sh

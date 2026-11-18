@@ -177,12 +177,6 @@ PanelWindow {
         onClicked: ShellState.close()
     }
     Small {
-        x: 36 * ask.u
-        y: 19 * ask.u
-        screen: ask.screen
-        text: (Theme.who.name || "you") + "."
-    }
-    Small {
         anchors {
             right: parent.right
             rightMargin: 36 * ask.u

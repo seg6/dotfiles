@@ -11,7 +11,7 @@ import Quickshell.Services.SystemTray
 import "RailLogic.js" as RailLogic
 import "Logic.js" as Logic
 
-// The top margin: who and what is in focus, the desks, and on the right what
+// The top margin: what is in focus, the desks, and on the right what
 // is playing, the tray as words, and the volume.
 PanelWindow {
     id: line
@@ -46,10 +46,6 @@ PanelWindow {
         x: 36 * line.u
         anchors.verticalCenter: parent.verticalCenter
         spacing: 14 * line.u
-        Small {
-            screen: line.screen
-            text: (Theme.who.name || "you") + "."
-        }
         Small {
             screen: line.screen
             lit: false
@@ -140,6 +136,7 @@ PanelWindow {
         spacing: 26 * line.u
         Row {
             visible: line.player !== null
+            anchors.verticalCenter: parent.verticalCenter
             spacing: 10 * line.u
             Small {
                 screen: line.screen
@@ -244,6 +241,7 @@ PanelWindow {
             }
         }
         Small {
+            anchors.verticalCenter: parent.verticalCenter
             screen: line.screen
             link: true
             lit: !line.audio?.muted
