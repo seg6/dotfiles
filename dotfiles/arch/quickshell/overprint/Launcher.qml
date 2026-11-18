@@ -61,8 +61,9 @@ PanelWindow {
             const path = [home + "/.local/bin", home + "/.cargo/bin", Quickshell.env("PATH") || "/usr/local/bin:/usr/bin"].join(":");
             // systemd user services can have a system-only PATH. env performs
             // executable lookup with the same path inherited by the app.
+            // The application gets a scope of its own, so restarting the shell does not stop it.
             Quickshell.execDetached({
-                command: ["/usr/bin/env", "PATH=" + path].concat(command),
+                command: ["systemd-run", "--user", "--scope", "--collect", "--quiet", "--", "/usr/bin/env", "PATH=" + path].concat(command),
                 workingDirectory: entry.workingDirectory || home
             });
             const next = Object.assign({}, history);

@@ -45,12 +45,14 @@ PanelWindow {
         const home = Quickshell.env("HOME");
         // systemd user services can have a system-only PATH. env performs
         // executable lookup with the same path inherited by the app.
+        // What is started gets a scope of its own: it is not part of the
+        // shell, and must not be stopped when the shell is restarted.
         const path = [home + "/.local/bin", home + "/.cargo/bin", Quickshell.env("PATH") || "/usr/local/bin:/usr/bin"].join(":");
         if (result.kind === "window") {
             I3.dispatch("[con_id=" + result.window.id + "] focus");
         } else if (result.kind === "project") {
             Quickshell.execDetached({
-                command: ["/usr/bin/env", "PATH=" + path, "kitty", "ws", "open", result.project]
+                command: ["systemd-run", "--user", "--scope", "--collect", "--quiet", "--", "/usr/bin/env", "PATH=" + path].concat(["kitty", "ws", "open", result.project])
             });
         } else if (result.kind === "clip") {
             // Only the numeric cliphist ID is passed as data; display text never becomes shell code.
@@ -64,7 +66,7 @@ PanelWindow {
             if (result.app.runInTerminal)
                 command.unshift("kitty", "--");
             Quickshell.execDetached({
-                command: ["/usr/bin/env", "PATH=" + path].concat(command),
+                command: ["systemd-run", "--user", "--scope", "--collect", "--quiet", "--", "/usr/bin/env", "PATH=" + path].concat(command),
                 workingDirectory: result.app.workingDirectory || home
             });
             const next = Object.assign({}, used);
