@@ -66,7 +66,7 @@ the clipboard history in both.
 ## Folio
 
 A page. Two colors, bone on near-black, and one red that only ever means
-something wants you. Two typefaces, both installed with the dotfiles: IBM Plex
+something wants you. Two typefaces, both installed with the dotfiles: Departure
 Mono for the small capitals in the margins, Newsreader for sentences. Windows
 are a hairline: no title bars, no shadows, the one in focus has the brighter line.
 
