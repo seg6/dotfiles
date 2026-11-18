@@ -157,53 +157,40 @@ function inFocus(app, title) {
     return [name, showing];
 }
 
-// What the desktop has to say, as rich text. Words that name something
-// elsewhere are links ("desk:7"). `waiting` lists what wants attention:
-// [{name: "Discord", desk: "8", since: Date}]. `more` adds what else is true:
-// {playing: {title, artist}, missed: 3}; its links are "pause" and "missed".
-function sentence(now, place, all, here, waiting, more) {
-    var out = "It is " + spokenTime(now) + " on a " + weekdays[now.getDay()] + (place ? " in " + escape(place) : "") + ". ";
-    var mine = all.filter(function(w) { return w.workspace === here; });
-    var others = elsewhere(all, here);
-    if (mine.length === 0) {
-        out += all.length === 0 ? "Nothing is open." : "Nothing is open on this desk.";
-    } else {
-        var kinds = [];
-        mine.forEach(function(w) {
-            var found = kinds.filter(function(k) { return k.app === w.app; })[0];
-            if (found) found.n++; else kinds.push({ app: w.app, n: 1 });
-        });
-        var things = list(kinds.map(function(k) { return several(k.app, k.n); }));
-        out += things.charAt(0).toUpperCase() + things.slice(1) + (mine.length === 1 ? " is" : " are") + " open here.";
+// The first thing the page says: "It is twenty to one on a Wednesday in Berlin."
+function headline(now, place) {
+    return "It is " + spokenTime(now) + " on a " + weekdays[now.getDay()] + (place ? " in " + place : "") + ".";
+}
+
+// What else is true, one fact to a line, each a label and rich text:
+//   [{label: "elsewhere", text: '<a href="desk:1">Helium</a> and …'}, …]
+// `waiting` lists what wants attention: [{name: "Discord", desk: "8", since: Date}].
+// `more` is {playing: {title, artist}, missed: 3}. Links are "desk:N", "pause" and "missed".
+function facts(now, all, here, waiting, more) {
+    var rows = [];
+    function capital(html) {
+        return html.replace(/^(<a [^>]*>)?([a-z])/, function(_, tag, letter) { return (tag || "") + letter.toUpperCase(); });
     }
+    function link(to, text) { return '<a href="' + escape(to) + '">' + escape(text) + "</a>"; }
     var waits = (waiting || []).filter(function(w) { return w.desk !== here; });
-    var quiet = others.filter(function(o) { return !waits.some(function(w) { return w.desk === o.desk; }); });
+    var quiet = elsewhere(all, here).filter(function(o) { return !waits.some(function(w) { return w.desk === o.desk; }); });
     if (quiet.length > 0) {
-        var total = quiet.reduce(function(sum, o) { return sum + o.n; }, 0);
-        var linked = list(quiet.map(function(o) { return '<a href="desk:' + escape(o.desk) + '">' + escape(o.text) + '</a>'; }));
-        out += " " + linked.replace(/^(<a [^>]*>)?([a-z])/, function(_, tag, letter) { return (tag || "") + letter.toUpperCase(); })
-            + (total === 1 ? " is" : " are") + " elsewhere";
-        out += waits.length > 0 ? ", and " : ".";
-    } else if (waits.length > 0) {
-        out += " ";
+        rows.push({ label: "elsewhere", text: capital(list(quiet.map(function(o) { return link("desk:" + o.desk, o.text); }))) + "." });
     }
     if (waits.length > 0) {
-        var first = waits[0];
-        var minutes = first.since ? Math.round((now - first.since) / 60000) : 0;
-        var name = '<a href="desk:' + escape(first.desk) + '">' + escape(first.name) + '</a>';
-        if (quiet.length === 0) name = name.replace(/>([a-z])/, function(_, letter) { return ">" + letter.toUpperCase(); });
-        out += name + " <i>" + (minutes >= 2 ? "has been waiting " + count(minutes) + " minutes" : "wants you")
-            + (waits.length > 1 ? ", and so " + (waits.length === 2 ? "does one other" : "do " + count(waits.length - 1) + " others") : "") + ".</i>";
+        rows.push({ label: "waiting", text: list(waits.map(function(w) {
+            var minutes = w.since ? Math.round((now - w.since) / 60000) : 0;
+            return link("desk:" + w.desk, w.name) + (minutes >= 2 ? ", " + count(minutes) + " minutes" : "");
+        })) + "." });
     }
     more = more || {};
     if (more.playing && more.playing.title) {
-        out += " <i>" + escape(more.playing.title) + "</i>" + (more.playing.artist ? " by " + escape(more.playing.artist) : "") + ' is <a href="pause">playing</a>.';
+        rows.push({ label: "playing", text: '<a href="pause"><i>' + escape(more.playing.title) + "</i></a>" + (more.playing.artist ? " by " + escape(more.playing.artist) : "") + "." });
     }
     if (more.missed > 0) {
-        var n = count(more.missed);
-        out += " " + n.charAt(0).toUpperCase() + n.slice(1) + ' <a href="missed">' + (more.missed === 1 ? "notification" : "notifications") + "</a> went by.";
+        rows.push({ label: "missed", text: capital(link("missed", count(more.missed) + (more.missed === 1 ? " notification" : " notifications"))) + "." });
     }
-    return out;
+    return rows;
 }
 
 // A desk's name in the line of desks along the top: what is mostly on it.

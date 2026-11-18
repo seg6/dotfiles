@@ -87,10 +87,11 @@ is written into that margin, with its actions and LATER beside it. It leaves on
 its own; the pointer over it keeps it. Ones that left unseen, or were held back
 while quiet, are counted there ("3 MISSED"); click the count to read them.
 
-A desk with nothing open says what is going on in a sentence, such as "It is
-twenty to one on a Wednesday in Berlin. Nothing is open on this desk. Helium is
-elsewhere, and Discord has been waiting eleven minutes." The names are links.
-It also says what is playing and how many notifications went by.
+A desk with nothing open says the hour, the day and the place in one large
+line, such as "It is twenty to one on a Wednesday in Berlin." Under it is a
+short list, one fact to a line: what is ELSEWHERE, what is WAITING and for how
+long, what is PLAYING, and how many notifications were MISSED. The names are
+links: to the desk, to pause, to the list of what went by.
 Along the foot of the page is the theme's wallpaper, dithered to the two
 colors, with wind passing through it: the sky drifts, the field sways.
 
