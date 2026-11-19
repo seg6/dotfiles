@@ -169,8 +169,8 @@ case $(uname -s) in
         # The theme tool generates this icon theme below ~/.config; GTK and Qt look here.
         icon_dir=${XDG_DATA_HOME:-$TARGET_HOME/.local/share}/icons
         install -d "$icon_dir"
-        if [[ ! -e $icon_dir/Overprint && ! -L $icon_dir/Overprint ]]; then
-            ln -s "${XDG_CONFIG_HOME:-$TARGET_HOME/.config}/dotfiles/icons/Overprint" "$icon_dir/Overprint"
+        if [[ ! -e $icon_dir/Folio && ! -L $icon_dir/Folio ]]; then
+            ln -s "${XDG_CONFIG_HOME:-$TARGET_HOME/.config}/dotfiles/icons/Folio" "$icon_dir/Folio"
         fi
         write_agent_config '"~/.1password/agent.sock"'
         ;;

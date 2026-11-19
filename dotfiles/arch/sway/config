@@ -16,12 +16,35 @@ exec polkit-agent
 #     resume 'swaymsg "output * power on"' \
 #     before-sleep '$lock'
 
-gaps inner 8
-gaps outer 4
-default_border pixel 2
-default_floating_border pixel 2
-
 include ~/.config/sway/theme
+
+default_border pixel 1
+default_floating_border pixel 1
+title_align left
+titlebar_border_thickness 1
+client.focused          $line $line $bg $line $line
+client.focused_inactive $surface_alt $surface_alt $fg $surface_alt $surface_alt
+client.unfocused        $surface_alt $surface_alt $fg $surface_alt $surface_alt
+client.urgent           $urgent $urgent $bg $urgent $urgent
+
+corner_radius 0
+smart_corner_radius enable
+shadows disable
+shadows_on_csd disable
+blur disable
+default_dim_inactive 0.22
+animation_duration_ms 0
+
+layer_effects "folio" shadows disable
+layer_effects "folio" blur disable
+layer_effects "folio" corner_radius 0
+
+gaps inner 12
+gaps outer 0
+gaps left 36
+gaps right 36
+gaps top 0
+gaps bottom 0
 
 focus_follows_mouse no
 floating_modifier $mod normal

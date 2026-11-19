@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 type Theme struct {
@@ -35,8 +36,10 @@ func Run(args []string) {
 		applyTheme(repoRoot(), configHome(), !hasArg(args, "--no-reload"))
 	case "reload":
 		reloadLive()
+	case "spotify":
+		spotify(repoRoot(), configHome())
 	default:
-		fmt.Fprintln(os.Stderr, "usage: theme [apply] [--no-reload] | theme reload")
+		fmt.Fprintln(os.Stderr, "usage: theme [apply] [--no-reload] | theme reload | theme spotify")
 		os.Exit(2)
 	}
 }
@@ -62,7 +65,7 @@ func repoRoot() string {
 }
 
 func validRoot(root string) bool {
-	return root != "" && exists(filepath.Join(root, "themes"))
+	return root != "" && exists(filepath.Join(root, themeDir, "theme.toml"))
 }
 
 func configHome() string {
@@ -85,6 +88,8 @@ func hasArg(args []string, arg string) bool {
 	return false
 }
 
+const themeDir = "dotfiles/common/theme"
+
 func loadTheme(root string) Theme {
 	theme, err := readTheme(root, "folio")
 	if err != nil {
@@ -94,7 +99,7 @@ func loadTheme(root string) Theme {
 }
 
 func readTheme(root, name string) (Theme, error) {
-	path := filepath.Join(root, "themes", name, "theme.toml")
+	path := filepath.Join(root, themeDir, "theme.toml")
 	var theme Theme
 	metadata, err := toml.DecodeFile(path, &theme)
 	if err != nil {
@@ -230,30 +235,24 @@ func generateShell(root, config string, theme Theme) {
 }
 
 func generateSway(root, config string, theme Theme) {
-	content := fmt.Sprintf(`set $bg %s
+	line := c(theme, "fg")
+	if ink, err := colorful.Hex(c(theme, "fg")); err == nil {
+		if paper, err := colorful.Hex(c(theme, "bg")); err == nil {
+			line = ink.BlendLab(paper, 0.32).Clamped().Hex()
+		}
+	}
+	write(filepath.Join(config, "sway/theme"), fmt.Sprintf(`set $bg %s
 set $fg %s
 set $surface %s
+set $surface_alt %s
+set $line %s
 set $accent %s
 set $dim %s
 set $urgent %s
 
 set $lock %s
 set $nagstyle "background=%s; border=%s; border-bottom=%s; button-background=%s; text=%s; button-text=%s; message-padding=12; button-padding=8"
-
-`, c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg"))
-	// No `output * bg`: the shell's page is the background, and a swaybg started on reload would cover it.
-	content += folioSway(theme) + "\n"
-	var reapply []string
-	for _, gap := range []struct {
-		side   string
-		amount int
-	}{{"inner", 12}, {"outer", 0}, {"left", 36}, {"right", 36}, {"top", 0}, {"bottom", 0}} {
-		content += fmt.Sprintf("gaps %s %d\n", gap.side, gap.amount)
-		reapply = append(reapply, fmt.Sprintf("gaps %s all set %d", gap.side, gap.amount))
-	}
-	write(filepath.Join(config, "sway/theme"), content)
-	// Sway's config defaults affect new workspaces; reload must update existing ones too.
-	write(filepath.Join(config, "dotfiles/sway-gaps"), strings.Join(reapply, "; "))
+`, c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "surface_alt"), line, c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg")))
 }
 
 // wallpaperPath is the theme's wallpaper, or "" when it has none on disk.
@@ -364,9 +363,6 @@ func generateGTK(config string, theme Theme) {
 	write(filepath.Join(config, "gtk-4.0/gtk.css"), modern)
 }
 
-// generateKitty writes the terminal palette. The larger type, padding, and
-// heading strip belong to the Sway desktop, whose title bars they are sized
-// against; elsewhere Kitty keeps its own layout and only takes the colors.
 func generateKitty(config string, theme Theme, desktop bool) {
 	target := filepath.Join(config, "kitty/current-theme.conf")
 	content := fmt.Sprintf(`background %s
@@ -392,21 +388,25 @@ color13 %s
 color14 %s
 color15 %s
 `, c(theme, "bg"), c(theme, "fg"), ansi(theme, "cursor", c(theme, "accent")), ansi(theme, "selection", c(theme, "surface_alt")), c(theme, "fg"), ansi(theme, "black", c(theme, "bg_alt")), ansi(theme, "red", c(theme, "red")), ansi(theme, "green", c(theme, "green")), ansi(theme, "yellow", c(theme, "yellow")), ansi(theme, "blue", c(theme, "blue")), ansi(theme, "magenta", c(theme, "magenta")), ansi(theme, "cyan", c(theme, "cyan")), ansi(theme, "white", c(theme, "fg")), ansi(theme, "bright_black", c(theme, "dim")), ansi(theme, "bright_red", c(theme, "red")), ansi(theme, "bright_green", c(theme, "green")), ansi(theme, "bright_yellow", c(theme, "yellow")), ansi(theme, "bright_blue", c(theme, "blue")), ansi(theme, "bright_magenta", c(theme, "magenta")), ansi(theme, "bright_cyan", c(theme, "cyan")), ansi(theme, "bright_white", c(theme, "fg")))
+	tabs := []string{c(theme, "bg"), c(theme, "accent"), c(theme, "dim"), c(theme, "bg_alt")}
 	if desktop {
-		content += folioKitty(theme)
-	} else {
-		content += fmt.Sprintf(`
-active_tab_foreground   %s
-active_tab_background   %s
+		tabs = []string{c(theme, "fg"), c(theme, "bg"), c(theme, "dim"), c(theme, "bg")}
+	}
+	content += fmt.Sprintf(`
+active_tab_foreground %s
+active_tab_background %s
 inactive_tab_foreground %s
 inactive_tab_background %s
-`, c(theme, "bg"), c(theme, "accent"), c(theme, "dim"), c(theme, "bg_alt"))
-	}
+`, tabs[0], tabs[1], tabs[2], tabs[3])
 	write(target, content)
 }
 
 func generateTmux(config string, theme Theme) {
-	write(filepath.Join(config, "tmux/theme.conf"), folioTmux(theme))
+	content := ""
+	for _, key := range []string{"bg", "fg", "dim", "red", "surface", "surface_alt"} {
+		content += fmt.Sprintf("set -g @%s %q\n", key, c(theme, key))
+	}
+	write(filepath.Join(config, "tmux/theme.conf"), content)
 }
 
 func generateHelix(config string, theme Theme) {
@@ -493,9 +493,6 @@ func reloadLive() {
 	var commands [][]string
 	if runtime.GOOS == "linux" {
 		commands = append(commands, []string{"swaymsg", "reload"})
-		if gaps := strings.TrimSpace(readString(filepath.Join(configHome(), "dotfiles/sway-gaps"))); gaps != "" {
-			commands = append(commands, []string{"swaymsg", gaps})
-		}
 		commands = append(commands, []string{"systemctl", "--user", "start", "desktop-shell.service"})
 	}
 	if runtime.GOOS == "linux" {
@@ -519,7 +516,7 @@ func reloadLive() {
 	commands = append(commands, []string{"tmux", "source-file", filepath.Join(configHome(), "tmux", "tmux.conf")})
 	commands = append(commands, []string{"pkill", "-USR1", "-u", strconv.Itoa(os.Getuid()), "-x", "kitty"})
 	commands = append(commands, []string{"pkill", "-USR1", "-u", strconv.Itoa(os.Getuid()), "-x", "hx"})
-	if _, err := exec.LookPath("spicetify"); err == nil && spotifyUsesOverprint(configHome()) {
+	if _, err := exec.LookPath("spicetify"); err == nil && spotifyUsesFolio(configHome()) {
 		commands = append(commands, []string{"spicetify", "refresh", "--no-restart"})
 	}
 	for _, command := range commands {
@@ -548,7 +545,7 @@ func reloadLive() {
 	}
 }
 
-func spotifyUsesOverprint(config string) bool {
+func spotifyUsesFolio(config string) bool {
 	section := ""
 	for _, line := range strings.Split(readString(filepath.Join(config, "spicetify/config-xpui.ini")), "\n") {
 		line = strings.TrimSpace(line)
@@ -558,7 +555,7 @@ func spotifyUsesOverprint(config string) bool {
 		}
 		key, value, ok := strings.Cut(line, "=")
 		if ok && section == "Setting" && strings.TrimSpace(key) == "current_theme" {
-			return strings.TrimSpace(value) == "Overprint"
+			return strings.TrimSpace(value) == "Folio"
 		}
 	}
 	return false

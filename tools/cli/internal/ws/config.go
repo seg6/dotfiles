@@ -19,8 +19,6 @@ type WorkspaceConfig struct {
 
 type UIColors struct {
 	Foreground         string `toml:"foreground"`
-	Background         string `toml:"background"`
-	Border             string `toml:"border"`
 	Accent             string `toml:"accent"`
 	Muted              string `toml:"muted"`
 	Session            string `toml:"session"`
@@ -31,7 +29,6 @@ type UIColors struct {
 }
 
 type UIConfig struct {
-	Style       string   `toml:"style"`
 	MaxWidth    int      `toml:"max_width"`
 	SidePadding int      `toml:"side_padding"`
 	ColumnGap   int      `toml:"column_gap"`
@@ -135,12 +132,11 @@ func defaultConfig(home, configPath, stateDir string) Config {
 
 func defaultUIConfig() UIConfig {
 	return UIConfig{
-		Style:       "classic",
 		MaxWidth:    88,
 		SidePadding: 2,
 		ColumnGap:   3,
 		Colors: UIColors{
-			Foreground: "7", Background: "0", Border: "8",
+			Foreground:         "7",
 			Accent:             "4",
 			Muted:              "8",
 			Session:            "2",
@@ -197,11 +193,8 @@ func (config *Config) normalizeAndValidate() error {
 	if config.UI.ColumnGap < 1 || config.UI.ColumnGap > 8 {
 		return fmt.Errorf("ui.column_gap must be between 1 and 8")
 	}
-	if config.UI.Style != "classic" && config.UI.Style != "overprint" {
-		return fmt.Errorf("ui.style must be classic or overprint")
-	}
 	colors := map[string]string{
-		"foreground": config.UI.Colors.Foreground, "background": config.UI.Colors.Background, "border": config.UI.Colors.Border,
+		"foreground":          config.UI.Colors.Foreground,
 		"accent":              config.UI.Colors.Accent,
 		"muted":               config.UI.Colors.Muted,
 		"session":             config.UI.Colors.Session,

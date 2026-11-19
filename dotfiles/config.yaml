@@ -64,6 +64,9 @@ dotfiles:
   f_kitty_config:
     src: common/kitty/kitty.conf
     dst: ~/.config/kitty/kitty.conf
+  f_kitty_desktop:
+    src: arch/kitty/desktop.conf
+    dst: ~/.config/kitty/desktop.conf
   f_tmux_config:
     src: common/tmux/tmux.conf
     dst: ~/.config/tmux/tmux.conf
@@ -178,6 +181,7 @@ profiles:
       - f_systemd_desktop_shell
       - d_folio
       - d_fonts
+      - f_kitty_desktop
       - f_bin_desktop_menu
       - f_bin_record_window
       - f_bin_polkit_agent

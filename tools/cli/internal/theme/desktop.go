@@ -10,12 +10,8 @@ import (
 )
 
 func generateWS(config string, theme Theme) {
-	content := fmt.Sprintf(`[ui]
-style = "classic"
-[ui.colors]
+	content := fmt.Sprintf(`[ui.colors]
 foreground = %q
-background = %q
-border = %q
 accent = %q
 muted = %q
 session = %q
@@ -23,7 +19,7 @@ branch = %q
 warning = %q
 error = %q
 selected_foreground = %q
-`, c(theme, "fg"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
+`, c(theme, "fg"), c(theme, "accent"), c(theme, "dim"), c(theme, "green"), c(theme, "cyan"), c(theme, "yellow"), c(theme, "red"), c(theme, "bg"))
 	write(filepath.Join(config, "ws/theme.toml"), content)
 }
 
@@ -36,7 +32,7 @@ func generateDesktop(root, config string, theme Theme) {
 	}
 	settings := fmt.Sprintf(`[Settings]
 gtk-theme-name=%s
-gtk-icon-theme-name=Overprint
+gtk-icon-theme-name=Folio
 gtk-font-name=Adwaita Sans 12
 gtk-application-prefer-dark-theme=%d
 gtk-xft-antialias=1
@@ -47,10 +43,10 @@ gtk-xft-rgba=rgb
 	for _, version := range []string{"gtk-3.0", "gtk-4.0"} {
 		write(filepath.Join(config, version, "settings.ini"), settings)
 	}
-	desktop := map[string]string{"gtk-theme": gtkTheme, "icon-theme": "Overprint", "font-name": "Adwaita Sans 12", "monospace-font-name": "Fantasque Sans Mono 12", "color-scheme": scheme, "cursor-theme": "Adwaita", "cursor-size": "24"}
+	desktop := map[string]string{"gtk-theme": gtkTheme, "icon-theme": "Folio", "font-name": "Adwaita Sans 12", "monospace-font-name": "Fantasque Sans Mono 12", "color-scheme": scheme, "cursor-theme": "Adwaita", "cursor-size": "24"}
 	data, _ := json.MarshalIndent(desktop, "", "  ")
 	write(filepath.Join(config, "dotfiles/desktop-settings.json"), string(data)+"\n")
-	write(filepath.Join(config, "fontconfig/conf.d/60-overprint.conf"), `<?xml version="1.0"?>
+	write(filepath.Join(config, "fontconfig/conf.d/60-folio.conf"), `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
  <alias><family>sans-serif</family><prefer><family>Adwaita Sans</family><family>Noto Sans</family></prefer></alias>
@@ -63,9 +59,9 @@ gtk-xft-rgba=rgb
 }
 
 func generateIcons(config string, theme Theme) {
-	dir := filepath.Join(config, "dotfiles/icons/Overprint")
+	dir := filepath.Join(config, "dotfiles/icons/Folio")
 	write(filepath.Join(dir, "index.theme"), `[Icon Theme]
-Name=Overprint
+Name=Folio
 Comment=Amber folders and Papirus desktop icons
 Inherits=Papirus-Dark,Papirus,Adwaita,hicolor
 Directories=scalable/places
@@ -106,7 +102,7 @@ func generateBrowser(config string, theme Theme) {
 	for key, value := range colors {
 		rgbColors[key] = browserRGB(value)
 	}
-	manifest := map[string]any{"manifest_version": 3, "name": "Overprint", "version": "1.0.0", "description": "The current Overprint desktop palette.", "theme": map[string]any{"colors": rgbColors, "properties": map[string]int{"ntp_logo_alternate": 1}}}
+	manifest := map[string]any{"manifest_version": 3, "name": "Folio", "version": "1.0.0", "description": "The Folio desktop palette.", "theme": map[string]any{"colors": rgbColors, "properties": map[string]int{"ntp_logo_alternate": 1}}}
 	data, _ := json.MarshalIndent(manifest, "", "  ")
 	write(filepath.Join(config, "dotfiles/browser-theme/manifest.json"), string(data)+"\n")
 	// Chromium requires the local theme to be loaded at startup. Preserve existing
@@ -127,8 +123,8 @@ func generateBrowser(config string, theme Theme) {
 		if !found {
 			lines = append(lines, "# Generated desktop theme.", "--load-extension="+themePath)
 		}
-		if existing != "" && !exists(flagsPath+".overprint.bak") {
-			write(flagsPath+".overprint.bak", existing)
+		if existing != "" && !exists(flagsPath+".bak") {
+			write(flagsPath+".bak", existing)
 		}
 		write(flagsPath, strings.Join(lines, "\n")+"\n")
 	}
@@ -136,13 +132,13 @@ func generateBrowser(config string, theme Theme) {
 
 func generateSpotify(root, config string, theme Theme) {
 	colors := map[string]string{"text": c(theme, "fg"), "subtext": c(theme, "dim"), "main": c(theme, "bg"), "sidebar": c(theme, "bg_alt"), "player": c(theme, "bg_alt"), "card": c(theme, "surface"), "shadow": c(theme, "surface_alt"), "selected-row": c(theme, "surface_alt"), "button": c(theme, "accent"), "button-active": c(theme, "yellow"), "button-disabled": c(theme, "surface_alt"), "tab-active": c(theme, "surface_alt"), "notification": c(theme, "surface"), "notification-error": c(theme, "red"), "misc": c(theme, "surface_alt")}
-	content := "[Overprint]\n"
+	content := "[Folio]\n"
 	for key, value := range colors {
 		content += key + " = " + strings.TrimPrefix(value, "#") + "\n"
 	}
-	write(filepath.Join(config, "spicetify/Themes/Overprint/color.ini"), content)
+	write(filepath.Join(config, "spicetify/Themes/Folio/color.ini"), content)
 	// The stylesheet names palette roles as {{role}}, so it follows any palette.
-	data, err := os.ReadFile(filepath.Join(root, "themes/folio/spotify.css"))
+	data, err := os.ReadFile(filepath.Join(root, themeDir, "spotify.css"))
 	if err != nil {
 		die(err.Error())
 	}
@@ -151,7 +147,7 @@ func generateSpotify(root, config string, theme Theme) {
 		"{{bg_alt}}", c(theme, "bg_alt"), "{{bg}}", c(theme, "bg"), "{{surface_alt}}", c(theme, "surface_alt"), "{{surface}}", c(theme, "surface"), "{{accent}}", c(theme, "accent"),
 	).Replace(string(data))
 	if strings.Contains(css, "{{") {
-		die("themes/folio/spotify.css names an unknown palette role")
+		die(themeDir + "/spotify.css names an unknown palette role")
 	}
-	write(filepath.Join(config, "spicetify/Themes/Overprint/user.css"), css)
+	write(filepath.Join(config, "spicetify/Themes/Folio/user.css"), css)
 }
