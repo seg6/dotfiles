@@ -4,14 +4,11 @@ import Quickshell
 import Quickshell.Io
 import "Logic.js" as Logic
 
-// What Sway is showing: every window, most recently focused first.
 QtObject {
     id: desktop
     property var windows: []
-    // Which workspace each output shows: {"DP-1": "2"}.
     property var showing: ({})
     readonly property var occupied: Array.from(new Set(windows.map(w => w.workspace)))
-    // When each project was last opened, as the `ws` tool records it.
     property var recent: ({})
     property FileView history: FileView {
         path: Theme.stateHome + "/ws/state.json"
@@ -26,7 +23,6 @@ QtObject {
             }
         }
     }
-    // Which desks want attention, and since when: {"8": Date}.
     property var waitingSince: ({})
     function noteWaiting(desks): void {
         const next = {};
@@ -38,8 +34,6 @@ QtObject {
         if (changed)
             waitingSince = next;
     }
-    // Where the day went: [{from, to, desk, name}], kept a day to a file, and
-    // when each desk was last on screen. Only desks with something open count.
     property var spans: []
     property var lastSeen: ({})
     property string today: Logic.dayKey(Date.now())
@@ -76,7 +70,6 @@ QtObject {
                 const value = JSON.parse(text());
                 if (Array.isArray(value)) {
                     desktop.spans = value;
-                    // When each desk was last in use is in the record too.
                     const seen = {};
                     for (const span of value)
                         seen[span.desk] = Math.max(seen[span.desk] || 0, span.to);
@@ -96,7 +89,6 @@ QtObject {
         }
     }
     property bool pending: false
-    // The icon a window's application is known by, or "" to fall back to letters.
     function iconFor(app: string): string {
         const entry = DesktopEntries.heuristicLookup(app);
         const name = entry?.icon || app;
@@ -130,7 +122,6 @@ QtObject {
                     const shown = desktop.showing[Object.keys(desktop.showing)[0]] ?? "";
                     if (shown !== desktop.notedDesk || desktop.windows.some(w => w.workspace === shown) !== desktop.notedBusy)
                         desktop.note();
-                    // Windows opened under another layout still wear its frame.
                     const frames = Logic.frameUpdates(tree);
                     if (frames.length > 0 && !framer.running) {
                         framer.command = ["swaymsg", frames.join("; ")];

@@ -6,14 +6,11 @@ import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import "RailLogic.js" as RailLogic
 
-// The bottom margin: where and when on the left; on the right, whatever just
-// arrived, or else what went by earlier, and quiet.
 PanelWindow {
     id: line
     readonly property real u: Theme.unit(screen)
     readonly property var notes: Notices.live.values
     readonly property var note: notes.length > 0 ? notes[notes.length - 1] : null
-    // Whether the list of what arrived earlier is open.
     property bool earlier: false
     property bool calendar: false
     Connections {
@@ -41,13 +38,11 @@ PanelWindow {
         id: clock
         precision: SystemClock.Seconds
     }
-    // What arrived leaves the margin on its own; the pointer over it keeps it.
     Timer {
         readonly property int wait: !line.note || line.note.urgency === NotificationUrgency.Critical ? 0 : (line.note.expireTimeout < 0 ? 8000 : line.note.expireTimeout)
         interval: Math.max(1, wait)
         running: wait > 0 && !noteHover.hovered
         onTriggered: {
-            // Every screen has this line; one of them does the counting and the expiring.
             if (line.screen !== Quickshell.screens[0])
                 return;
             if (!line.note.transient)
@@ -56,7 +51,6 @@ PanelWindow {
         }
     }
 
-    // The picture at the foot of the page must not run under the words.
     component Plate: Rectangle {
         required property Item around
         visible: around.visible
@@ -96,7 +90,6 @@ PanelWindow {
             screen: line.screen
             lit: false
             link: true
-            // Dates are written in English, whatever the locale.
             text: Qt.locale("C").toString(clock.date, "ddd d MMM")
             onPressed: time.pressed(null)
         }
@@ -115,7 +108,6 @@ PanelWindow {
     Row {
         id: arrived
         visible: line.note !== null
-        // What arrives is written in from the right.
         transform: Translate {
             id: writing
         }
@@ -244,7 +236,6 @@ PanelWindow {
         }
     }
 
-    // The month, set in the same small type, above the clock.
     Sheet {
         id: almanac
         readonly property int firstDay: Qt.locale().firstDayOfWeek % 7
@@ -291,7 +282,6 @@ PanelWindow {
                         lit: false
                         width: almanac.cell
                         horizontalAlignment: Text.AlignRight
-                        // Dates are written in English; only the first weekday follows the locale.
                         text: index === 0 ? "wk" : Qt.locale("C").dayName((almanac.firstDay + index - 1) % 7, Locale.ShortFormat).slice(0, 2)
                     }
                 }
@@ -348,7 +338,6 @@ PanelWindow {
         }
     }
 
-    // What arrived earlier, newest first.
     Sheet {
         anchor.window: line
         anchor.rect.x: Math.round(line.width - implicitWidth - 36 * line.u)

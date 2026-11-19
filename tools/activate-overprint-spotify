@@ -14,7 +14,7 @@ spice = shutil.which('spicetify')
 if not spice or not (spotify / 'Apps').is_dir():
     sys.exit('Install Spicetify with tools/install-overprint-extras and launch Spotify once first.')
 if not (config / 'spicetify/Themes/Overprint/user.css').is_file():
-    sys.exit('Run theme use overprint first.')
+    sys.exit('Run theme first.')
 
 def player(*args):
     result = subprocess.run(['playerctl', '-p', 'spotify', *args], capture_output=True, text=True)

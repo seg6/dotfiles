@@ -1,7 +1,6 @@
 name = "folio"
 display = "Folio"
 mode = "dark"
-layout = "folio"
 wallpaper = "wallpaper.jpg"
 
 [colors]
@@ -38,8 +37,3 @@ bright_cyan = "#e6e1d5"
 bright_white = "#ffffff"
 cursor = "#e6e1d5"
 selection = "#343330"
-
-[ui]
-radius = 0
-shadow = false
-blur = false

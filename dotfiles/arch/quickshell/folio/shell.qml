@@ -1,8 +1,6 @@
 import QtQuick
 import Quickshell
 
-// Folio: a page. Two lines of small type in the margins, a sentence where
-// there is room for one, and a request you can type from anywhere.
 ShellRoot {
     Variants {
         model: Quickshell.screens

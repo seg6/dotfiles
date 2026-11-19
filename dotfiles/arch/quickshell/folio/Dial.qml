@@ -4,12 +4,6 @@ import Quickshell
 import Quickshell.Io
 import "Logic.js" as Logic
 
-// One instrument for the day. Midnight is at the top and the day goes round
-// once. The outer ring is the hours, with the daylight marked; the middle one
-// is where you have been, a different tone for each desk; the inner one is
-// the track that is playing. The red hand is now.
-// Hover the middle ring to read it, click the inner ring to move through the
-// track, scroll to turn back to earlier days.
 Item {
     id: dial
     required property var screen
@@ -20,7 +14,6 @@ Item {
     readonly property real dot: width / 640
     readonly property real centerX: 320
     readonly property real centerY: 178
-    // How many days back is shown; 0 is today.
     property int back: 0
     readonly property date shown: new Date(now.getFullYear(), now.getMonth(), now.getDate() - back, 12)
     property var kept: []
@@ -29,7 +22,6 @@ Item {
     readonly property var sky: Logic.sky(shown, Theme.who.latitude)
     readonly property var player: Media.player
     property real played: 0
-    // What the pointer is on in the middle ring.
     property var read: null
     property point hand: Qt.point(0, 0)
     readonly property var tones: [0.92, 0.50, 0.28, 0.72, 0.38, 0.84, 0.60, 0.22, 0.45]
@@ -77,7 +69,6 @@ Item {
         id: face
         width: 640
         height: 360
-        // Whole dots: a line is ink or it is not.
         antialiasing: false
         onPaint: {
             const ctx = getContext("2d");
@@ -90,7 +81,6 @@ Item {
             ctx.reset();
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, 640, 360);
-            // The hours.
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 1.3;
             for (let k = 0; k < 96; k++) {
@@ -101,7 +91,6 @@ Item {
                 ctx.lineTo(cx + reach * Math.cos(a), cy + reach * Math.sin(a));
                 ctx.stroke();
             }
-            // Night all the way round, and day laid over it.
             ctx.lineWidth = 8;
             ctx.strokeStyle = gray(0.07);
             ctx.beginPath();
@@ -113,7 +102,6 @@ Item {
                 ctx.arc(cx, cy, 125, at(Math.max(0, dial.sky.rise) / 24), at(Math.min(24, dial.sky.set) / 24));
                 ctx.stroke();
             }
-            // Where the day went.
             const nowPart = Logic.dayPart(dial.now);
             ctx.lineWidth = 1;
             ctx.strokeStyle = gray(0.16);
@@ -125,14 +113,12 @@ Item {
             ctx.lineWidth = 20;
             for (const s of dial.spans) {
                 const from = Logic.dayPart(s.from);
-                // A span too short to see still leaves a mark.
                 const to = Math.max(Logic.dayPart(s.to), from + 1.5 / 1440);
                 ctx.strokeStyle = gray(dial.tone(s.desk));
                 ctx.beginPath();
                 ctx.arc(cx, cy, 104, at(from), at(to));
                 ctx.stroke();
             }
-            // The track.
             if (dial.player) {
                 ctx.lineWidth = 1;
                 ctx.strokeStyle = gray(0.3);
@@ -145,7 +131,6 @@ Item {
                 ctx.arc(cx, cy, 72, at(0), at(Math.max(0.004, dial.played)));
                 ctx.stroke();
             }
-            // Now.
             if (dial.back === 0) {
                 const a = at(nowPart);
                 ctx.lineWidth = 1.2;
@@ -171,7 +156,6 @@ Item {
         anchors.fill: parent
         fragmentShader: Qt.resolvedUrl("Dither.frag.qsb")
     }
-    // The hour, in the middle, and what is left of the light.
     Column {
         x: dial.centerX * dial.dot - width / 2
         y: dial.centerY * dial.dot - height / 2
@@ -210,7 +194,6 @@ Item {
             text: dial.player?.trackTitle ?? ""
         }
     }
-    // What the day adds up to, to the left of the dial.
     Column {
         x: (dial.centerX - 172) * dial.dot - width
         y: (dial.centerY - 60) * dial.dot
@@ -245,7 +228,6 @@ Item {
             }
         }
     }
-    // What the pointer is on.
     Rectangle {
         visible: dial.read !== null
         x: dial.hand.x * dial.dot + 18 * dial.u

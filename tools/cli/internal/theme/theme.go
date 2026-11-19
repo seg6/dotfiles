@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,69 +20,25 @@ type Theme struct {
 	Name      string            `toml:"name"`
 	Display   string            `toml:"display"`
 	Mode      string            `toml:"mode"`
-	Layout    string            `toml:"layout,omitempty"`
 	Wallpaper string            `toml:"wallpaper,omitempty"`
 	Colors    map[string]string `toml:"colors"`
 	ANSI      map[string]string `toml:"ansi"`
-	UI        map[string]any    `toml:"ui"`
 }
 
 func Run(args []string) {
-	if len(args) < 1 {
-		usage()
+	command := "apply"
+	if len(args) > 0 && !strings.HasPrefix(args[0], "--") {
+		command = args[0]
 	}
-	root := repoRoot()
-	config := configHome()
-
-	switch args[0] {
-	case "wallpaper":
-		if err := wallpaperCommand(root, config, args[1:]); err != nil {
-			die(err.Error())
-		}
-	case "list":
-		listThemes(root, config)
-	case "current":
-		currentTheme(root, config)
-	case "use":
-		if len(args) < 2 || strings.HasPrefix(args[1], "--") {
-			die("usage: theme use <name> [--layout overprint|folio] [--no-reload]")
-		}
-		useTheme(root, config, args[1], argValue(args, "--layout"), !hasArg(args, "--no-reload"))
-	case "layout":
-		if len(args) < 2 || strings.HasPrefix(args[1], "--") {
-			fmt.Println(storedLayout(config))
-			return
-		}
-		name := selectedTheme(root, config)
-		if name == "" {
-			die("no current theme selected")
-		}
-		useTheme(root, config, name, args[1], !hasArg(args, "--no-reload"))
+	switch command {
 	case "apply":
-		name := selectedTheme(root, config)
-		if len(args) >= 2 && !strings.HasPrefix(args[1], "--") {
-			name = args[1]
-		}
-		if name == "" {
-			die("no current theme selected")
-		}
-		applyTheme(root, config, name, !hasArg(args, "--no-reload"))
-	case "random":
-		names := themeNames(root)
-		if len(names) == 0 {
-			die("no themes found")
-		}
-		useTheme(root, config, names[rand.Intn(len(names))], "", !hasArg(args, "--no-reload"))
+		applyTheme(repoRoot(), configHome(), !hasArg(args, "--no-reload"))
 	case "reload":
 		reloadLive()
 	default:
-		usage()
+		fmt.Fprintln(os.Stderr, "usage: theme [apply] [--no-reload] | theme reload")
+		os.Exit(2)
 	}
-}
-
-func usage() {
-	fmt.Fprintln(os.Stderr, "usage: theme list|current|apply [name]|use <name> [--layout name]|layout [overprint|folio]|wallpaper <image> [--name name] [--layout name] [--preview]|random|reload")
-	os.Exit(2)
 }
 
 func die(msg string) {
@@ -130,108 +85,8 @@ func hasArg(args []string, arg string) bool {
 	return false
 }
 
-// argValue is the word after flag, or "" when the flag is absent.
-func argValue(args []string, flag string) string {
-	for i, candidate := range args[:max(len(args)-1, 0)] {
-		if candidate == flag {
-			return args[i+1]
-		}
-	}
-	return ""
-}
-
-// A layout is a whole desktop: shell, window frames, spacing, and how each
-// program is dressed. Any palette can be used with either.
-var layouts = []string{"overprint", "folio"}
-
-func validLayout(name string) bool {
-	for _, layout := range layouts {
-		if name == layout {
-			return true
-		}
-	}
-	return false
-}
-
-func layoutPath(config string) string { return filepath.Join(config, "dotfiles/layout") }
-
-func storedLayout(config string) string {
-	if layout := strings.TrimSpace(readString(layoutPath(config))); validLayout(layout) {
-		return layout
-	}
-	return "overprint"
-}
-
-func folio(theme Theme) bool { return theme.Layout == "folio" }
-
-// layoutName is the theme's layout; a theme that names none is Overprint.
-func layoutName(theme Theme) string {
-	if theme.Layout == "" {
-		return "overprint"
-	}
-	return theme.Layout
-}
-
-func themeNames(root string) []string {
-	names := map[string]bool{}
-	for _, directory := range []string{filepath.Join(root, "themes"), userThemeDir(configHome())} {
-		entries, err := os.ReadDir(directory)
-		if err != nil {
-			continue
-		}
-		for _, entry := range entries {
-			if entry.IsDir() && exists(filepath.Join(directory, entry.Name(), "theme.toml")) {
-				names[entry.Name()] = true
-			}
-		}
-	}
-	result := make([]string, 0, len(names))
-	for name := range names {
-		result = append(result, name)
-	}
-	sort.Strings(result)
-	return result
-}
-
-func listThemes(root, config string) {
-	current := selectedTheme(root, config)
-	for _, name := range themeNames(root) {
-		theme := loadTheme(root, name)
-		marker := " "
-		if current == name {
-			marker = "*"
-		}
-		display := theme.Display
-		if display == "" {
-			display = theme.Name
-		}
-		fmt.Printf("%s %-22s %s\n", marker, name, display)
-	}
-}
-
-func currentTheme(root, config string) {
-	current := selectedTheme(root, config)
-	if current == "" {
-		current = "none"
-	}
-	fmt.Println(current)
-}
-
-func selectedTheme(root, config string) string {
-	current := strings.TrimSpace(readString(themeSelectionPath(config)))
-	if validThemeName(current) && (exists(filepath.Join(root, "themes", current, "theme.toml")) ||
-		exists(filepath.Join(userThemeDir(config), current, "theme.toml"))) {
-		return current
-	}
-	return strings.TrimSpace(readString(filepath.Join(root, "themes", "default")))
-}
-
-func themeSelectionPath(config string) string {
-	return filepath.Join(config, "dotfiles", "theme")
-}
-
-func loadTheme(root, name string) Theme {
-	theme, err := readTheme(root, name)
+func loadTheme(root string) Theme {
+	theme, err := readTheme(root, "folio")
 	if err != nil {
 		die(err.Error())
 	}
@@ -239,13 +94,7 @@ func loadTheme(root, name string) Theme {
 }
 
 func readTheme(root, name string) (Theme, error) {
-	if !validThemeName(name) {
-		return Theme{}, fmt.Errorf("invalid theme name: %s", name)
-	}
 	path := filepath.Join(root, "themes", name, "theme.toml")
-	if !exists(path) {
-		path = filepath.Join(userThemeDir(configHome()), name, "theme.toml")
-	}
 	var theme Theme
 	metadata, err := toml.DecodeFile(path, &theme)
 	if err != nil {
@@ -268,11 +117,6 @@ func readTheme(root, name string) (Theme, error) {
 	if theme.ANSI == nil {
 		theme.ANSI = make(map[string]string)
 	}
-	if theme.UI == nil {
-		theme.UI = make(map[string]any)
-	}
-	// A relative wallpaper belongs to the theme's own directory, so a saved
-	// palette keeps working when its directory is moved into the repository.
 	if theme.Wallpaper != "" && !filepath.IsAbs(theme.Wallpaper) {
 		theme.Wallpaper = filepath.Join(filepath.Dir(path), theme.Wallpaper)
 	}
@@ -288,9 +132,6 @@ func validateTheme(theme Theme) error {
 	}
 	if strings.TrimSpace(theme.Display) == "" {
 		return fmt.Errorf("theme %s is missing display", theme.ID)
-	}
-	if theme.Layout != "" && !validLayout(theme.Layout) {
-		return fmt.Errorf("theme %s layout must be one of %s", theme.ID, strings.Join(layouts, ", "))
 	}
 	if theme.Mode != "dark" && theme.Mode != "light" {
 		return fmt.Errorf("theme %s has invalid mode %q", theme.ID, theme.Mode)
@@ -310,22 +151,6 @@ func validateTheme(theme Theme) error {
 		}
 	}
 
-	for key, value := range theme.UI {
-		switch key {
-		case "radius":
-			radius, ok := integerValue(value)
-			if !ok || radius < 0 || radius > 32 {
-				return fmt.Errorf("theme %s ui.radius must be between 0 and 32", theme.ID)
-			}
-		case "shadow", "blur":
-			if _, ok := value.(bool); !ok {
-				return fmt.Errorf("theme %s ui.%s must be a boolean", theme.ID, key)
-			}
-		default:
-			return fmt.Errorf("theme %s has unknown ui key %s", theme.ID, key)
-		}
-	}
-
 	return nil
 }
 
@@ -337,63 +162,20 @@ func validHexColor(value string) bool {
 	return err == nil
 }
 
-func integerValue(value any) (int, bool) {
-	switch value := value.(type) {
-	case int64:
-		return int(value), true
-	case int:
-		return value, true
-	default:
-		return 0, false
+func applyTheme(root, config string, shouldReload bool) {
+	generateTheme(root, config, loadTheme(root))
+	if shouldReload {
+		reloadLive()
 	}
-}
-
-// useTheme selects a theme. It takes the layout asked for, or the theme's own,
-// so choosing a plain palette returns to Overprint.
-func useTheme(root, config, name, layout string, shouldReload bool) {
-	theme := loadTheme(root, name)
-	if layout != "" {
-		if !validLayout(layout) {
-			die("unknown layout " + layout + "; choose " + strings.Join(layouts, " or "))
-		}
-		theme.Layout = layout
-	}
-	if theme.Layout == "" {
-		theme.Layout = "overprint"
-	}
-	generateTheme(root, config, theme)
-	write(themeSelectionPath(config), name)
-	finishTheme(name, shouldReload)
-}
-
-// applyTheme regenerates files for a theme in the layout already in use.
-func applyTheme(root, config, name string, shouldReload bool) {
-	theme := loadTheme(root, name)
-	if exists(layoutPath(config)) {
-		theme.Layout = storedLayout(config)
-	} else if theme.Layout == "" {
-		theme.Layout = "overprint"
-	}
-	generateTheme(root, config, theme)
-	finishTheme(name, shouldReload)
 }
 
 func generateTheme(root, config string, theme Theme) {
-	if theme.Layout == "" {
-		theme.Layout = "overprint"
-	}
-	// The other layout's shell is still running; the next reload replaces it,
-	// and the new shell reframes the windows that are already open.
-	if exists(layoutPath(config)) && storedLayout(config) != theme.Layout {
-		write(filepath.Join(config, "dotfiles/layout-changed"), theme.Layout)
-	}
-	write(layoutPath(config), theme.Layout)
 	if runtime.GOOS == "linux" {
 		generateSway(root, config, theme)
 		generateGTK(config, theme)
 		generateShell(root, config, theme)
 	}
-	generateKitty(root, config, theme, runtime.GOOS == "linux")
+	generateKitty(config, theme, runtime.GOOS == "linux")
 	// Sway reads the wallpaper from its generated theme; macOS is told on reload.
 	write(filepath.Join(config, "dotfiles/wallpaper"), wallpaperPath(root, theme))
 	generateHelix(config, theme)
@@ -402,13 +184,6 @@ func generateTheme(root, config string, theme Theme) {
 	if runtime.GOOS == "linux" {
 		generateDesktop(root, config, theme)
 	}
-}
-
-func finishTheme(name string, shouldReload bool) {
-	if shouldReload {
-		reloadLive()
-	}
-	fmt.Println("theme: using " + name)
 }
 
 func c(theme Theme, key string) string {
@@ -439,48 +214,23 @@ func ansi(theme Theme, key, fallback string) string {
 	return c(theme, key)
 }
 
-func uiInt(theme Theme, key string, fallback int) int {
-	value, ok := integerValue(theme.UI[key])
-	if !ok {
-		return fallback
-	}
-	return value
-}
-
-func uiBool(theme Theme, key string, fallback bool) bool {
-	value, ok := theme.UI[key].(bool)
-	if !ok {
-		return fallback
-	}
-	return value
-}
-
 func generateShell(root, config string, theme Theme) {
 	palette, err := json.MarshalIndent(theme.Colors, "", "  ")
 	if err != nil {
 		die(err.Error())
 	}
-	write(filepath.Join(config, "quickshell", layoutName(theme), "colors.json"), string(palette))
-	if folio(theme) {
-		write(filepath.Join(config, "quickshell/folio/who.json"), whoAndWhere(config))
-		// The picture at the foot of the page: the theme's wallpaper in two colors.
-		if wallpaper := wallpaperPath(root, theme); wallpaper != "" {
-			if err := writePage(wallpaper, filepath.Join(config, "quickshell/folio/page.png"), c(theme, "bg"), c(theme, "fg")); err != nil {
-				fmt.Fprintln(os.Stderr, "theme: page picture: "+err.Error())
-			}
+	write(filepath.Join(config, "quickshell/folio/colors.json"), string(palette))
+	write(filepath.Join(config, "quickshell/folio/who.json"), whoAndWhere(config))
+	if wallpaper := wallpaperPath(root, theme); wallpaper != "" {
+		if err := writePage(wallpaper, filepath.Join(config, "quickshell/folio/page.png"), c(theme, "bg"), c(theme, "fg")); err != nil {
+			fmt.Fprintln(os.Stderr, "theme: page picture: "+err.Error())
 		}
 	}
-	// The shell locks the screen with the same command Sway binds.
 	writeMode(filepath.Join(config, "dotfiles/lock"), "#!/bin/sh\nexec "+lockCommand(theme)+"\n", 0o755)
 }
 
 func generateSway(root, config string, theme Theme) {
-	shadow := enable(uiBool(theme, "shadow", true))
-	header := role(theme, "header", "surface_alt")
-	ink := role(theme, "shadow", "ink")
-	content := fmt.Sprintf(`output * bg %s solid_color
-
-set $bg %s
+	content := fmt.Sprintf(`set $bg %s
 set $fg %s
 set $surface %s
 set $accent %s
@@ -490,66 +240,14 @@ set $urgent %s
 set $lock %s
 set $nagstyle "background=%s; border=%s; border-bottom=%s; button-background=%s; text=%s; button-text=%s; message-padding=12; button-padding=8"
 
-# Generated by theme use %s.
-`, c(theme, "bg"), c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg"), theme.ID)
-	if folio(theme) {
-		content += folioSway(theme)
-	} else {
-		content += fmt.Sprintf(`# Sway supplies the window headings; the shell keeps Kitty headings visible in both layouts.
-default_border pixel 2
-default_floating_border normal 2
-title_align left
-default_dim_inactive 0.0
-animation_duration_ms 0
-font pango:Fantasque Sans Mono 12
-titlebar_padding 14 16
-titlebar_border_thickness 2
-titlebar_separator disable
-client.focused          $accent   %s $fg  $accent $accent
-client.focused_inactive $dim      %s $dim $dim    $dim
-client.unfocused        $bg       %s $dim $bg     $bg
-client.urgent           $urgent   $surface $fg $urgent $urgent
-
-corner_radius %d
-smart_corner_radius enable
-shadows %s
-shadows_on_csd %s
-shadow_blur_radius 1
-shadow_color %s75
-shadow_inactive_color %s44
-shadow_offset 8 8
-
-blur %s
-blur_radius 3
-blur_passes 2
-blur_noise 0.01
-blur_brightness 0.82
-blur_contrast 1.05
-blur_saturation 0.95
-
-layer_effects "overprint" shadows disable
-layer_effects "overprint" blur disable
-layer_effects "overprint" corner_radius 0
-`, header, header, header, uiInt(theme, "radius", 0), shadow, shadow, ink, ink, enable(uiBool(theme, "blur", false)))
-	}
-	if folio(theme) {
-		// The shell's page is the background. A swaybg started on reload would land on top of it.
-		content = strings.TrimPrefix(content, strings.SplitAfter(content, "\n")[0])
-	}
-	if wallpaper := wallpaperPath(root, theme); wallpaper != "" && !folio(theme) {
-		content += fmt.Sprintf("\noutput * bg %s fill\n", strconv.Quote(wallpaper))
-	}
-	content += "\n"
+`, c(theme, "bg"), c(theme, "fg"), c(theme, "surface"), c(theme, "accent"), c(theme, "dim"), c(theme, "red"), lockCommand(theme), c(theme, "surface"), c(theme, "red"), c(theme, "surface_alt"), c(theme, "bg"), c(theme, "fg"), c(theme, "fg"))
+	// No `output * bg`: the shell's page is the background, and a swaybg started on reload would cover it.
+	content += folioSway(theme) + "\n"
 	var reapply []string
 	for _, gap := range []struct {
 		side   string
 		amount int
-	}{{"inner", 48}, {"outer", 0}, {"left", -14}, {"right", 0}, {"top", 16}, {"bottom", 24}} {
-		if folio(theme) {
-			// The shell's two lines of small type reserve the top and bottom
-			// margins themselves; the sides are plain margin.
-			gap.amount = map[string]int{"inner": 12, "outer": 0, "left": 36, "right": 36}[gap.side]
-		}
+	}{{"inner", 12}, {"outer", 0}, {"left", 36}, {"right", 36}, {"top", 0}, {"bottom", 0}} {
 		content += fmt.Sprintf("gaps %s %d\n", gap.side, gap.amount)
 		reapply = append(reapply, fmt.Sprintf("gaps %s all set %d", gap.side, gap.amount))
 	}
@@ -561,10 +259,7 @@ layer_effects "overprint" corner_radius 0
 // wallpaperPath is the theme's wallpaper, or "" when it has none on disk.
 func wallpaperPath(root string, theme Theme) string {
 	wallpaper := theme.Wallpaper
-	if wallpaper == "" {
-		wallpaper = filepath.Join(root, "themes", theme.ID, "wallpaper.png")
-	}
-	if !exists(wallpaper) {
+	if wallpaper == "" || !exists(wallpaper) {
 		return ""
 	}
 	return wallpaper
@@ -645,20 +340,7 @@ func generateGTK(config string, theme Theme) {
 @define-color borders %s;
 @define-color unfocused_borders %s;
 `, c(theme, "bg"), c(theme, "fg"), c(theme, "bg_alt"), c(theme, "fg"), c(theme, "accent"), c(theme, "bg"), c(theme, "surface_alt"), c(theme, "surface"))
-	header := role(theme, "header", "surface_alt")
-	if folio(theme) {
-		header = c(theme, "surface")
-	} else {
-		content += fmt.Sprintf(`
-window, dialog { background-color: @window_bg_color; color: @window_fg_color; }
-headerbar, .titlebar { background: %s; color: %s; border-radius: 0; box-shadow: none; }
-button, entry, spinbutton, dropdown, combobox, popover, menu, .card { border-radius: 2px; }
-button:checked, button.suggested-action, selection, row:selected { background: @accent_bg_color; color: @accent_fg_color; }
-entry:focus, button:focus { outline-color: @accent_color; }
-.sidebar, sidebar { background-color: @sidebar_bg_color; }
-view, textview text, treeview.view { background-color: @view_bg_color; color: @view_fg_color; }
-`, header, c(theme, "fg"))
-	}
+	header := c(theme, "surface")
 	write(filepath.Join(config, "gtk-3.0/gtk.css"), content)
 	modern := content + "\n/* libadwaita 1.6+ uses CSS custom properties. */\n:root {\n"
 	values := map[string]string{
@@ -685,17 +367,8 @@ view, textview text, treeview.view { background-color: @view_bg_color; color: @v
 // generateKitty writes the terminal palette. The larger type, padding, and
 // heading strip belong to the Sway desktop, whose title bars they are sized
 // against; elsewhere Kitty keeps its own layout and only takes the colors.
-func generateKitty(root, config string, theme Theme, desktop bool) {
-	override := filepath.Join(root, "themes", theme.ID, "kitty.conf")
+func generateKitty(config string, theme Theme, desktop bool) {
 	target := filepath.Join(config, "kitty/current-theme.conf")
-	if exists(override) {
-		data, err := os.ReadFile(override)
-		if err != nil {
-			die(err.Error())
-		}
-		write(target, string(data))
-		return
-	}
 	content := fmt.Sprintf(`background %s
 foreground %s
 cursor %s
@@ -719,31 +392,8 @@ color13 %s
 color14 %s
 color15 %s
 `, c(theme, "bg"), c(theme, "fg"), ansi(theme, "cursor", c(theme, "accent")), ansi(theme, "selection", c(theme, "surface_alt")), c(theme, "fg"), ansi(theme, "black", c(theme, "bg_alt")), ansi(theme, "red", c(theme, "red")), ansi(theme, "green", c(theme, "green")), ansi(theme, "yellow", c(theme, "yellow")), ansi(theme, "blue", c(theme, "blue")), ansi(theme, "magenta", c(theme, "magenta")), ansi(theme, "cyan", c(theme, "cyan")), ansi(theme, "white", c(theme, "fg")), ansi(theme, "bright_black", c(theme, "dim")), ansi(theme, "bright_red", c(theme, "red")), ansi(theme, "bright_green", c(theme, "green")), ansi(theme, "bright_yellow", c(theme, "yellow")), ansi(theme, "bright_blue", c(theme, "blue")), ansi(theme, "bright_magenta", c(theme, "magenta")), ansi(theme, "bright_cyan", c(theme, "cyan")), ansi(theme, "bright_white", c(theme, "fg")))
-	if desktop && folio(theme) {
+	if desktop {
 		content += folioKitty(theme)
-	} else if desktop {
-		header := role(theme, "header", "surface_alt")
-		content += fmt.Sprintf(`
-font_size 18.0
-background_opacity 1.0
-window_padding_width 16 16 0 16
-window_title_bar_min_windows 0
-tab_bar_style custom
-tab_bar_min_tabs 2
-hide_window_decorations no
-tab_bar_edge top
-tab_bar_align left
-tab_bar_margin_width 0
-tab_bar_margin_height 12 12
-tab_bar_margin_color %s
-tab_bar_background %s
-active_tab_foreground %s
-active_tab_background %s
-inactive_tab_foreground %s
-inactive_tab_background %s
-active_tab_font_style normal
-inactive_tab_font_style normal
-	`, header, header, role(theme, "header_fg", "fg"), header, role(theme, "header_dim", "dim"), header)
 	} else {
 		content += fmt.Sprintf(`
 active_tab_foreground   %s
@@ -756,73 +406,7 @@ inactive_tab_background %s
 }
 
 func generateTmux(config string, theme Theme) {
-	if folio(theme) {
-		write(filepath.Join(config, "tmux/theme.conf"), folioTmux(theme))
-		return
-	}
-	ink := role(theme, "ink", "surface_alt")
-	content := fmt.Sprintf(`# Generated by theme use %s.
-set -g @theme-popup-border "%s"
-set -g popup-border-style "fg=#{@theme-popup-border}"
-set -g @theme-popup-lines single
-set -g popup-border-lines single
-set -g @theme-popup-bg "%s"
-set -g @theme-popup-fg "%s"
-set -g popup-style "bg=#{@theme-popup-bg},fg=#{@theme-popup-fg}"
-
-# A cell-aligned offset shadow, with italic workspace indices.
-set -g status 3
-set -g set-titles-string '#{?@ws-title,#{@ws-title},#S}:#I:#W'
-set -g status-position bottom
-set -g status-justify absolute-centre
-set -g status-interval 5
-set -g status-left-length 40
-set -g status-right-length 30
-set -g status-style "bg=%s,fg=%s"
-set -g status-format[0] '#[fg=%s,bg=default]#{R:─,#{client_width}}'
-set -g status-format[1] '#[align=left,range=left]#{T;=/#{status-left-length}:status-left}#[norange,list=on,align=#{status-justify}]#[list=left-marker]<#[list=right-marker]>#[list=on]#{W:#[range=window|#{window_index}]#{T:window-status-format}#[norange],#[range=window|#{window_index},list=focus]#{T:window-status-current-format}#[norange,list=on]}#[nolist,align=right,range=right]#{T;=/#{status-right-length}:status-right}#[norange]'
-set -g status-format[2] '#[list=on,align=absolute-centre]#[list=left-marker]<#[list=right-marker]>#[list=on]#{W:#[range=window|#{window_index}]#{T:@theme-shadow-window}#[norange],#[range=window|#{window_index},list=focus]#{T:@theme-shadow-current}#[norange,list=on]}#[nolist]'
-set -g status-left '#[fg=%s,bg=default,bold] #{?@ws-title,#{@ws-title},#S} '
-set -g status-right '#{?client_prefix,#[fg=%s,bg=%s,bold] PREFIX #[fg=%s,bg=%s,nobold],}#[fg=%s,bg=%s] %%H:%%M '
-
-set -g window-status-separator "#[bg=%s] "
-set -g window-status-format "#[fg=%s,bg=default,nobold] #[italics]#I#[noitalics] #W  "
-set -g window-status-current-format "#[fg=%s,bg=%s,bold] #[italics]#I#[noitalics,nobold] #W #[fg=%s,bg=default]▄#[default]"
-set -g @theme-shadow-window '#{R: ,#{e|+|:4,#{e|+|:#{n:window_index},#{w:window_name}}}}'
-set -g @theme-shadow-current '#[fg=%s,bg=default] #{R:▀,#{e|+|:3,#{e|+|:#{n:window_index},#{w:window_name}}}}#[default]'
-set -g window-status-last-style "fg=%s,bg=%s"
-set -g window-status-activity-style "fg=%s,bg=%s"
-set -g window-status-bell-style "fg=%s,bg=%s,bold"
-
-set -g pane-border-lines single
-set -g pane-border-style "fg=%s"
-set -g pane-active-border-style "fg=%s"
-set -g message-style "fg=%s,bg=%s,bold"
-set -g message-command-style "fg=%s,bg=%s"
-setw -g mode-style "fg=%s,bg=%s,bold"
-set -g clock-mode-colour "%s"
-`, theme.ID,
-		c(theme, "surface_alt"),
-		c(theme, "bg"), c(theme, "fg"),
-		"default", c(theme, "fg"),
-		c(theme, "surface_alt"),
-		c(theme, "accent"),
-		c(theme, "bg"), c(theme, "yellow"), c(theme, "fg"), "default", c(theme, "dim"), "default",
-		"default",
-		c(theme, "dim"),
-		c(theme, "bg"), c(theme, "accent"), ink,
-		ink,
-		c(theme, "cyan"), "default",
-		c(theme, "yellow"), "default",
-		c(theme, "red"), "default",
-		c(theme, "surface_alt"),
-		c(theme, "accent"),
-		c(theme, "bg"), c(theme, "accent"),
-		c(theme, "fg"), c(theme, "surface"),
-		c(theme, "fg"), c(theme, "surface_alt"),
-		c(theme, "accent"),
-	)
-	write(filepath.Join(config, "tmux/theme.conf"), content)
+	write(filepath.Join(config, "tmux/theme.conf"), folioTmux(theme))
 }
 
 func generateHelix(config string, theme Theme) {
@@ -912,15 +496,7 @@ func reloadLive() {
 		if gaps := strings.TrimSpace(readString(filepath.Join(configHome(), "dotfiles/sway-gaps"))); gaps != "" {
 			commands = append(commands, []string{"swaymsg", gaps})
 		}
-		// The shell watches its palette file, so it only needs starting after a
-		// first install, or replacing when the layout changed.
-		changed := filepath.Join(configHome(), "dotfiles/layout-changed")
-		if exists(changed) {
-			os.Remove(changed)
-			commands = append(commands, []string{"systemctl", "--user", "restart", "desktop-shell.service"})
-		} else {
-			commands = append(commands, []string{"systemctl", "--user", "start", "desktop-shell.service"})
-		}
+		commands = append(commands, []string{"systemctl", "--user", "start", "desktop-shell.service"})
 	}
 	if runtime.GOOS == "linux" {
 		if _, err := exec.LookPath("gsettings"); err == nil {

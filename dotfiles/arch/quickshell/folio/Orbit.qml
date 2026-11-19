@@ -3,23 +3,17 @@ import QtQuick
 import Quickshell
 import "Logic.js" as Logic
 
-// The other desks, as bodies in orbit round this empty one. The desk seen
-// last is nearest; a desk with more windows is larger; one that wants
-// attention wears a red ring. Click one to go there. Drag one onto another
-// and its windows move in with the other's.
 Item {
     id: orbit
     required property var screen
     property string here: ""
     property bool live: true
     readonly property real u: Theme.unit(screen)
-    // The drawing is 640 dots by 360; this is the width of a dot.
     readonly property real dot: width / 640
     readonly property real centerX: 320
     readonly property real centerY: 176
     readonly property real squash: 0.40
     readonly property var desks: Logic.orbits(Desktop.windows, here, Desktop.waitingSince, Desktop.lastSeen)
-    // Where each body is now: [{desk, name, count, urgent, seen, x, y, r, ring}], in dots.
     property var placed: []
     property real time: 0
     property int hovered: -1
@@ -38,7 +32,6 @@ Item {
     }
     function place(): void {
         const most = Math.max(1, desks.length);
-        // The orbits share the room there is, so nine desks fit as well as two.
         const gap = Math.min(46, (296 - 62) / most);
         placed = desks.map((d, i) => {
             const ring = 62 + i * gap;
@@ -92,7 +85,6 @@ Item {
                 ctx.ellipse(orbit.centerX - b.ring, orbit.centerY - b.ring * orbit.squash, b.ring * 2, b.ring * 2 * orbit.squash);
                 ctx.stroke();
             }
-            // You are here.
             ctx.strokeStyle = "#ffffff";
             ctx.beginPath();
             ctx.arc(orbit.centerX, orbit.centerY, 3, 0, 2 * Math.PI);
@@ -144,7 +136,6 @@ Item {
         anchors.fill: parent
         fragmentShader: Qt.resolvedUrl("Dither.frag.qsb")
     }
-    // Each body's name, on the side away from the middle, on a patch of clear page so it can be read.
     Repeater {
         model: orbit.placed
         Item {

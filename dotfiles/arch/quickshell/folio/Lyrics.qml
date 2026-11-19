@@ -5,9 +5,6 @@ import Quickshell
 import Quickshell.Io
 import "Logic.js" as Logic
 
-// The words of what is playing, with their times, and which line is being
-// sung. They are looked up at lrclib.net by title and artist, and only while
-// an empty desk is showing Words: nothing is asked for a view nobody sees.
 Singleton {
     id: lyrics
 
@@ -16,7 +13,6 @@ Singleton {
     readonly property string artist: player?.trackArtist ?? ""
     readonly property string key: title && artist ? artist + "\n" + title : ""
     readonly property bool wanted: ShellState.view === "words" && Object.values(Desktop.showing).some(desk => !Desktop.windows.some(w => w.workspace === desk))
-    // What has been found, by track: lines, or none.
     property var known: ({})
     readonly property var lines: known[key] ?? []
     property real position: 0
@@ -46,7 +42,6 @@ Singleton {
                 try {
                     answers = JSON.parse(text);
                 } catch (_) {
-                    // No answer at all: ask again another time.
                     return;
                 }
                 const next = Object.assign({}, lyrics.known);

@@ -3,9 +3,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// What the keys and the pointer do, on one sheet, for when it is wanted.
-// Nothing else on the desktop explains itself. Super+/ shows it; Escape,
-// Super+/ again, or a click puts it away.
 PanelWindow {
     id: sheet
     screen: ShellState.focusedScreen
@@ -88,7 +85,6 @@ PanelWindow {
             event.accepted = true;
         }
     }
-    // Two columns, each part under its name, each key beside what it does.
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
         y: sheet.height * 0.11 + (1 - sheet.shown) * 24 * sheet.u

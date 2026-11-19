@@ -5,9 +5,6 @@ import Quickshell.Io
 import Quickshell.Wayland
 import "Logic.js" as Logic
 
-// The page behind everything. With nothing open on a desk it says the hour
-// and the place, then lists what is going on. The picture along its foot is the theme's
-// wallpaper in the page's two colors.
 PanelWindow {
     id: page
     readonly property real u: Theme.unit(screen)
@@ -18,7 +15,6 @@ PanelWindow {
                 desk: desk,
                 since: Desktop.waitingSince[desk]
             }))
-    // What the page has to say right now.
     readonly property var player: Media.playing?.trackTitle ? Media.playing : null
     readonly property string headline: Logic.headline(clock.date, Theme.who.city || "")
     readonly property var facts: Logic.facts(clock.date, Desktop.windows, here, waiting, {
@@ -37,10 +33,8 @@ PanelWindow {
             ShellState.showMissed(screen);
     }
     property int stamp: 0
-    // What the empty desk shows: one of the views, or the words where there is no GPU to draw a view.
     readonly property string view: wind.GraphicsInfo.api === GraphicsInfo.Software ? "words" : ShellState.view
     readonly property bool worded: bare && view === "words"
-    // With a song playing whose words are known, the page is the song.
     readonly property bool sung: Lyrics.lines.length > 0 && Media.player !== null
     anchors {
         left: true
@@ -62,8 +56,6 @@ PanelWindow {
         printErrors: false
         onFileChanged: page.stamp++
     }
-    // Each pixel of the picture is a square several screen pixels wide, so the
-    // dither shows. Wind passes through it: Picture.frag moves the dots about.
     Image {
         id: picture
         anchors.bottom: parent.bottom
@@ -73,9 +65,7 @@ PanelWindow {
         smooth: false
         cache: false
         fillMode: Image.Stretch
-        // The picture belongs to the empty page; behind work it would only show as noise in the margins.
         opacity: page.worded ? 1 : 0
-        // Without a GPU there is no shader, and the picture stands still.
         visible: !wind.visible
         Behavior on opacity {
             NumberAnimation {
@@ -84,7 +74,6 @@ PanelWindow {
             }
         }
     }
-    // What the picture answers to: the hour, the pointer, and whether music is playing.
     readonly property date pictured: Quickshell.env("FOLIO_NOW") ? new Date(Quickshell.env("FOLIO_NOW")) : clock.date
     ShaderEffect {
         id: wind
@@ -94,7 +83,6 @@ PanelWindow {
         property real gale: Media.playing ? 1 : 0
         property real reach: pointer.containsMouse ? 1 : 0
         property real stir: 0
-        // The pointer in dots. It is followed a little late, so it leaves a wake.
         property real pointerX: pointer.mouseX / Math.max(1, picture.width) * size.width
         property real pointerY: (pointer.mouseY - picture.y) / Math.max(1, picture.height) * size.height
         property point pointer: Qt.point(pointerX, pointerY)
@@ -141,7 +129,6 @@ PanelWindow {
             duration: 1600
             easing.type: Easing.OutQuad
         }
-        // A dozen steps a second is as fast as dots this size can be seen to move.
         Timer {
             interval: 80
             running: wind.visible && wind.opacity > 0
@@ -161,7 +148,6 @@ PanelWindow {
         onClicked: ShellState.ask("anything")
     }
     Column {
-        // The words come up as the desk empties.
         visible: opacity > 0
         opacity: page.worded && !page.sung ? 1 : 0
         anchors.horizontalCenter: parent.horizontalCenter
@@ -174,7 +160,6 @@ PanelWindow {
         }
         width: Math.min(1140 * page.u, page.width * 0.7)
         spacing: 0
-        // First the hour and the place, large; then each thing that is true, on a line of its own.
         Text {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
@@ -208,7 +193,6 @@ PanelWindow {
             Item {
                 id: fact
                 required property var modelData
-                // Labels end and facts begin on one line down the page, a little left of its middle.
                 readonly property real gutter: parent.width / 2 - 170 * page.u
                 width: parent.width
                 height: said.height + 10 * page.u
@@ -241,8 +225,6 @@ PanelWindow {
             }
         }
     }
-    // The song's words: the line being sung in the middle, what came before
-    // and what comes next around it. Click a line to go to it.
     Item {
         id: song
         visible: opacity > 0
@@ -277,7 +259,6 @@ PanelWindow {
             interactive: false
             model: Lyrics.lines
             currentIndex: Math.max(0, Lyrics.at)
-            // The line being sung is held a third of the way down.
             preferredHighlightBegin: height * 0.32
             preferredHighlightEnd: height * 0.32
             highlightRangeMode: ListView.StrictlyEnforceRange
@@ -292,7 +273,6 @@ PanelWindow {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                // A rest in the words is a rest on the page.
                 text: modelData.text || "·"
                 color: now ? Theme.fg : Theme.dim
                 opacity: now ? 1 : Math.max(0.12, 0.62 - 0.17 * (away - 1))
@@ -331,7 +311,6 @@ PanelWindow {
             }
         }
     }
-    // The views: each is the whole page, drawn in dots, and something to do.
     Item {
         id: views
         anchors.fill: picture
@@ -380,7 +359,6 @@ PanelWindow {
             }
         }
     }
-    // Which view, and the others a click away. Super+` turns to the next.
     Rectangle {
         visible: turner.visible
         opacity: turner.opacity

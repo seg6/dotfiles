@@ -3,9 +3,6 @@ import QtQuick
 import Quickshell
 import "Logic.js" as Logic
 
-// A plate a day: rings from three places, crossing. The day decides where
-// the places are, so today's is not yesterday's. Drag one of the points to
-// move a source; click anywhere else for another plate.
 Item {
     id: plate
     required property var screen
@@ -15,9 +12,7 @@ Item {
     readonly property real dot: width / 640
     property date today: new Date()
     readonly property int dayOfYear: Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000)
-    // How many times another has been asked for today.
     property int turned: 0
-    // The three sources, in dots, and how closely each one's rings are set.
     property var sources: []
     property var rates: [0.27, 0.23, 0.09]
     property int held: -1
@@ -29,7 +24,6 @@ Item {
         sources = [
             [140 + chance(1) * 150, 110 + chance(2) * 100],
             [350 + chance(3) * 150, 105 + chance(4) * 105],
-            // The third is often off the foot of the page, and felt more than seen.
             [180 + chance(5) * 280, chance(6) > 0.4 ? 400 + chance(7) * 90 : 230 + chance(7) * 60]
         ];
         rates = [0.20 + chance(8) * 0.14, 0.17 + chance(9) * 0.13, 0.06 + chance(10) * 0.07];
@@ -58,7 +52,6 @@ Item {
             repeat: true
             onTriggered: {
                 rings.time += 0.08 * (Media.playing ? 2.2 : 1);
-                // The day turns over while the plate is up.
                 if (new Date().getDate() !== plate.today.getDate())
                     plate.today = new Date();
             }

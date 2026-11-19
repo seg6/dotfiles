@@ -1,6 +1,5 @@
 import QtQuick
 
-// A word or two of small capitals. It can be a link.
 Text {
     id: word
     property var screen
@@ -20,7 +19,6 @@ Text {
         pixelSize: Theme.small(screen)
         capitalization: Font.AllUppercase
     }
-    // The rule under a link is drawn from its left as the pointer arrives.
     Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: -2

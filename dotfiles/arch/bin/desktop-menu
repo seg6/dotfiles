@@ -1,42 +1,18 @@
 #!/usr/bin/env sh
 set -eu
 
-# Talk to the desktop shell of the layout in use. `theme` records the layout;
-# each layout is a Quickshell configuration of the same name.
-layout=overprint
-selection=${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/layout
-if [ -r "$selection" ]; then
-    IFS= read -r layout <"$selection" || true
-fi
-
 action=${1:-launcher}
 case $action in
-    launcher | clipboard | close) ;;
-    # Folio can show what its keys do.
-    keys) [ "$layout" = folio ] || exit 0 ;;
-    # Folio has a lock screen of its own; `unlock` is the way back in from
-    # another terminal if it misbehaves. Overprint locks with swaylock.
-    lock | unlock)
-        if [ "$layout" != folio ]; then
-            [ "$action" = lock ] && exec "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/lock"
-            exit 0
-        fi
-        ;;
-    # Folio's empty desk has several views: `view next`, `view prev`, or one by name.
-    view)
-        [ "$layout" = folio ] || exit 0
-        exec qs ipc -c "$layout" call shell view "${2:-next}"
-        ;;
-    # Run the shell itself; this is what desktop-shell.service starts.
-    serve) exec qs -c "$layout" --no-duplicate ;;
+    launcher | clipboard | close | keys | lock | unlock) ;;
+    view) exec qs ipc -c folio call shell view "${2:-next}" ;;
+    serve) exec qs -c folio --no-duplicate ;;
     *)
         printf '%s\n' 'usage: desktop-menu [launcher|clipboard|keys|lock|unlock|close|view [next|prev|NAME]|serve]' >&2
         exit 2
         ;;
 esac
 if [ "$action" = lock ]; then
-    # If the shell is not there to lock the screen, swaylock still is.
-    qs ipc -c "$layout" call shell lock || exec "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/lock"
+    qs ipc -c folio call shell lock || exec "${XDG_CONFIG_HOME:-"$HOME/.config"}/dotfiles/lock"
     exit 0
 fi
-exec qs ipc -c "$layout" call shell "$action"
+exec qs ipc -c folio call shell "$action"

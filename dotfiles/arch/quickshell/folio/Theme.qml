@@ -3,7 +3,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Two colors and one more, two typefaces, and who and where this is.
 QtObject {
     id: root
     property var colors: ({})
@@ -13,12 +12,10 @@ QtObject {
     readonly property color dim: colors.dim || "#8b877d"
     readonly property color faint: colors.surface_alt || "#343330"
     readonly property color signal: colors.red || "#ff4a2b"
-    // Departure Mono is drawn on an 11-unit grid and is only sharp at multiples of it.
     readonly property string mono: "Departure Mono"
     readonly property string serif: "Newsreader"
     readonly property string configHome: Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
     readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")
-    // A surface can ask before it has been given its screen.
     function unit(screen): real {
         return screen ? Math.min(1, screen.height / 1440) : 1;
     }

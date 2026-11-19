@@ -3,9 +3,6 @@ import QtQuick
 import Quickshell
 import "Logic.js" as Logic
 
-// The number of the desk you are on, as large as the page allows, with
-// weather inside it. It comes apart near the pointer and forms again, and
-// scatters for a moment when you change desks.
 Item {
     id: numeral
     required property var screen
@@ -14,7 +11,6 @@ Item {
     readonly property real u: Theme.unit(screen)
     readonly property real dot: width / 640
     onHereChanged: scatter.restart()
-    // The numeral as a shape for the shader to fill.
     Item {
         id: shape
         width: 640

@@ -187,7 +187,6 @@ chmod 700 "$TARGET_HOME/.ssh"
 
 if [[ $(uname -s) == Linux ]]; then
     systemctl --user daemon-reload
-    # Folio's typefaces were just installed with the dotfiles; let fontconfig find them.
     fc-cache -f "${XDG_DATA_HOME:-$TARGET_HOME/.local/share}/fonts" >/dev/null 2>&1 || true
     if [[ -n ${SWAYSOCK:-} ]]; then
         systemctl --user start sway-session.target

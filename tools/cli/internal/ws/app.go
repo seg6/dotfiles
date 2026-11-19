@@ -120,8 +120,6 @@ func (app *App) runWorkspace(ctx context.Context) error {
 	return app.activate(ctx, candidates[selected])
 }
 
-// runOpen goes straight to a project named as the picker lists it
-// ("personal/dotfiles"), for anything that already knows which one it wants.
 func (app *App) runOpen(ctx context.Context, id string) error {
 	projects, err := DiscoverProjects(app.Config.Workspace)
 	if err != nil {

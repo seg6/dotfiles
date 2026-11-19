@@ -6,9 +6,7 @@ StartLimitIntervalSec=30
 StartLimitBurst=5
 
 [Service]
-# `theme` records the layout; each layout is a Quickshell configuration of the same name.
 ExecStart=%h/.local/bin/desktop-menu serve
 Restart=on-failure
-# Stopping the shell stops the shell, not whatever was started from it.
 KillMode=process
 RestartSec=2

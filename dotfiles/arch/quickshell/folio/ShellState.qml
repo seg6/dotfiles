@@ -4,17 +4,13 @@ import Quickshell
 import Quickshell.I3
 import Quickshell.Io
 
-// Whether a request is being typed, what it searches, and whether the screen is locked.
 QtObject {
     id: root
     property bool asking: false
-    // "anything" or "clipboard".
     property string about: "anything"
     property var screen: null
     property bool locked: false
-    // The sheet of what the keys do.
     property bool keys: false
-    // The tray item whose menu is open, and where its icon ends on that screen.
     property var menuItem: null
     property var menuScreen: null
     property real menuX: 0
@@ -24,10 +20,8 @@ QtObject {
         menuX = x;
         menuItem = item;
     }
-    // What the empty desk shows. The choice is kept.
     readonly property var views: ["orbit", "dial", "numeral", "plate", "words"]
     property string view: "orbit"
-    // "next", "prev", or a view by name.
     function show(name: string): void {
         let at = views.indexOf(view);
         if (name === "next")
@@ -67,7 +61,6 @@ QtObject {
     function close(): void {
         asking = false;
     }
-    // The page asks the bottom line of a screen to show what went by.
     signal missedWanted(var onScreen)
     function showMissed(onScreen): void {
         missedWanted(onScreen);
@@ -85,7 +78,6 @@ QtObject {
             root.menuItem = null;
             root.locked = true;
         }
-        // The way back in from another terminal if the lock screen misbehaves.
         function unlock(): void {
             root.locked = false;
         }

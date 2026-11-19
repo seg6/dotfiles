@@ -1,7 +1,4 @@
 #version 440
-// The number of the desk, as large as the page allows, with weather inside
-// it and almost none outside. It leans away from the pointer and comes apart
-// near it, and scatters for a moment when the desk changes.
 // Rebuild after editing: /usr/lib/qt6/bin/qsb --qt6 -o Numeral.frag.qsb Numeral.frag
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
@@ -10,7 +7,6 @@ layout(std140, binding = 0) uniform buf {
     float qt_Opacity;
     float time;
     float clock;
-    // 1 with the pointer on the page, 1 just after it has moved, 1 just after the desk changed.
     float reach;
     float stir;
     float burst;
@@ -19,7 +15,6 @@ layout(std140, binding = 0) uniform buf {
     vec4 ink;
     vec4 paper;
 };
-// The numeral itself, drawn white on nothing.
 layout(binding = 1) uniform sampler2D mask;
 
 float hash(vec2 p) {
@@ -50,7 +45,6 @@ void main() {
     float push = exp(-far * far / 1400.0) * 20.0;
     float rings = sin(far * 0.5 - clock * 8.0) * exp(-far / 46.0) * 4.0 * stir;
     vec2 moved = dot_ - out_ * (push + rings) * reach;
-    // Near the pointer, and everywhere for a moment after a change of desk, the dots lose their places.
     float loose = clamp(burst + reach * exp(-far * far / 2600.0) * 0.9, 0.0, 1.0);
     vec2 scatter = (vec2(hash(dot_ + 1.0), hash(dot_ + 9.0)) - 0.5) * 90.0 * loose * loose;
     bool inside = texture(mask, (moved + scatter + 0.5) / size).a > 0.5;

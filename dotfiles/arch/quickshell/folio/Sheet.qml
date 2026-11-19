@@ -1,8 +1,6 @@
 import QtQuick
 import Quickshell
 
-// A slip of the page that opens beside a word: a hairline and what it holds.
-// A click anywhere else puts it away.
 PopupWindow {
     id: sheet
     property real pad: 18

@@ -4,13 +4,10 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Wayland
 
-// A tray application's own menu, set as a list under its icon. The surface
-// covers the screen so a click anywhere else, or Escape, puts it away.
 PanelWindow {
     id: window
     screen: ShellState.menuScreen || Quickshell.screens[0]
     readonly property real u: Theme.unit(screen)
-    // A submenu replaces the list; this is the path taken into it.
     property var trail: []
     readonly property var openers: [rootMenu, firstSubmenu, secondSubmenu, thirdSubmenu]
     readonly property var listing: openers[trail.length].children
@@ -35,13 +32,11 @@ PanelWindow {
     function close(): void {
         ShellState.menuItem = null;
     }
-    // The application may quit while its menu is open.
     readonly property bool gone: ShellState.menuItem !== null && !SystemTray.items.values.includes(ShellState.menuItem)
     onGoneChanged: {
         if (gone)
             close();
     }
-    // A submenu only exists while its parent stays open, so each level keeps its own opener.
     QsMenuOpener {
         id: rootMenu
         menu: ShellState.menuItem ? ShellState.menuItem.menu : null
@@ -66,7 +61,6 @@ PanelWindow {
         property bool quiet: false
         property bool checked: false
         property bool more: false
-        // Menus mark keyboard mnemonics with a single underscore.
         readonly property string text: label.replace(/_(?!_)/g, "").replace(/__/g, "_")
         signal chosen
         width: entries.width
@@ -159,7 +153,6 @@ PanelWindow {
                 Line {
                     required property var modelData
                     required property int index
-                    // Applications often end a menu with a rule.
                     visible: !(modelData.isSeparator && index === window.listing.values.length - 1)
                     rule: modelData.isSeparator
                     label: modelData.text

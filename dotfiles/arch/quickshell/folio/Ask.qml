@@ -8,9 +8,6 @@ import Quickshell.Services.Pipewire
 import "Search.js" as Search
 import "Logic.js" as Logic
 
-// A request. Type what you want and the page finishes the sentence: go to a
-// window, resume a project, open an application, or simply lock or shut down.
-// Tab turns it to what you have copied.
 PanelWindow {
     id: ask
     screen: ShellState.screen || Quickshell.screens[0]
@@ -19,7 +16,6 @@ PanelWindow {
     property var used: ({})
     property var clips: []
     property int chosen: 0
-    // A request that cannot be undone waits for Enter a second time.
     property string armed: ""
     readonly property var results: clipboard ? Search.rank(clips, input.text, {}, true).slice(0, 7).map(clip => ({
                 kind: "clip",
@@ -123,7 +119,6 @@ PanelWindow {
         bottom: true
     }
     exclusionMode: ExclusionMode.Ignore
-    // It comes up out of the page and goes back into it.
     property real shown: ShellState.asking ? 1 : 0
     Behavior on shown {
         NumberAnimation {
@@ -132,8 +127,6 @@ PanelWindow {
         }
     }
     color: "transparent"
-    // The surface is always there, and takes no clicks until asked: mapping
-    // a new one costs the first frames of coming up.
     mask: ShellState.asking ? null : nothing
     Region {
         id: nothing
@@ -195,7 +188,6 @@ PanelWindow {
             onStreamFinished: ask.clips = Search.clipboard(text)
         }
     }
-    // The weather of the page goes on under the request, fainter.
     ShaderEffect {
         id: weather
         property real time: 0
@@ -242,7 +234,6 @@ PanelWindow {
         y: ask.height * 0.15 + (1 - ask.shown) * 28 * ask.u
         opacity: ask.shown
         width: Math.min(1400 * ask.u, ask.width * 0.8)
-        // The request, as a sentence that finishes itself.
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 0
@@ -293,7 +284,6 @@ PanelWindow {
                     } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                         ask.run(ask.first);
                     } else if (input.text.length === 0 && !ask.clipboard && event.key >= Qt.Key_0 && event.key <= Qt.Key_9) {
-                        // A bare number goes to that desk.
                         ShellState.close();
                         I3.dispatch("workspace " + JSON.stringify(event.key === Qt.Key_0 ? "10" : String(event.key - Qt.Key_0)));
                     } else {
@@ -329,8 +319,6 @@ PanelWindow {
             width: 1
             height: 52 * ask.u
         }
-        // The answers, as a list with a margin: what kind of thing each is, the
-        // thing, and a few words about it.
         Column {
             id: answers
             readonly property real gutter: 190 * ask.u
@@ -351,7 +339,6 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     readonly property bool chosen: ask.chosen === index
-                    // The kind is said once, at the head of its run.
                     readonly property bool heads: index === 0 || ask.results[index - 1].kind !== modelData.kind
                     width: answers.width
                     height: 56 * ask.u

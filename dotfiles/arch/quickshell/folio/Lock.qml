@@ -5,10 +5,8 @@ import Quickshell.Wayland
 import Quickshell.Services.Pam
 import "Logic.js" as Logic
 
-// The page, locked. It says so, and waits for the password.
 Scope {
     id: lock
-    // What has been typed, and what the last attempt came to.
     property string typed: ""
     property string verdict: ""
     function attempt(): void {
@@ -19,7 +17,6 @@ Scope {
     }
     PamContext {
         id: pam
-        // The same service swaylock uses, unless a test supplies its own.
         config: Quickshell.env("FOLIO_PAM_CONFIG") || "swaylock"
         configDirectory: Quickshell.env("FOLIO_PAM_DIRECTORY") || "/etc/pam.d"
         onPamMessage: {
@@ -88,7 +85,6 @@ Scope {
                 id: words
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: parent.height * (0.15 + (1 - opacity) * 0.012)
-                // The page is locked at once; the words follow.
                 opacity: 0
                 Component.onCompleted: opacity = 1
                 Behavior on opacity {
@@ -114,11 +110,9 @@ Scope {
                     width: 1
                     height: 60 * surface.u
                 }
-                // One mark for each character typed; nothing else about it is shown.
                 Row {
                     id: marks
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // A wrong password shakes its head.
                     transform: Translate {
                         id: shake
                     }
@@ -171,7 +165,6 @@ Scope {
                     }
                 }
             }
-            // The keys go here; the field itself is never drawn.
             TextInput {
                 id: field
                 width: 1

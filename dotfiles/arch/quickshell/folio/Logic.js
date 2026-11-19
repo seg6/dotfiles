@@ -1,8 +1,5 @@
 .pragma library
 
-// Every window in the Sway tree, most recently focused first. Sway keeps each
-// container's children in focus order, so following that order through the
-// tree gives the order a person would call "last used".
 function windows(tree) {
     var found = [];
     function visit(node, workspace) {
@@ -32,7 +29,6 @@ function windows(tree) {
     return found;
 }
 
-// Which workspace each output is showing: {"DP-1": "2"}.
 function showing(tree) {
     var seen = {};
     (tree.nodes || []).forEach(function(output) {
@@ -42,8 +38,6 @@ function showing(tree) {
     return seen;
 }
 
-// Windows have a hairline and no heading. One that arrives with a heading,
-// from another layout, loses it; ones that draw their own frame are left alone.
 function frameUpdates(tree) {
     var commands = [];
     function visit(node) {
@@ -60,8 +54,6 @@ var numbers = ["no", "one", "two", "three", "four", "five", "six", "seven", "eig
 
 function count(n) { return numbers[n] || String(n); }
 
-// What a person calls the program: "Helium", not "helium-browser" or
-// "com.anthropic.Claude".
 var names = { "helium": "Helium", "kitty": "Kitty", "com.anthropic.claude": "Claude", "org.gnome.nautilus": "Files", "thunar": "Thunar", "teams-for-linux": "Teams" };
 
 function proper(app) {
@@ -73,7 +65,6 @@ function proper(app) {
 
 var terminals = ["kitty", "alacritty", "foot", "wezterm", "ghostty"];
 
-// "Helium", "a terminal", "three terminals".
 function several(app, n) {
     if (terminals.indexOf(String(app).toLowerCase()) !== -1)
         return n === 1 ? "a terminal" : count(n) + " terminals";
@@ -89,8 +80,6 @@ function escape(text) {
     return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// The hour the way it is said aloud, to the nearest five minutes: "twenty to
-// one", "half past nine", "noon".
 function spokenTime(date) {
     var minutes = Math.round((date.getHours() * 60 + date.getMinutes()) / 5) * 5;
     var hour = Math.floor(minutes / 60) % 24, past = minutes % 60;
@@ -112,8 +101,6 @@ function spokenTime(date) {
 var weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-// How long ago, as a person would put it: "two minutes ago", "yesterday",
-// "Monday", "12 November".
 function since(then, now) {
     var minutes = Math.max(0, Math.round((now - then) / 60000));
     if (minutes < 1) return "just now";
@@ -133,8 +120,6 @@ function since(then, now) {
     return then.getDate() + " " + months[then.getMonth()];
 }
 
-// What is open on other desks, each thing a link to its desk:
-// [{text: "three terminals", desk: "2"}].
 function elsewhere(all, here) {
     var groups = [];
     all.forEach(function(w) {
@@ -147,8 +132,6 @@ function elsewhere(all, here) {
     return groups.map(function(g) { return { text: several(g.app, g.n), desk: g.desk, n: g.n }; });
 }
 
-// The window in focus, as the program and what it is showing. A window whose
-// title only repeats the program's name is said once: ["Claude", ""].
 function inFocus(app, title) {
     var name = proper(app);
     var showing = String(title || "").trim();
@@ -157,15 +140,10 @@ function inFocus(app, title) {
     return [name, showing];
 }
 
-// The first thing the page says: "It is twenty to one on a Wednesday in Berlin."
 function headline(now, place) {
     return "It is " + spokenTime(now) + " on a " + weekdays[now.getDay()] + (place ? " in " + place : "") + ".";
 }
 
-// What else is true, one fact to a line, each a label and rich text:
-//   [{label: "elsewhere", text: '<a href="desk:1">Helium</a> and …'}, …]
-// `waiting` lists what wants attention: [{name: "Discord", desk: "8", since: Date}].
-// `more` is {playing: {title, artist}, missed: 3}. Links are "desk:N", "pause" and "missed".
 function facts(now, all, here, waiting, more) {
     var rows = [];
     function capital(html) {
@@ -193,7 +171,6 @@ function facts(now, all, here, waiting, more) {
     return rows;
 }
 
-// A desk's name in the line of desks along the top: what is mostly on it.
 function deskName(all, desk) {
     var mine = all.filter(function(w) { return w.workspace === desk; });
     if (mine.length === 0) return "here";
@@ -203,8 +180,6 @@ function deskName(all, desk) {
     return proper(best) + (Object.keys(tally).length > 1 ? " +" + (mine.length - tally[best]) : "");
 }
 
-// The projects opened most recently, from the `ws` tool's own record
-// ({"personal/dotfiles": "2026-11-18T11:16:43Z"}), newest first.
 function lately(recent, now, limit) {
     return Object.keys(recent || {}).map(function(id) {
         return { id: id, name: id.split("/").slice(-2).join(" / "), then: new Date(recent[id]) };
@@ -212,7 +187,6 @@ function lately(recent, now, limit) {
         .slice(0, limit).map(function(p) { return { id: p.id, name: p.name, when: since(p.then, now) }; });
 }
 
-// How well a name answers what was typed: lower is better, Infinity is no.
 function match(text, token) {
     text = String(text || "").toLowerCase();
     if (text === token) return 0;
@@ -229,12 +203,10 @@ function match(text, token) {
         last = at;
         cursor = at + 1;
     }
-    // letters scattered across a phrase are a coincidence, not a match
     if (last - first > token.length + 1) return Infinity;
     return 90 + last - first;
 }
 
-// What the desktop can simply be told to do.
 var commands = [
     { id: "lock", verb: "Lock", name: "the screen", words: "lock screen" },
     { id: "sleep", verb: "Put", name: "the machine to sleep", words: "sleep suspend" },
@@ -253,8 +225,6 @@ var commands = [
     { id: "view-words", verb: "Show", name: "the words", words: "view words lyrics sentence" }
 ];
 
-// Arithmetic typed as a request: "12 * 7", "= (3 + 4) / 2", "2^10", "15% of" is not.
-// Gives {text, value} or null. Nothing is evaluated as code: it is parsed.
 function sum(query) {
     var text = String(query || "").trim().replace(/^=\s*/, "").replace(/×/g, "*").replace(/÷/g, "/").replace(/,/g, ".");
     if (!/^[\d\s.+\-*\/()%^]+$/.test(text) || !/\d\s*[+\-*\/%^]\s*[\d(.\-]/.test(text)) return null;
@@ -292,8 +262,6 @@ function sum(query) {
     return { text: text.replace(/\s+/g, " "), value: String(parseFloat(value.toPrecision(12))) };
 }
 
-// With nothing typed yet, what is most likely wanted: the windows used
-// last, the projects opened last, the applications opened last.
 function suggest(sources, now) {
     var rows = [];
     (sources.windows || []).slice(0, 3).forEach(function(w) {
@@ -311,14 +279,9 @@ function suggest(sources, now) {
     return rows;
 }
 
-// Everything that answers what was typed, best first, each as the parts of a
-// sentence: a verb, a name, and a few words more.
-//   {kind: "window" | "project" | "app" | "command", verb, name, detail, ...}
 function ask(query, sources, now, limit) {
     var tokens = String(query || "").trim().toLowerCase().split(/\s+/).filter(function(t) { return t.length > 0; });
     if (tokens.length === 0) return suggest(sources, now);
-    // The first field is the name; a match in a later one counts for less,
-    // by `second` (a window's title is as good as its name, a description is not).
     function score(fields, second) {
         return tokens.reduce(function(sum, token) {
             return sum + Math.min.apply(null, fields.map(function(f, i) { return match(f, token) + i * (second === undefined ? 60 : second); }));
@@ -348,25 +311,17 @@ function ask(query, sources, now, limit) {
     return found.slice(0, limit || 7);
 }
 
-// The rest of a name once what was typed is taken off its front, so the
-// request can finish itself: "hel" + "ium".
 function rest(query, name) {
     var typed = String(query || "");
     return name.toLowerCase().indexOf(typed.toLowerCase()) === 0 ? name.slice(typed.length) : "";
 }
 
-// Where the light is, for the picture: {progress, light, phase}.
-// `progress` is how far the sun is across the sky, 0 at rising to 1 at setting;
-// after dark it is the moon's, from sunset to sunrise. `light` is 1 by day and
-// 0 by night, with three quarters of an hour of dawn and dusk between.
-// `phase` is the moon's: 0 new, 0.5 full. Without a latitude, 50 north is assumed.
 function sky(now, latitude) {
     var lat = (typeof latitude === "number" ? latitude : 50) * Math.PI / 180;
     var start = new Date(now.getFullYear(), 0, 0);
     var day = Math.floor((now - start) / 86400000);
     var tilt = -23.44 * Math.cos(2 * Math.PI * (day + 10) / 365) * Math.PI / 180;
     var half = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(tilt)))) / Math.PI * 12;
-    // Clocks on summer time run an hour ahead of the sun.
     var winter = Math.max(new Date(now.getFullYear(), 0, 1).getTimezoneOffset(), new Date(now.getFullYear(), 6, 1).getTimezoneOffset());
     var noon = 12 + (winter - now.getTimezoneOffset()) / 60;
     var rise = noon - half, set = noon + half;
@@ -376,14 +331,12 @@ function sky(now, latitude) {
     var progress = up ? (hour - rise) / Math.max(set - rise, 0.01) : ((hour - set + 24) % 24) / Math.max(night, 0.01);
     var edge = Math.min(Math.abs(hour - rise), Math.abs(hour - set), 24 - Math.abs(hour - rise), 24 - Math.abs(hour - set));
     var light = Math.max(0, Math.min(1, 0.5 + (up ? 1 : -1) * edge / 1.5));
-    // Where the sun does not set, or does not rise, there is no dawn to pass through.
     if (half >= 12) { up = true; light = 1; progress = hour / 24; }
     if (half <= 0) { up = false; light = 0; progress = hour / 24; }
     var months = (now.getTime() - Date.UTC(2000, 0, 6, 18, 14)) / 86400000 / 29.530588853;
     return { progress: Math.max(0, Math.min(1, progress)), light: light, phase: months - Math.floor(months), rise: rise, set: set };
 }
 
-// Short forms for the small capitals: "just now", "4 min", "2 h", "3 d".
 function ago(ms) {
     var minutes = Math.max(0, Math.round(ms / 60000));
     if (minutes < 1) return "just now";
@@ -392,34 +345,27 @@ function ago(ms) {
     return Math.round(minutes / 1440) + " d";
 }
 
-// "48 min", "5 h 12 min", "2 h".
 function lasting(ms) {
     var minutes = Math.max(0, Math.round(ms / 60000));
     if (minutes < 60) return minutes + " min";
     return Math.floor(minutes / 60) + " h" + (minutes % 60 ? " " + (minutes % 60) + " min" : "");
 }
 
-// "09:05".
 function hourMinute(when) {
     var d = new Date(when);
     return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 }
 
-// "2026-11-18", in local time: the name a day's record is kept under.
 function dayKey(when) {
     var d = new Date(when);
     return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
 }
 
-// Where in the day a moment falls, 0 at midnight to 1 at the next.
 function dayPart(when) {
     var d = new Date(when);
     return (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400;
 }
 
-// A day's record grows by what is on screen now. `spans` is
-// [{from, to, desk, name}] in milliseconds; a desk shown again within a few
-// minutes carries its span on, anything else starts a new one.
 function noteSpan(spans, now, desk, name) {
     var next = spans.slice();
     var last = next[next.length - 1];
@@ -430,8 +376,6 @@ function noteSpan(spans, now, desk, name) {
     return next;
 }
 
-// What a day's record adds up to: {total, names: [{name, ms}], longest: {ms, from}}.
-// Stretches are runs of spans with no more than a few minutes between them.
 function dayStats(spans) {
     var total = 0, tally = {}, longest = { ms: 0, from: 0 }, run = null;
     (spans || []).forEach(function(s) {
@@ -448,8 +392,6 @@ function dayStats(spans) {
     return { total: total, names: names, longest: longest };
 }
 
-// The other desks in use, the one seen most recently first:
-//   [{desk, name, count, urgent, seen}]
 function orbits(all, here, waiting, lastSeen) {
     var desks = [];
     all.forEach(function(w) { if (w.workspace !== here && desks.indexOf(w.workspace) === -1) desks.push(w.workspace); });
@@ -464,9 +406,6 @@ function orbits(all, here, waiting, lastSeen) {
     }).sort(function(a, b) { return b.seen - a.seen || (a.desk < b.desk ? -1 : 1); });
 }
 
-// Lyrics with their times ("[01:07.27] Caught in a landslide") as
-// [{at: 67.27, text: "Caught in a landslide"}], in order. Lines with no
-// words are kept: they are the rests.
 function parseLyrics(text) {
     var lines = [];
     String(text || "").split(/\r?\n/).forEach(function(row) {
@@ -480,14 +419,12 @@ function parseLyrics(text) {
     return lines.sort(function(a, b) { return a.at - b.at; });
 }
 
-// Which line is being sung at `position` seconds: the last one begun, or -1 before the first.
 function lineAt(lines, position) {
     var at = -1;
     for (var i = 0; i < lines.length && lines[i].at <= position + 0.15; i++) at = i;
     return at;
 }
 
-// Of the answers a lyrics search gives, the one with timed words whose length is nearest the track's.
 function bestLyrics(answers, length) {
     var best = null;
     (Array.isArray(answers) ? answers : []).forEach(function(a) {

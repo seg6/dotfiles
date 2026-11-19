@@ -58,12 +58,6 @@ dotfiles:
   f_helix_languages:
     src: common/helix/languages.toml
     dst: ~/.config/helix/languages.toml
-  f_kitty_tab_bar:
-    src: arch/kitty/tab_bar.py
-    dst: ~/.config/kitty/tab_bar.py
-  f_kitty_header:
-    src: arch/kitty/window_title_bar.py
-    dst: ~/.config/kitty/window_title_bar.py
   f_kitty_fonts:
     src: common/kitty/fonts.conf
     dst: ~/.config/kitty/fonts.conf
@@ -112,9 +106,6 @@ dotfiles:
   f_systemd_desktop_shell:
     src: arch/systemd/user/desktop-shell.service
     dst: ~/.config/systemd/user/desktop-shell.service
-  d_overprint:
-    src: arch/quickshell/overprint
-    dst: ~/.config/quickshell/overprint
   d_folio:
     src: arch/quickshell/folio
     dst: ~/.config/quickshell/folio
@@ -182,12 +173,9 @@ profiles:
     dotfiles:
       - f_sway_config
       - f_sway_arch_fragment
-      - f_kitty_tab_bar
-      - f_kitty_header
       - f_teams_desktop
       - f_systemd_sway_session_target
       - f_systemd_desktop_shell
-      - d_overprint
       - d_folio
       - d_fonts
       - f_bin_desktop_menu

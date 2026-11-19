@@ -3,13 +3,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 
-// The notification server, a history of what arrived, and do-not-disturb.
 QtObject {
     id: notices
     property bool quiet: false
-    // Newest first: {app, summary, body, icon, time, critical}.
     property var history: []
-    // How many went by without being seen: held back while quiet, or left on their own.
     property int missed: 0
     readonly property var live: server.trackedNotifications
     function clear(): void {
@@ -36,7 +33,6 @@ QtObject {
                         critical: critical
                     }].concat(notices.history).slice(0, 40);
             }
-            // While quiet, only what is critical appears; the rest waits in the history.
             notification.tracked = critical || !notices.quiet;
             if (!notification.tracked && !notification.transient)
                 notices.missed++;

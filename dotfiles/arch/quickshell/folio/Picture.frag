@@ -1,28 +1,16 @@
 #version 440
-// The picture at the foot of the page. It is of nothing: a slow weather of
-// dots, thick at the foot of the page and gone before it reaches the words.
-//   It flows, faster and fuller while music plays.
-//   It parts round the pointer, and rings run out when the pointer moves.
-//   By night it thins and stars come out over it; now and then one falls.
-// Every dot is ink or paper, never a gray.
 // Rebuild after editing: /usr/lib/qt6/bin/qsb --qt6 -o Picture.frag.qsb Picture.frag
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
-    // Flow time: it runs faster while music plays.
     float time;
-    // Plain seconds, for what the flow does not carry.
     float clock;
-    // 1 in full day, 0 in full night.
     float light;
-    // 0 in calm, 1 while music plays.
     float gale;
-    // 1 with the pointer on the page, and 1 just after it has moved.
     float reach;
     float stir;
-    // The pointer, in dots.
     vec2 pointer;
     vec2 size;
     vec4 ink;
@@ -52,7 +40,6 @@ float fbm(vec2 p) {
 void main() {
     vec2 dot_ = floor(qt_TexCoord0 * size);
     float height = (dot_.y + 0.5) / size.y;
-    // The pointer pushes the weather aside, and rings run out from it when it moves.
     vec2 off = dot_ - pointer;
     float far = length(off);
     vec2 out_ = far > 0.0 ? off / far : vec2(0.0);
@@ -60,33 +47,26 @@ void main() {
     float rings = sin(far * 0.5 - clock * 8.0) * exp(-far / 46.0) * 4.0 * stir;
     vec2 q = (dot_ - out_ * (push + rings) * reach) / size.y;
 
-    // Two slow currents bend everything that follows.
     vec2 bend = vec2(fbm(q * 1.3 + vec2(0.0, time * 0.030)), fbm(q * 1.3 + vec2(5.2, -time * 0.024)));
-    // Long bodies lying across the page, and finer strands inside them.
     float body = fbm(q * vec2(1.1, 3.0) + 2.4 * bend + vec2(-time * 0.020, 0.0));
     float strands = fbm(q * vec2(2.6, 11.0) + 3.4 * bend + vec2(-time * 0.055, time * 0.01));
     float tone = smoothstep(0.34, 0.72, body) * 0.80;
     tone *= 0.45 + 1.1 * smoothstep(0.30, 0.70, strands);
-    // Nothing near the words; all of it by the foot of the page. The upper edge is not a line.
     float rise = smoothstep(0.40, 0.98, height + (bend.x - 0.5) * 0.22);
     tone *= rise * (0.35 + 0.95 * rise);
     tone *= mix(0.55, 1.0, light) * (1.0 + 0.22 * gale);
-    // The place under the pointer is cleared.
     tone *= 1.0 - exp(-far * far / 260.0) * reach * 0.85;
 
-    // Which dots come on first as a tone rises: evenly scattered, in no pattern the eye can name.
     float order = fract(dot(dot_, vec2(0.7548776662, 0.5698402910)));
     vec4 color = tone > order ? ink : paper;
 
     float dark = 1.0 - light;
-    // Stars, over the weather and a little into it, a few of them going in and out.
     float star = hash(dot_ * 0.731 + 3.0);
     if (star > 0.9987 && height < 0.60) {
         float blink = step(0.22, fract(star * 733.0 + clock * (0.02 + 0.05 * hash(dot_))));
         if (blink * dark > 0.5)
             color = ink;
     }
-    // Now and then one falls.
     float turn = floor(clock / 37.0);
     float fall = (clock - turn * 37.0) / 0.9;
     if (dark > 0.5 && fall < 1.0) {

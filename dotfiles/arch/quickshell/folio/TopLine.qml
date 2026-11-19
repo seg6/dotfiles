@@ -10,8 +10,6 @@ import Quickshell.Services.SystemTray
 import "RailLogic.js" as RailLogic
 import "Logic.js" as Logic
 
-// The top margin: what is in focus, the desks, and on the right what
-// is playing, the tray as words, and the volume.
 PanelWindow {
     id: line
     readonly property real u: Theme.unit(screen)
@@ -20,8 +18,6 @@ PanelWindow {
     readonly property var lit: Desktop.windows.find(w => w.focused && w.workspace === line.here) ?? null
     readonly property var player: Media.player
     readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
-    // The desk whose picture is showing, and where along the line its word is.
-    // The name of the tray item under the pointer.
     property string tip: ""
     property real tipX: 0
     anchors {
@@ -59,7 +55,6 @@ PanelWindow {
         }
     }
 
-    // The desks sit in the middle of the line, and give way when the right side is long.
     Row {
         id: deskRow
         readonly property real gap: 48 * line.u
@@ -100,7 +95,6 @@ PanelWindow {
                         height: width
                         radius: width / 2
                         color: Theme.signal
-                        // It breathes, so it is noticed without being looked for.
                         SequentialAnimation on opacity {
                             running: !!desk.entry?.urgent
                             loops: Animation.Infinite
@@ -128,7 +122,6 @@ PanelWindow {
         }
     }
 
-    // One rule under the desk you are on. It slides to the next one.
     Rectangle {
         readonly property Item under: {
             line.desks;
@@ -185,14 +178,12 @@ PanelWindow {
                 }
             }
             Small {
-                // A title in another script is set in a taller typeface; it still sits on the same line.
                 anchors.baseline: playWord.baseline
                 screen: line.screen
                 link: true
                 width: Math.min(implicitWidth, 300 * line.u)
                 elide: Text.ElideRight
                 text: line.player?.trackTitle || line.player?.identity || ""
-                // Click to play or pause; right click for the next track, middle for the last.
                 onPressed: event => {
                     if (event.button === Qt.RightButton)
                         line.player.next();
@@ -203,8 +194,6 @@ PanelWindow {
                 }
             }
         }
-        // The tray: each application's own icon, in a hairline box. They are
-        // drawn without their color until the pointer is on them.
         Rectangle {
             visible: SystemTray.items.values.length > 0
             anchors.verticalCenter: parent.verticalCenter
@@ -278,15 +267,12 @@ PanelWindow {
             link: true
             lit: !line.audio?.muted
             text: line.audio ? (line.audio.muted ? "muted" : "vol " + Math.round(line.audio.volume * 100)) : "vol —"
-            // Scroll to change it; click to mute; right click for the mixer.
             onPressed: event => {
                 if (event.button === Qt.RightButton)
                     Quickshell.execDetached(["pavucontrol"]);
                 else if (line.audio)
                     line.audio.muted = !line.audio.muted;
             }
-            // One notch of a wheel is two in a hundred. A touchpad sends many small
-            // movements for one gesture, so they are added up until they make a notch.
             property real turned: 0
             onWheeled: event => {
                 if (!line.audio)
